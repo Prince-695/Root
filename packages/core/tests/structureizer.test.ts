@@ -34,7 +34,7 @@ describe("structureizeExpressTs (Phase 2 golden path)", () => {
       "src/index.ts",
       "src/server.ts",
       "src/config/env.ts",
-      "src/db/prisma.ts",
+      "src/db/client.ts",
       "src/schema.ts",
       "src/routes/health.routes.ts",
       "src/controllers/health.controller.ts",

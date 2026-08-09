@@ -1,4 +1,5 @@
 services:
+{{#if isPostgres}}
   postgres:
     image: postgres:16-alpine
     restart: unless-stopped
@@ -13,3 +14,35 @@ services:
 
 volumes:
   root_pg_data:
+{{/if}}
+{{#if isMysql}}
+  mysql:
+    image: mysql:8.4
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: {{projectName}}
+    ports:
+      - "3306:3306"
+    volumes:
+      - root_mysql_data:/var/lib/mysql
+
+volumes:
+  root_mysql_data:
+{{/if}}
+{{#if isMongo}}
+  mongo:
+    image: mongo:7
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: root
+      MONGO_INITDB_DATABASE: {{projectName}}
+    ports:
+      - "27017:27017"
+    volumes:
+      - root_mongo_data:/data/db
+
+volumes:
+  root_mongo_data:
+{{/if}}

@@ -1,0 +1,10 @@
+/**
+ * No ORM selected. Add a data layer later with:
+ *   pnpm dlx root@latest add model <name>
+ * or re-init with Prisma / Drizzle / Mongoose.
+ */
+export const db = {
+  async ping() {
+    return { ok: true as const, mode: "none" as const };
+  },
+};

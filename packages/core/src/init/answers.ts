@@ -1,4 +1,5 @@
 import { type RootJson, createRootJsonFixture } from "../config/root-json.js";
+import { invalidComboMessage, isValidCombo } from "./stack-matrix.js";
 
 export type InitAnswers = {
   projectName: string;
@@ -14,7 +15,7 @@ export type InitAnswers = {
   githubActions: boolean;
 };
 
-/** Phase 2 golden path defaults (`root init --yes`). */
+/** Default path (`root init --yes`): Postgres + Prisma. */
 export function createGoldenInitAnswers(projectName: string): InitAnswers {
   return {
     projectName,
@@ -31,25 +32,49 @@ export function createGoldenInitAnswers(projectName: string): InitAnswers {
   };
 }
 
-export function isPhase2SupportedStack(answers: InitAnswers): boolean {
+export function createInitAnswers(
+  projectName: string,
+  overrides: Partial<InitAnswers> = {},
+): InitAnswers {
+  return { ...createGoldenInitAnswers(projectName), ...overrides, projectName };
+}
+
+/** Express TS layered stack with a valid DB×ORM combo. */
+export function isSupportedExpressTsStack(answers: InitAnswers): boolean {
   return (
     answers.language === "typescript" &&
     answers.framework === "express" &&
     answers.architecture === "layered-mvc" &&
-    answers.database === "postgresql" &&
-    answers.orm === "prisma" &&
-    answers.validation === "zod"
+    answers.validation === "zod" &&
+    isValidCombo(answers.database, answers.orm)
   );
 }
 
+/** @deprecated Use isSupportedExpressTsStack */
+export const isPhase2SupportedStack = isSupportedExpressTsStack;
+
 export function unsupportedStackMessage(answers: InitAnswers): string {
+  if (
+    answers.language !== "typescript" ||
+    answers.framework !== "express" ||
+    answers.architecture !== "layered-mvc"
+  ) {
+    return [
+      "This language/framework/architecture is not generated yet.",
+      "",
+      `Requested: ${answers.language} / ${answers.framework} / ${answers.architecture}`,
+      "Supported now: typescript / express / layered-mvc",
+    ].join("\n");
+  }
+
+  if (!isValidCombo(answers.database, answers.orm)) {
+    return invalidComboMessage(answers.database, answers.orm);
+  }
+
   return [
-    "This stack combination is not generated yet (Phase 2 golden path only).",
+    "Unsupported stack combination.",
     "",
     `Requested: ${answers.language} / ${answers.framework} / ${answers.database} / ${answers.orm}`,
-    "Supported now: typescript / express / postgresql / prisma / layered-mvc",
-    "",
-    "Other databases and ORMs arrive in Phase 3.",
   ].join("\n");
 }
 
@@ -68,6 +93,6 @@ export function answersToRootJson(answers: InitAnswers): RootJson {
       docker: answers.docker,
       githubActions: answers.githubActions,
     },
-    modules: answers.auth === "jwt" ? {} : {},
+    modules: {},
   });
 }

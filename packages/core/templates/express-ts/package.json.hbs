@@ -8,30 +8,37 @@
     "build": "tsc -p tsconfig.json",
     "start": "node dist/index.js",
     "lint": "tsc -p tsconfig.json --noEmit",
-    "test": "{{#if testingVitest}}vitest run{{else}}echo \"No tests configured\"{{/if}}",
+    "test": "{{#if testingVitest}}vitest run{{else}}echo \"No tests configured\"{{/if}}"{{#if isPrisma}},
     "prisma:generate": "prisma generate",
-    "prisma:migrate": "prisma migrate dev"
+    "prisma:migrate": "prisma migrate dev"{{/if}}{{#if isDrizzle}},
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate"{{/if}}
   },
   "engines": {
     "node": ">=18"
   },
   "dependencies": {
-    "@prisma/client": "^6.5.0",
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
     "helmet": "^8.0.0",
     "morgan": "^1.10.0",
-    "zod": "^3.24.2"
+    "zod": "^3.24.2"{{#if isPrisma}},
+    "@prisma/client": "^6.5.0"{{/if}}{{#if isDrizzle}},
+    "drizzle-orm": "^0.40.0"{{#if isPostgres}},
+    "postgres": "^3.4.5"{{/if}}{{#if isMysql}},
+    "mysql2": "^3.12.0"{{/if}}{{/if}}{{#if isMongoose}},
+    "mongoose": "^8.12.1"{{/if}}
   },
   "devDependencies": {
     "@types/cors": "^2.8.17",
     "@types/express": "^4.17.21",
     "@types/morgan": "^1.9.9",
     "@types/node": "^22.13.10",
-    "prisma": "^6.5.0",
     "tsx": "^4.19.3",
-    "typescript": "^5.8.2"{{#if testingVitest}},
+    "typescript": "^5.8.2"{{#if isPrisma}},
+    "prisma": "^6.5.0"{{/if}}{{#if isDrizzle}},
+    "drizzle-kit": "^0.30.5"{{/if}}{{#if testingVitest}},
     "vitest": "^3.0.8",
     "supertest": "^7.0.0",
     "@types/supertest": "^6.0.2"{{/if}}

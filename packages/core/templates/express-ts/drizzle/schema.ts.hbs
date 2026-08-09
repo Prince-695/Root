@@ -1,0 +1,20 @@
+{{#if isPostgres}}
+import { pgTable, serial, text, timestamp } from "drizzle-orm/pg-core";
+
+/** Example placeholder table — replace via Root `add model` later. */
+export const healthChecks = pgTable("health_checks", {
+  id: serial("id").primaryKey(),
+  note: text("note"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+{{/if}}
+{{#if isMysql}}
+import { int, mysqlTable, text, timestamp } from "drizzle-orm/mysql-core";
+
+/** Example placeholder table — replace via Root `add model` later. */
+export const healthChecks = mysqlTable("health_checks", {
+  id: int("id").primaryKey().autoincrement(),
+  note: text("note"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+{{/if}}

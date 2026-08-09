@@ -18,6 +18,8 @@ jobs:
           node-version: 22
           cache: pnpm
       - run: pnpm install
+{{#if isPrisma}}
       - run: pnpm prisma:generate
+{{/if}}
       - run: pnpm build
       - run: pnpm test
