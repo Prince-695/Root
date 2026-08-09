@@ -10,6 +10,7 @@ After each implementation phase gate turns green, a markdown file is added here:
 | [phase-3.md](./phase-3.md) | Database × ORM matrix (10 combos) |
 | [phase-4.md](./phase-4.md) | Interconnection engine core |
 | [phase-5.md](./phase-5.md) | `add route` end-to-end |
+| [phase-6.md](./phase-6.md) | `add auth` + auth-aware graph (MVP) |
 | … | … |
 
 Each file includes:
