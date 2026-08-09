@@ -7,6 +7,7 @@ After each implementation phase gate turns green, a markdown file is added here:
 | [phase-0.md](./phase-0.md) | Repository foundation (Turborepo) |
 | [phase-1.md](./phase-1.md) | CLI shell, detection, `root.json` + Cursor skills |
 | [phase-2.md](./phase-2.md) | Init wizard + Express TS golden path (Postgres + Prisma) |
+| [phase-3.md](./phase-3.md) | Database × ORM matrix (10 combos) |
 | … | … |
 
 Each file includes:

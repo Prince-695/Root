@@ -18,7 +18,8 @@
     "lint:fix": "biome check --write .",
     "format": "biome format --write .",
     "check": "pnpm lint && pnpm typecheck && pnpm test && pnpm build",
-    "root-cli": "node packages/cli/dist/cli.js"
+    "root-cli": "node packages/cli/dist/cli.js",
+    "matrix:typebuild": "node scripts/matrix-typebuild.mjs"
   },
   "devDependencies": {
     "@biomejs/biome": "^1.9.4",

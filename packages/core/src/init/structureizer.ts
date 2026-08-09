@@ -6,9 +6,10 @@ import { renderTemplateFile } from "../templates/renderer.js";
 import {
   type InitAnswers,
   answersToRootJson,
-  isPhase2SupportedStack,
+  isSupportedExpressTsStack,
   unsupportedStackMessage,
 } from "./answers.js";
+import { buildStackTemplateContext } from "./stack-matrix.js";
 
 export type StructureizeResult = {
   filesWritten: string[];
@@ -16,11 +17,8 @@ export type StructureizeResult = {
 };
 
 type TemplateSpec = {
-  /** Path relative to templates/express-ts */
   template: string;
-  /** Output path relative to project root */
   output: string;
-  /** If false, skip when answers.docker is false, etc. */
   when?: (answers: InitAnswers) => boolean;
 };
 
@@ -30,11 +28,9 @@ const EXPRESS_TS_TEMPLATES: TemplateSpec[] = [
   { template: "gitignore.hbs", output: ".gitignore" },
   { template: "env.example.hbs", output: ".env.example" },
   { template: "README.md.hbs", output: "README.md" },
-  { template: "prisma/schema.prisma.hbs", output: "prisma/schema.prisma" },
   { template: "src/index.ts.hbs", output: "src/index.ts" },
   { template: "src/server.ts.hbs", output: "src/server.ts" },
   { template: "src/config/env.ts.hbs", output: "src/config/env.ts" },
-  { template: "src/db/prisma.ts.hbs", output: "src/db/prisma.ts" },
   { template: "src/schema.ts.hbs", output: "src/schema.ts" },
   { template: "src/utils/logger.ts.hbs", output: "src/utils/logger.ts" },
   { template: "src/middleware/errorHandler.ts.hbs", output: "src/middleware/errorHandler.ts" },
@@ -46,10 +42,59 @@ const EXPRESS_TS_TEMPLATES: TemplateSpec[] = [
   },
   { template: "src/routes/health.routes.ts.hbs", output: "src/routes/health.routes.ts" },
   { template: "src/routes/index.ts.hbs", output: "src/routes/index.ts" },
+
+  // DB clients
+  {
+    template: "src/db/prisma.ts.hbs",
+    output: "src/db/client.ts",
+    when: (a) => a.orm === "prisma",
+  },
+  {
+    template: "src/db/drizzle.ts.hbs",
+    output: "src/db/client.ts",
+    when: (a) => a.orm === "drizzle",
+  },
+  {
+    template: "src/db/mongoose.ts.hbs",
+    output: "src/db/client.ts",
+    when: (a) => a.orm === "mongoose",
+  },
+  {
+    template: "src/db/none.ts.hbs",
+    output: "src/db/client.ts",
+    when: (a) => a.orm === "none",
+  },
+
+  // Prisma schema
+  {
+    template: "prisma/schema.prisma.hbs",
+    output: "prisma/schema.prisma",
+    when: (a) => a.orm === "prisma",
+  },
+
+  // Drizzle
+  {
+    template: "drizzle/schema.ts.hbs",
+    output: "src/db/schema.ts",
+    when: (a) => a.orm === "drizzle",
+  },
+  {
+    template: "drizzle.config.ts.hbs",
+    output: "drizzle.config.ts",
+    when: (a) => a.orm === "drizzle",
+  },
+
+  // Mongoose model placeholder
+  {
+    template: "src/models/.gitkeep.hbs",
+    output: "src/models/.gitkeep",
+    when: (a) => a.orm === "mongoose",
+  },
+
   {
     template: "docker-compose.yml.hbs",
     output: "docker-compose.yml",
-    when: (a) => a.docker,
+    when: (a) => a.docker && a.database !== "none",
   },
   {
     template: "github/workflows/ci.yml.hbs",
@@ -70,7 +115,6 @@ const EXPRESS_TS_TEMPLATES: TemplateSpec[] = [
 
 export function getExpressTsTemplatesRoot(): string {
   const here = path.dirname(fileURLToPath(import.meta.url));
-  // dist/init → package root
   return path.join(here, "..", "..", "templates", "express-ts");
 }
 
@@ -80,19 +124,20 @@ export async function structureizeExpressTs(options: {
 }): Promise<StructureizeResult> {
   const { targetDir, answers } = options;
 
-  if (!isPhase2SupportedStack(answers)) {
+  if (!isSupportedExpressTsStack(answers)) {
     throw new Error(unsupportedStackMessage(answers));
   }
 
   const templatesRoot = getExpressTsTemplatesRoot();
-  const context = {
+  const context = buildStackTemplateContext({
     projectName: answers.projectName,
-    authJwt: answers.auth === "jwt",
-    testingVitest: answers.testing === "vitest",
+    database: answers.database,
+    orm: answers.orm,
+    auth: answers.auth,
+    testing: answers.testing,
     docker: answers.docker,
     githubActions: answers.githubActions,
-    routesAnchor: "[ROOT-INJECT:ROUTES]",
-  };
+  });
 
   const filesWritten: string[] = [];
 

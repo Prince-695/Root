@@ -46,10 +46,25 @@ export { ERRORS } from "./errors/messages.js";
 export {
   answersToRootJson,
   createGoldenInitAnswers,
+  createInitAnswers,
   isPhase2SupportedStack,
+  isSupportedExpressTsStack,
   unsupportedStackMessage,
   type InitAnswers,
 } from "./init/answers.js";
+
+export {
+  SUPPORTED_COMBOS,
+  buildStackTemplateContext,
+  defaultDatabaseUrl,
+  invalidComboMessage,
+  isValidCombo,
+  ormOptionsForDatabase,
+  type Database,
+  type Orm,
+  type StackCombo,
+  type StackTemplateContext,
+} from "./init/stack-matrix.js";
 
 export {
   getExpressTsTemplatesRoot,
