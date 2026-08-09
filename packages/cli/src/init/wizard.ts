@@ -4,7 +4,7 @@ import {
   type InitAnswers,
   type Orm,
   createGoldenInitAnswers,
-  isSupportedExpressTsStack,
+  isSupportedExpressStack,
   ormOptionsForDatabase,
   unsupportedStackMessage,
 } from "@root/core";
@@ -42,7 +42,7 @@ export async function runInitWizard(projectName: string): Promise<InitAnswers | 
     message: "Select your language / runtime:",
     options: [
       { value: "typescript", label: "Node.js (TypeScript)", hint: "Recommended" },
-      { value: "javascript", label: "Node.js (JavaScript)", hint: "Coming soon", disabled: true },
+      { value: "javascript", label: "Node.js (JavaScript)", hint: "ESM Express" },
       { value: "python", label: "Python (FastAPI)", hint: "Coming soon", disabled: true },
       { value: "java", label: "Java (Spring Boot)", hint: "Coming soon", disabled: true },
     ],
@@ -114,7 +114,7 @@ export async function runInitWizard(projectName: string): Promise<InitAnswers | 
     message: "Authentication:",
     options: [
       { value: "none", label: "None", hint: "Add later with root add auth" },
-      { value: "jwt", label: "JWT", hint: "Recorded in root.json; full module in Phase 6" },
+      { value: "jwt", label: "JWT", hint: "Signup/signin + authenticate middleware" },
     ],
   });
   if (p.isCancel(auth)) {
@@ -163,7 +163,7 @@ export async function runInitWizard(projectName: string): Promise<InitAnswers | 
     githubActions: extras.includes("githubActions"),
   };
 
-  if (!isSupportedExpressTsStack(answers)) {
+  if (!isSupportedExpressStack(answers)) {
     p.log.error(unsupportedStackMessage(answers));
     return null;
   }

@@ -12,9 +12,9 @@ export function createProgram(): Command {
   program
     .name("root")
     .description(
-      "Pure-engineering backend scaffolding CLI (shadcn-style for backend). Primary UX: pnpm dlx root@latest",
+      "Pure-engineering backend scaffolding CLI (shadcn-style for backend). Primary UX: pnpm dlx root-scaffold@latest",
     )
-    .version("0.0.0")
+    .version("0.1.0")
     .option("-v, --verbose", "Enable verbose logging", false)
     .option("--dry-run", "Preview actions without writing files", false)
     .option("--yes", "Skip confirmation prompts where safe", false);
