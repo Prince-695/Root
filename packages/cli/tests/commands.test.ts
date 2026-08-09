@@ -1,4 +1,4 @@
-import { mkdir, mkdtemp, writeFile } from "node:fs/promises";
+import { access, mkdir, mkdtemp, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { createRootJsonFixture, serializeRootJson } from "@root/core";
@@ -37,17 +37,16 @@ describe("CLI command guards (Phase 1)", () => {
   it("init with arg creates a subfolder even when cwd is foreign", async () => {
     const dir = await tempDir("cli-foreign-");
     await writeFile(path.join(dir, "index.js"), "1\n", "utf8");
-    const log = vi.spyOn(console, "log").mockImplementation(() => {});
+    vi.spyOn(console, "log").mockImplementation(() => {});
+    vi.spyOn(console, "error").mockImplementation(() => {});
     const program = createProgram();
 
     await withCwd(dir, async () => {
-      await program.parseAsync(["node", "root", "init", "nested-api"]);
+      await program.parseAsync(["node", "root", "--yes", "init", "nested-api", "--skip-install"]);
     });
 
     expect(process.exitCode ?? 0).toBe(0);
-    const output = log.mock.calls.flat().join("\n");
-    expect(output).toContain("nested-api");
-    expect(output).toContain("Created folder: yes");
+    await access(path.join(dir, "nested-api", "root.json"));
   });
 
   it("init --yes --dry-run stays in empty cwd", async () => {
@@ -154,7 +153,7 @@ describe("CLI command guards (Phase 1)", () => {
     const program = createProgram();
 
     await withCwd(dir, async () => {
-      await program.parseAsync(["node", "root", "--verbose", "--yes", "init"]);
+      await program.parseAsync(["node", "root", "--verbose", "--yes", "init", "--skip-install"]);
     });
 
     expect(err.mock.calls.flat().join("\n")).toContain("[verbose]");

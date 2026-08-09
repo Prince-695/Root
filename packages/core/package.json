@@ -12,7 +12,7 @@
       "import": "./dist/index.js"
     }
   },
-  "files": ["dist"],
+  "files": ["dist", "templates"],
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
     "typecheck": "tsc -p tsconfig.json --noEmit",
@@ -21,6 +21,7 @@
     "dev": "tsc -p tsconfig.build.json --watch"
   },
   "dependencies": {
+    "handlebars": "^4.7.9",
     "zod": "^3.24.2"
   },
   "devDependencies": {

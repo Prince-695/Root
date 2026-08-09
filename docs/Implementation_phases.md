@@ -315,12 +315,13 @@ CLI behaves safely on real directories: it knows when it can create, when it can
 
 ### Deliverables Checklist
 
-- [ ] Empty dir → wizard (or `--yes` defaults) → project files exist
-- [ ] `root.json` matches choices
-- [ ] Generated app `pnpm install && pnpm build` succeeds
-- [ ] `pnpm dev` serves `GET /health` → 200
-- [ ] Anchor comment present in `server.ts`
-- [ ] `.env.example` has `DATABASE_URL` placeholder (no real secrets)
+- [x] Empty dir → wizard (or `--yes` defaults) → project files exist
+- [x] `root.json` matches choices
+- [x] Generated app `pnpm install && pnpm build` succeeds
+- [x] `pnpm dev` serves `GET /health` → 200
+- [x] Anchor comment present in `server.ts`
+- [x] `.env.example` has `DATABASE_URL` placeholder (no real secrets)
+- [x] Phase note: [`docs/phase/phase-2.md`](./phase/phase-2.md)
 
 ---
 
