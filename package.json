@@ -19,6 +19,7 @@
     "format": "biome format --write .",
     "check": "pnpm lint && pnpm typecheck && pnpm test && pnpm build",
     "root-cli": "node packages/cli/dist/cli.js",
+    "web": "pnpm --filter @root/web dev",
     "matrix:typebuild": "node scripts/matrix-typebuild.mjs",
     "prepare-publish": "node scripts/prepare-publish.mjs",
     "pack:audit": "node scripts/pack-audit.mjs",

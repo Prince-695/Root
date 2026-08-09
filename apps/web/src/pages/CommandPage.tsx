@@ -1,0 +1,64 @@
+import { Link, useParams } from "react-router-dom";
+import { CommandPlate } from "../components/CommandPlate";
+import { commands } from "../content/commands";
+
+export function CommandPage() {
+  const { slug } = useParams();
+  const doc = commands.find((c) => c.slug === slug);
+
+  if (!doc) {
+    return (
+      <>
+        <h1>Unknown command</h1>
+        <p>
+          <Link to="/docs/commands">Back to commands</Link>
+        </p>
+      </>
+    );
+  }
+
+  return (
+    <>
+      <h1>{doc.title}</h1>
+      <p className="lede">{doc.oneLiner}</p>
+
+      <p className="section-label">What you type</p>
+      {doc.commands.map((code) => (
+        <CommandPlate key={code} code={code} />
+      ))}
+
+      <h2>When to use it</h2>
+      <p>{doc.when}</p>
+
+      <h2>What you will see</h2>
+      <ul>
+        {doc.see.map((item) => (
+          <li key={item}>{item}</li>
+        ))}
+      </ul>
+
+      <h2>What files change</h2>
+      <ul>
+        {doc.files.map((item) => (
+          <li key={item}>{item}</li>
+        ))}
+      </ul>
+
+      <h2>What to do next</h2>
+      <ul>
+        {doc.next.map((item) => (
+          <li key={item}>
+            <code>{item}</code>
+          </li>
+        ))}
+      </ul>
+
+      <h2>Common mistakes</h2>
+      <ul>
+        {doc.mistakes.map((item) => (
+          <li key={item}>{item}</li>
+        ))}
+      </ul>
+    </>
+  );
+}

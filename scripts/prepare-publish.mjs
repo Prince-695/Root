@@ -45,8 +45,8 @@ function toPosix(p) {
   return p.split(path.sep).join("/");
 }
 
-console.log("Building workspace…");
-execSync("pnpm build", { cwd: root, stdio: "inherit" });
+console.log("Building CLI + core…");
+execSync("pnpm exec turbo run build --filter=@root/cli", { cwd: root, stdio: "inherit" });
 
 rmSync(out, { recursive: true, force: true });
 mkdirSync(path.join(out, "dist"), { recursive: true });
