@@ -1,7 +1,7 @@
 import { resolveResourceNames } from "../registry/codegen/resource-files.js";
 import { type RecipeContext, type RecipeId, getRecipe } from "../registry/index.js";
 import type { ModuleGraph } from "./module-graph.js";
-import { hasAuth, hasModule } from "./module-graph.js";
+import { hasModule } from "./module-graph.js";
 import type { Operation } from "./operations.js";
 
 export type PlanRequest = {
@@ -31,7 +31,8 @@ export function planInterconnect(request: PlanRequest): Operation[] {
       case "validate":
         return graph.probe.hasValidateMiddleware || hasModule(graph, "validate");
       case "auth":
-        return hasAuth(graph);
+        // Manifest entry is the source of truth (config.auth may be jwt before files exist).
+        return hasModule(graph, "auth");
       case "resource": {
         if (!request.resourceName) {
           return false;

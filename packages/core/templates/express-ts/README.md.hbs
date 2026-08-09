@@ -58,3 +58,15 @@ pnpm dlx root@latest add auth
 pnpm dlx root@latest add route post
 pnpm dlx root@latest doctor
 ```
+
+{{#if authJwt}}
+## Authentication
+
+JWT auth is included. Sign up / sign in at \`/auth/signup\` and \`/auth/signin\`, then send:
+
+\`\`\`bash
+Authorization: Bearer <token>
+\`\`\`
+
+on mutating resource routes (POST/PUT/DELETE). Set \`ACCESS_TOKEN_SECRET\` in \`.env\`.
+{{/if}}

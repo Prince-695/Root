@@ -64,7 +64,7 @@ exports[`InterconnectPlanner > orders schema → validate → resource deps dete
     "fields": [
       {
         "name": "title",
-        "zodType": "z.string()"
+        "zodType": "z.string().min(1)"
       }
     ]
   },
@@ -75,7 +75,7 @@ exports[`InterconnectPlanner > orders schema → validate → resource deps dete
     "fields": [
       {
         "name": "title",
-        "zodType": "z.string()"
+        "zodType": "z.string().min(1)"
       }
     ]
   },

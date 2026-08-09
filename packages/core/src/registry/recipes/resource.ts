@@ -1,8 +1,10 @@
+import { hasAuth } from "../../engine/module-graph.js";
 import type { Operation } from "../../engine/operations.js";
 import {
   buildResourceFiles,
   defaultResourceZodFields,
   resolveResourceNames,
+  resourceOrmFields,
   serverRouteImportSource,
 } from "../codegen/resource-files.js";
 import type { Recipe } from "../types.js";
@@ -23,16 +25,19 @@ export const resourceRecipe: Recipe = {
       return [];
     }
 
-    const fields = ctx.fields ?? defaultResourceZodFields();
+    const authAware = hasAuth(ctx.graph);
+    const schemaFields = defaultResourceZodFields();
     const files = buildResourceFiles({
       config: ctx.graph.config,
       names,
-      fields,
+      fields: schemaFields,
+      hasAuth: authAware,
     });
     const serverRel = ctx.graph.config.aliases.server;
     const anchor = ctx.graph.config.inject.routesAnchor;
     const mountLine = `app.use("${names.mountPath}", ${names.routerExport});`;
     const addedAt = ctx.addedAt ?? "1970-01-01T00:00:00.000Z";
+    const ormFields = resourceOrmFields(authAware, schemaFields);
 
     const ops: Operation[] = [
       {
@@ -69,7 +74,7 @@ export const resourceRecipe: Recipe = {
         type: "updateSchema",
         kind: "resource",
         resourceName: names.slug,
-        fields,
+        fields: schemaFields,
       },
     ];
 
@@ -79,7 +84,7 @@ export const resourceRecipe: Recipe = {
         type: "updateOrm",
         kind: "prisma-model",
         resourceName: names.slug,
-        fields,
+        fields: ormFields,
       });
       ops.push({
         type: "runCommand",
@@ -91,14 +96,14 @@ export const resourceRecipe: Recipe = {
         type: "updateOrm",
         kind: "drizzle-table",
         resourceName: names.slug,
-        fields,
+        fields: ormFields,
       });
     } else if (orm === "mongoose") {
       ops.push({
         type: "updateOrm",
         kind: "mongoose-model",
         resourceName: names.slug,
-        fields,
+        fields: ormFields,
       });
     }
 

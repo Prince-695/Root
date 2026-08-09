@@ -7,6 +7,11 @@ import {
   writeRootJson,
 } from "../config/root-json.js";
 import {
+  ensureAccessTokenEnv,
+  ensureAccessTokenInEnvTs,
+  ensureAuthReadmeSection,
+} from "../mutators/env-config.js";
+import {
   InjectSyntaxError,
   addImport,
   applyAnchorPatch,
@@ -137,6 +142,7 @@ export class Transaction {
         this.journal.push({ kind: "manifest", previous });
         const next: RootJson = {
           ...config,
+          auth: op.moduleName === "auth" ? "jwt" : config.auth,
           modules: {
             ...config.modules,
             [op.moduleName]: op.entry,
@@ -145,6 +151,35 @@ export class Transaction {
         if (!this.dryRun) {
           await writeRootJson(this.projectRoot, next);
         }
+        return;
+      }
+      case "ensureText": {
+        const current = (await readMaybe(this.abs(op.path))) ?? "";
+        if (current.includes(op.skipIfContains)) {
+          return;
+        }
+        let next: string;
+        switch (op.transform) {
+          case "access-token-env":
+            next = ensureAccessTokenEnv(current);
+            break;
+          case "access-token-env-ts":
+            next = ensureAccessTokenInEnvTs(
+              current.length > 0 ? current : "const envSchema = z.object({\n});\n",
+            );
+            break;
+          case "auth-readme":
+            next = ensureAuthReadmeSection(current.length > 0 ? current : "# App\n");
+            break;
+          default: {
+            const _exhaustive: never = op.transform;
+            throw new TransactionError(`Unknown ensureText transform: ${_exhaustive}`);
+          }
+        }
+        if (next === current) {
+          return;
+        }
+        await this.writeTracked(op.path, next);
         return;
       }
       case "ensureDependency": {
