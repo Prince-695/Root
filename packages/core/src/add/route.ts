@@ -7,6 +7,7 @@ import {
   defaultResourceZodFields,
   resolveResourceNames,
 } from "../registry/codegen/resource-files.js";
+import { invalidModuleNameMessage, isValidModuleName, normalizeModuleName } from "./names.js";
 
 export class AddRouteError extends Error {
   constructor(
@@ -28,10 +29,6 @@ export type AddRouteOptions = {
   runCommand?: TransactionOptions["runCommand"];
   addedAt?: string;
 };
-
-function isValidRouteName(name: string): boolean {
-  return /^[a-z][a-z0-9-]*$/.test(name.trim().toLowerCase());
-}
 
 async function defaultRunCommand(command: string, args: string[], cwd: string): Promise<void> {
   await new Promise<void>((resolve, reject) => {
@@ -62,14 +59,11 @@ export type AddRouteResult = {
  * Plan and apply a resource route into an existing Root project.
  */
 export async function addRoute(options: AddRouteOptions): Promise<AddRouteResult> {
-  if (!isValidRouteName(options.name)) {
-    throw new AddRouteError(
-      `Invalid route name "${options.name}". Use lowercase letters, numbers, and hyphens (e.g. post).`,
-      "invalid-name",
-    );
+  if (!isValidModuleName(options.name)) {
+    throw new AddRouteError(invalidModuleNameMessage(options.name, "route"), "invalid-name");
   }
 
-  const names = resolveResourceNames(options.name);
+  const names = resolveResourceNames(normalizeModuleName(options.name));
   const graph = await loadModuleGraph(options.projectRoot);
 
   if (hasModule(graph, names.slug)) {

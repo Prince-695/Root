@@ -1,11 +1,19 @@
 import type { ModuleGraph } from "../engine/module-graph.js";
 import type { Operation, ZodField } from "../engine/operations.js";
 
-export type RecipeId = "schema" | "validate" | "resource" | "auth";
+export type RecipeId =
+  | "schema"
+  | "validate"
+  | "resource"
+  | "auth"
+  | "model"
+  | "service"
+  | "middleware"
+  | "controller";
 
 export type RecipeContext = {
   graph: ModuleGraph;
-  /** Resource name (slug), e.g. "post" */
+  /** Component / resource name (slug), e.g. "post" */
   resourceName?: string;
   fields?: ZodField[];
   mountPath?: string;
