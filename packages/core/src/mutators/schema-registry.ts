@@ -76,9 +76,9 @@ export function writeAuthSchemas(content: string): string {
   ensureBanners(content);
   const body = sectionBody(content, AUTH_BANNER, RESOURCE_BANNER);
   if (body.includes("signUpSchema")) {
-    return content;
+    return rewriteExports(content);
   }
-  return replaceSection(content, AUTH_BANNER, RESOURCE_BANNER, `\n${AUTH_BLOCK}`);
+  return rewriteExports(replaceSection(content, AUTH_BANNER, RESOURCE_BANNER, `\n${AUTH_BLOCK}`));
 }
 
 export function appendResourceSchema(

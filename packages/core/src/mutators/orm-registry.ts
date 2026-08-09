@@ -8,12 +8,20 @@ function createFields(fields: ZodField[]): ZodField[] {
   return fields.filter((f) => !["id", "createdAt", "updatedAt"].includes(f.name));
 }
 
-function titleField(fields: ZodField[]): string {
-  return (
-    createFields(fields).find((f) => f.name === "title")?.name ??
-    createFields(fields)[0]?.name ??
-    "title"
-  );
+function prismaLine(field: ZodField): string {
+  if (field.ormType) {
+    return `  ${field.name.padEnd(9)} ${field.ormType}`;
+  }
+  if (field.name === "email") {
+    return "  email     String   @unique";
+  }
+  if (field.name === "passwordHash") {
+    return "  passwordHash String";
+  }
+  if (field.name === "authorId") {
+    return "  authorId  String";
+  }
+  return `  ${field.name.padEnd(9)} String`;
 }
 
 export function appendPrismaModel(
@@ -23,14 +31,22 @@ export function appendPrismaModel(
 ): string {
   const pascal = toPascalCase(resourceName);
   if (new RegExp(`\\bmodel\\s+${pascal}\\b`).test(schemaPrisma)) {
+    // Ensure authorId exists when requested (auth retrofit).
+    const wantsAuthor = createFields(fields).some((f) => f.name === "authorId");
+    if (wantsAuthor && !new RegExp(`model\\s+${pascal}[\\s\\S]*?authorId`).test(schemaPrisma)) {
+      return schemaPrisma.replace(
+        new RegExp(`(model\\s+${pascal}\\s*\\{[^}]*)(\\n\\})`),
+        "$1\n  authorId  String$2",
+      );
+    }
     return schemaPrisma;
   }
 
-  const fieldName = titleField(fields);
+  const body = createFields(fields).map(prismaLine).join("\n");
   const block = `
 model ${pascal} {
   id        String   @id @default(cuid())
-  ${fieldName.padEnd(9)} String
+${body}
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
@@ -42,6 +58,28 @@ model ${pascal} {
   return `${schemaPrisma.trimEnd()}\n${block}`;
 }
 
+function drizzleColumns(fields: ZodField[], database: RootJson["database"]): string {
+  const cols = createFields(fields);
+  if (database === "mysql") {
+    return cols
+      .map((f) => {
+        if (f.name === "email") return `  email: text("email").notNull().unique(),`;
+        if (f.name === "passwordHash") return `  passwordHash: text("password_hash").notNull(),`;
+        if (f.name === "authorId") return `  authorId: text("author_id").notNull(),`;
+        return `  ${f.name}: text("${f.name}"),`;
+      })
+      .join("\n");
+  }
+  return cols
+    .map((f) => {
+      if (f.name === "email") return `  email: text("email").notNull().unique(),`;
+      if (f.name === "passwordHash") return `  passwordHash: text("password_hash").notNull(),`;
+      if (f.name === "authorId") return `  authorId: text("author_id").notNull(),`;
+      return `  ${f.name}: text("${f.name}"),`;
+    })
+    .join("\n");
+}
+
 export function appendDrizzleTable(
   schemaTs: string,
   resourceName: string,
@@ -49,18 +87,20 @@ export function appendDrizzleTable(
   database: RootJson["database"],
 ): string {
   const camel = toCamelCase(resourceName);
-  if (new RegExp(`export const ${camel}\\b`).test(schemaTs)) {
+  // Auth user table is conventionally `users`
+  const exportName = resourceName === "user" ? "users" : camel;
+  if (new RegExp(`export const ${exportName}\\b`).test(schemaTs)) {
     return schemaTs;
   }
 
-  const fieldName = titleField(fields);
-  const tableName = `${camel}`;
+  const tableName = exportName;
+  const columns = drizzleColumns(fields, database);
 
   if (database === "mysql") {
     const block = `
-export const ${camel} = mysqlTable("${tableName}", {
+export const ${exportName} = mysqlTable("${tableName}", {
   id: int("id").primaryKey().autoincrement(),
-  ${fieldName}: text("${fieldName}"),
+${columns}
   createdAt: timestamp("created_at").defaultNow(),
 });
 `;
@@ -71,11 +111,10 @@ export const ${camel} = mysqlTable("${tableName}", {
     return `${next.trimEnd()}\n${block}`;
   }
 
-  // postgresql default for drizzle in our matrix
   const block = `
-export const ${camel} = pgTable("${tableName}", {
+export const ${exportName} = pgTable("${tableName}", {
   id: serial("id").primaryKey(),
-  ${fieldName}: text("${fieldName}"),
+${columns}
   createdAt: timestamp("created_at").defaultNow(),
 });
 `;
@@ -88,12 +127,26 @@ export const ${camel} = pgTable("${tableName}", {
 
 export function buildMongooseModelFile(resourceName: string, fields: ZodField[]): string {
   const pascal = toPascalCase(resourceName);
-  const fieldName = titleField(fields);
+  const body = createFields(fields)
+    .map((f) => {
+      if (f.name === "email") {
+        return "    email: { type: String, required: true, unique: true },";
+      }
+      if (f.name === "passwordHash") {
+        return "    passwordHash: { type: String, required: true },";
+      }
+      if (f.name === "authorId") {
+        return "    authorId: { type: String, required: true },";
+      }
+      return `    ${f.name}: { type: String, required: true },`;
+    })
+    .join("\n");
+
   return `import { Schema, model, type InferSchemaType } from "mongoose";
 
 const ${pascal}Schema = new Schema(
   {
-    ${fieldName}: { type: String, required: true },
+${body}
   },
   { timestamps: true },
 );

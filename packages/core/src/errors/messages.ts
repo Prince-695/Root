@@ -70,8 +70,8 @@ export const ERRORS = {
     [
       `Component type "${component}" is not implemented yet.`,
       "",
-      "Phase 5 supports: route",
-      "Coming later: auth, model, service, middleware, controller",
+      "Supported now: route, auth",
+      "Coming later: model, service, middleware, controller",
     ].join("\n"),
 
   doctorNotRootProject: (cwd: string) =>

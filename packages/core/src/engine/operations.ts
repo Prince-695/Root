@@ -5,6 +5,8 @@ export type ModuleEntry = RootJson["modules"][string];
 export type ZodField = {
   name: string;
   zodType: string;
+  /** Optional Prisma / ORM type override, e.g. `String @unique`. */
+  ormType?: string;
 };
 
 export type CreateFileOp = {
@@ -70,6 +72,14 @@ export type UpdateOrmOp = {
   fields: ZodField[];
 };
 
+export type EnsureTextOp = {
+  type: "ensureText";
+  path: string;
+  skipIfContains: string;
+  /** Full-file transform when skipIfContains is absent. */
+  transform: "access-token-env" | "access-token-env-ts" | "auth-readme";
+};
+
 export type Operation =
   | CreateFileOp
   | PatchAnchorOp
@@ -79,7 +89,8 @@ export type Operation =
   | UpdateManifestOp
   | EnsureDependencyOp
   | RunCommandOp
-  | UpdateOrmOp;
+  | UpdateOrmOp
+  | EnsureTextOp;
 
 export function stableStringifyOperations(ops: Operation[]): string {
   return JSON.stringify(ops, null, 2);
