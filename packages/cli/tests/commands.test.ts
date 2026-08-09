@@ -207,13 +207,13 @@ describe("CLI command guards (Phase 1)", () => {
     expect(err.mock.calls.flat().join("\n")).toMatch(/Invalid root\.json|language|FAILED/);
   });
 
-  it("doctor passes on valid root.json", async () => {
+  it("doctor passes on a healthy generated project", async () => {
     const dir = await tempDir("cli-doctor-ok-");
-    await writeFile(
-      path.join(dir, "root.json"),
-      serializeRootJson(createRootJsonFixture({ projectName: "healthy" })),
-      "utf8",
-    );
+    const { structureizeExpressTs, createInitAnswers } = await import("@root/core");
+    await structureizeExpressTs({
+      targetDir: dir,
+      answers: createInitAnswers("healthy", { docker: false, database: "none", orm: "none" }),
+    });
     const log = vi.spyOn(console, "log").mockImplementation(() => {});
     const program = createProgram();
 
@@ -222,7 +222,9 @@ describe("CLI command guards (Phase 1)", () => {
     });
 
     expect(process.exitCode ?? 0).toBe(0);
-    expect(log.mock.calls.flat().join("\n")).toContain("OK");
+    const out = log.mock.calls.flat().join("\n");
+    expect(out).toContain("root doctor — OK");
+    expect(out).toContain("All integrity checks passed.");
   });
 
   it("verbose flag reaches init handler", async () => {
