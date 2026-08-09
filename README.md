@@ -34,13 +34,15 @@ node packages/cli/dist/cli.js --help
 | `pnpm lint` | Biome check |
 | `pnpm check` | lint + typecheck + test + build |
 
-## Commands (Phase 0 stubs)
+## Commands
 
 ```bash
-root init          # Structureize empty folder — Phase 2
-root add <type>    # Interconnect module — Phases 5–7
-root doctor        # Integrity checks — Phase 8
+pnpm root-cli --yes init my-api   # Generate Express TS + Prisma API (Phase 2)
+pnpm root-cli add route post      # Interconnect module — Phases 5–7
+pnpm root-cli doctor              # Integrity checks — Phase 8
 ```
+
+Primary UX when published: `pnpm dlx root@latest init`
 
 ## Docs
 
