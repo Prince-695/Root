@@ -66,12 +66,24 @@ export const ERRORS = {
       "  pnpm dlx root@latest add route post",
     ].join("\n"),
 
+  addRequiresName: (component: string) =>
+    [
+      `Missing ${component} name.`,
+      "",
+      "Usage:",
+      `  pnpm dlx root@latest add ${component} <name>`,
+      "Examples:",
+      "  pnpm dlx root@latest add model comment",
+      "  pnpm dlx root@latest add service mailer",
+      "  pnpm dlx root@latest add middleware rate-limit",
+      "  pnpm dlx root@latest add controller invoice",
+    ].join("\n"),
+
   addComponentNotImplemented: (component: string) =>
     [
-      `Component type "${component}" is not implemented yet.`,
+      `Unknown component type "${component}".`,
       "",
-      "Supported now: route, auth",
-      "Coming later: model, service, middleware, controller",
+      "Supported: route | auth | model | service | middleware | controller",
     ].join("\n"),
 
   doctorNotRootProject: (cwd: string) =>

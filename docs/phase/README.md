@@ -11,6 +11,7 @@ After each implementation phase gate turns green, a markdown file is added here:
 | [phase-4.md](./phase-4.md) | Interconnection engine core |
 | [phase-5.md](./phase-5.md) | `add route` end-to-end |
 | [phase-6.md](./phase-6.md) | `add auth` + auth-aware graph (MVP) |
+| [phase-7.md](./phase-7.md) | Remaining atomic adds |
 | … | … |
 
 Each file includes:

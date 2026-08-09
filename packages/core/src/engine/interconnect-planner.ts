@@ -15,6 +15,14 @@ export type PlanRequest = {
   allowRunCommand?: boolean;
 };
 
+function namedModuleSatisfied(graph: ModuleGraph, resourceName: string | undefined): boolean {
+  if (!resourceName) {
+    return false;
+  }
+  const slug = resolveResourceNames(resourceName).slug;
+  return hasModule(graph, slug);
+}
+
 /**
  * Resolve registryDependencies depth-first, then the target recipe.
  * Skips deps already satisfied by the module graph / probes.
@@ -31,21 +39,18 @@ export function planInterconnect(request: PlanRequest): Operation[] {
       case "validate":
         return graph.probe.hasValidateMiddleware || hasModule(graph, "validate");
       case "auth":
-        // Manifest entry is the source of truth (config.auth may be jwt before files exist).
         return hasModule(graph, "auth");
-      case "resource": {
-        if (!request.resourceName) {
-          return false;
-        }
-        const slug = resolveResourceNames(request.resourceName).slug;
-        return hasModule(graph, slug);
-      }
+      case "resource":
+      case "model":
+      case "service":
+      case "middleware":
+      case "controller":
+        return namedModuleSatisfied(graph, request.resourceName);
       default:
         return false;
     }
   }
 
-  // Idempotent no-op when the requested recipe is already present.
   if (isSatisfied(request.recipeId)) {
     return [];
   }

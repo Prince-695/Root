@@ -1,9 +1,21 @@
-import { AddAuthError, AddRouteError, ERRORS, addAuth, addRoute, detectProject } from "@root/core";
+import {
+  AddAtomicError,
+  AddAuthError,
+  AddRouteError,
+  type AtomicKind,
+  ERRORS,
+  addAtomic,
+  addAuth,
+  addRoute,
+  detectProject,
+} from "@root/core";
 import type { Command } from "commander";
 import { getGlobalFlags, logVerbose } from "../global-flags.js";
 
+const ATOMIC_KINDS = new Set<AtomicKind>(["model", "service", "middleware", "controller"]);
+
 /**
- * Modify-mode entry. Phase 5–6: `add route` / `add auth` with full interconnection.
+ * Modify-mode entry: route, auth, and atomic model/service/middleware/controller.
  */
 export function registerAddCommand(program: Command): void {
   program
@@ -13,8 +25,21 @@ export function registerAddCommand(program: Command): void {
       "<component>",
       "Component type: route | auth | model | service | middleware | controller",
     )
-    .argument("[name]", "Component name (required for route)")
+    .argument("[name]", "Component name (required except for auth)")
     .option("--skip-generate", "Skip prisma generate after ORM model updates", false)
+    .addHelpText(
+      "after",
+      [
+        "",
+        "Examples:",
+        "  $ root add auth",
+        "  $ root add route post",
+        "  $ root add model comment",
+        "  $ root add service mailer",
+        "  $ root add middleware rate-limit",
+        "  $ root add controller invoice",
+      ].join("\n"),
+    )
     .action(
       async (component: string, name: string | undefined, _options: unknown, command: Command) => {
         const flags = getGlobalFlags(command);
@@ -76,6 +101,59 @@ export function registerAddCommand(program: Command): void {
             );
           } catch (error) {
             if (error instanceof AddAuthError) {
+              console.error(error.message);
+              process.exitCode = 1;
+              return;
+            }
+            throw error;
+          }
+          return;
+        }
+
+        if (ATOMIC_KINDS.has(component as AtomicKind)) {
+          if (!name) {
+            console.error(ERRORS.addRequiresName(component));
+            process.exitCode = 1;
+            return;
+          }
+
+          try {
+            const result = await addAtomic({
+              projectRoot: cwd,
+              kind: component as AtomicKind,
+              name,
+              dryRun: flags.dryRun,
+              skipGenerate: Boolean(local.skipGenerate) || flags.dryRun,
+            });
+
+            if (result.warnings.length > 0) {
+              console.error(result.warnings.map((w) => `Warning: ${w}`).join("\n"));
+            }
+
+            if (flags.dryRun) {
+              console.log(
+                [
+                  `root add ${component} — dry-run (no files written)`,
+                  `Project: ${detected.config.projectName}`,
+                  `Name: ${result.slug}`,
+                  `Operations: ${result.ops.length}`,
+                  "",
+                  ...result.ops.map((op, i) => `  ${i + 1}. ${op.type}`),
+                ].join("\n"),
+              );
+              return;
+            }
+
+            console.log(
+              [
+                `root add ${component} — registered`,
+                `Project: ${detected.config.projectName}`,
+                `Name: ${result.slug}`,
+                `Files/ops: ${result.ops.length}`,
+              ].join("\n"),
+            );
+          } catch (error) {
+            if (error instanceof AddAtomicError) {
               console.error(error.message);
               process.exitCode = 1;
               return;
