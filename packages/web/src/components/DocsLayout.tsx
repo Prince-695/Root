@@ -44,16 +44,27 @@ const groups: { title: string; links: { to: string; label: string }[] }[] = [
 
 export function DocsLayout() {
   return (
-    <div className="grid min-h-screen md:grid-cols-[240px_1fr]">
-      <aside className="scrollbar-none sticky top-0 h-auto overflow-auto border-b-2 border-foreground bg-[rgba(244,244,240,0.97)] px-5 pt-7 pb-12 md:h-screen md:border-r-2 md:border-b-0">
+    <div className="grid min-h-svh w-full md:grid-cols-[260px_minmax(0,1fr)]">
+      <aside className="scrollbar-none sticky top-0 z-10 h-auto overflow-auto border-b-2 border-foreground bg-[rgba(244,244,240,0.98)] px-5 pt-7 pb-12 md:h-svh md:border-r-2 md:border-b-0">
         <NavLink
           to="/"
-          className="mb-2 inline-block border-b-2 border-foreground font-serif text-[1.65rem] leading-none no-underline transition-[border-width] hover:border-b-[3px]"
+          className="mb-2 inline-flex items-center gap-2.5 no-underline transition-opacity hover:opacity-80"
         >
-          Root
+          <span className="inline-flex size-9 shrink-0 items-center justify-center overflow-hidden border-2 border-foreground bg-background shadow-[2px_2px_0_var(--ink)]">
+            <img
+              src="/logo.png"
+              alt=""
+              width={36}
+              height={36}
+              className="size-full object-contain p-0.5"
+            />
+          </span>
+          <span className="border-b-2 border-foreground font-serif text-[1.55rem] leading-none tracking-[0.02em]">
+            Root
+          </span>
         </NavLink>
-        <p className="mb-9 max-w-[20ch] text-[0.82rem] leading-[1.65] text-muted-foreground">
-          Printed-manual docs. No account. No AI.
+        <p className="mb-2 max-w-[22ch] text-[0.82rem] leading-[1.65] text-muted-foreground">
+          Let's get started with Root.
         </p>
         <nav className="flex flex-col gap-7">
           {groups.map((group) => (
@@ -86,8 +97,8 @@ export function DocsLayout() {
         </nav>
       </aside>
 
-      <main className="scrollbar-none flex justify-center px-5 py-12 sm:px-8 sm:py-14 md:px-12 lg:px-16">
-        <article className="manual-page w-full max-w-[42rem]">
+      <main className="scrollbar-none min-w-0 px-4 py-6 sm:px-6 sm:py-8 md:px-8 md:py-10 lg:px-10">
+        <article className="manual-page manual-page--full">
           <Outlet />
           <p className="footer-meta">
             Invoke with <code>npx root@latest</code> · also pnpm/yarn/bun dlx · Node{" "}
