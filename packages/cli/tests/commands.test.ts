@@ -117,6 +117,44 @@ describe("CLI command guards (Phase 1)", () => {
     await access(path.join(dir, "src/routes/post.routes.ts"));
   });
 
+  it("add model / service register atomic modules", async () => {
+    const dir = await tempDir("cli-add-atomic-");
+    const { structureizeExpressTs, createInitAnswers } = await import("@root/core");
+    await structureizeExpressTs({
+      targetDir: dir,
+      answers: createInitAnswers("atomic-cli", { docker: false, database: "none", orm: "none" }),
+    });
+    vi.spyOn(console, "log").mockImplementation(() => {});
+    vi.spyOn(console, "error").mockImplementation(() => {});
+    const program = createProgram();
+
+    await withCwd(dir, async () => {
+      await program.parseAsync(["node", "root", "add", "model", "note", "--skip-generate"]);
+      await program.parseAsync(["node", "root", "add", "service", "mailer", "--skip-generate"]);
+    });
+
+    expect(process.exitCode ?? 0).toBe(0);
+    await access(path.join(dir, "src/services/mailer.service.ts"));
+  });
+
+  it("add rejects invalid atomic names", async () => {
+    const dir = await tempDir("cli-add-badname-");
+    const { structureizeExpressTs, createInitAnswers } = await import("@root/core");
+    await structureizeExpressTs({
+      targetDir: dir,
+      answers: createInitAnswers("bad-cli", { docker: false, database: "none", orm: "none" }),
+    });
+    const err = vi.spyOn(console, "error").mockImplementation(() => {});
+    const program = createProgram();
+
+    await withCwd(dir, async () => {
+      await program.parseAsync(["node", "root", "add", "service", "!!!", "--skip-generate"]);
+    });
+
+    expect(process.exitCode).toBe(1);
+    expect(err.mock.calls.flat().join("\n")).toMatch(/Invalid service name/i);
+  });
+
   it("add auth interconnects JWT module", async () => {
     const dir = await tempDir("cli-add-auth-");
     const { structureizeExpressTs, createInitAnswers } = await import("@root/core");
