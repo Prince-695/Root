@@ -20,6 +20,9 @@
     "test:coverage": "vitest run --coverage",
     "dev": "tsc -p tsconfig.build.json --watch"
   },
+  "dependencies": {
+    "zod": "^3.24.2"
+  },
   "devDependencies": {
     "typescript": "^5.8.2",
     "vitest": "^3.0.8"
