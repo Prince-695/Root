@@ -61,6 +61,7 @@ export {
   stableStringifyOperations,
   type CreateFileOp,
   type EnsureDependencyOp,
+  type EnsureTextOp,
   type ModuleEntry,
   type Operation,
   type PatchAnchorOp,
@@ -81,6 +82,13 @@ export {
 } from "./add/route.js";
 
 export {
+  AddAuthError,
+  addAuth,
+  type AddAuthOptions,
+  type AddAuthResult,
+} from "./add/auth.js";
+
+export {
   appendDrizzleTable,
   appendPrismaModel,
   buildMongooseModelFile,
@@ -90,6 +98,7 @@ export {
   buildResourceFiles,
   defaultResourceZodFields,
   resolveResourceNames,
+  resourceOrmFields,
   type ResourceNames,
 } from "./registry/codegen/resource-files.js";
 
