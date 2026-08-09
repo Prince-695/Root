@@ -1,0 +1,32 @@
+{
+  "name": "@root/cli",
+  "version": "0.0.0",
+  "description": "Root CLI — pnpm dlx entrypoint for backend scaffolding.",
+  "type": "module",
+  "bin": {
+    "root": "./dist/cli.js"
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json && node ../../scripts/add-bin-shebang.mjs dist/cli.js",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "dev": "tsx src/cli.ts"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "dependencies": {
+    "@root/core": "workspace:*",
+    "commander": "^13.1.0"
+  },
+  "devDependencies": {
+    "tsx": "^4.19.3",
+    "typescript": "^5.8.2",
+    "vitest": "^3.0.8"
+  }
+}
