@@ -89,6 +89,24 @@ export {
 } from "./add/auth.js";
 
 export {
+  AddAtomicError,
+  addAtomic,
+  addController,
+  addMiddleware,
+  addModel,
+  addService,
+  type AddAtomicOptions,
+  type AddAtomicResult,
+  type AtomicKind,
+} from "./add/atomic.js";
+
+export {
+  invalidModuleNameMessage,
+  isValidModuleName,
+  normalizeModuleName,
+} from "./add/names.js";
+
+export {
   appendDrizzleTable,
   appendPrismaModel,
   buildMongooseModelFile,
