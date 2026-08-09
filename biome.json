@@ -14,7 +14,10 @@
       ".turbo/**",
       "templates/**",
       "docs/**",
-      "pnpm-lock.yaml"
+      ".agents/**",
+      ".cursor/skills/**",
+      "pnpm-lock.yaml",
+      "skills-lock.json"
     ]
   },
   "formatter": {
