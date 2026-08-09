@@ -20,7 +20,7 @@
     "dev": "tsc -p tsconfig.build.json --watch"
   },
   "engines": {
-    "node": ">=18"
+    "node": "^22.18.0 || >=24"
   },
   "publishConfig": {
     "access": "public"

@@ -1,14 +1,16 @@
 # Compatibility
 
-## Node.js
+## Node.js (CLI / `root-scaffold`)
 
 | Version | Status |
 |---|---|
-| 18.x | Supported |
-| 20.x | Supported |
-| 22.x | Supported (CI default) |
+| 22.x (`>=22.18`) | Supported (CI) |
+| 24.x | Supported (CI default / Active LTS) |
+| 18.x / 20.x | Not supported |
 
-Engines field: `node >= 18`.
+Engines field: `^22.18.0 || >=24` (aligned with Babel 8).
+
+Generated Express apps may still declare `node >= 18` in their own `package.json` — that is independent of the Root CLI runtime.
 
 ## Package managers (dlx / install)
 
