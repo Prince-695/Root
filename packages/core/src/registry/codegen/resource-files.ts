@@ -1,5 +1,6 @@
 import type { RootJson } from "../../config/root-json.js";
 import type { ZodField } from "../../engine/operations.js";
+import { isTypeScript, sourceExtension } from "../../providers/language.js";
 import { schemaExportName, toCamelCase, toPascalCase } from "../types.js";
 
 export type ResourceNames = {
@@ -68,14 +69,15 @@ export function buildResourceFiles(options: {
 }): ResourceFileBundle {
   const { config, names, hasAuth } = options;
   const fields = createBodyFields(options.fields).filter((f) => f.name !== "authorId");
-  const { camel, pascal, schemaExport, routerExport, slug } = names;
+  const { pascal, schemaExport, routerExport, slug } = names;
+  const ext = sourceExtension(config);
   const routesDir = config.aliases.routes;
   const controllersDir = config.aliases.controllers;
   const servicesDir = config.aliases.services;
 
-  const routePath = `${routesDir}/${slug}.routes.ts`;
-  const controllerPath = `${controllersDir}/${slug}.controller.ts`;
-  const servicePath = `${servicesDir}/${slug}.service.ts`;
+  const routePath = `${routesDir}/${slug}.routes.${ext}`;
+  const controllerPath = `${controllersDir}/${slug}.controller.${ext}`;
+  const servicePath = `${servicesDir}/${slug}.service.${ext}`;
 
   const authImport = hasAuth ? `import { authenticate } from "../middleware/auth.js";\n` : "";
   const postHandlers = hasAuth
@@ -98,8 +100,23 @@ ${routerExport}.get("/:id", get${pascal}ById);
 ${routerExport}.post("/", ${postHandlers});
 `;
 
-  const controllerContent = hasAuth
-    ? `import type { Request, Response, NextFunction } from "express";
+  const controllerContent = isTypeScript(config)
+    ? buildTsController(slug, pascal, hasAuth)
+    : buildJsController(slug, pascal, hasAuth);
+
+  return {
+    routePath,
+    controllerPath,
+    servicePath,
+    routeContent,
+    controllerContent,
+    serviceContent: buildServiceContent(config, names, fields, hasAuth),
+  };
+}
+
+function buildTsController(slug: string, pascal: string, hasAuth: boolean): string {
+  if (hasAuth) {
+    return `import type { Request, Response, NextFunction } from "express";
 import {
   create${pascal}Record,
   get${pascal}Record,
@@ -148,8 +165,10 @@ export async function create${pascal}(req: Request, res: Response, next: NextFun
     next(error);
   }
 }
-`
-    : `import type { Request, Response, NextFunction } from "express";
+`;
+  }
+
+  return `import type { Request, Response, NextFunction } from "express";
 import {
   create${pascal}Record,
   get${pascal}Record,
@@ -188,15 +207,96 @@ export async function create${pascal}(req: Request, res: Response, next: NextFun
   }
 }
 `;
+}
 
-  return {
-    routePath,
-    controllerPath,
-    servicePath,
-    routeContent,
-    controllerContent,
-    serviceContent: buildServiceContent(config, names, fields, hasAuth),
-  };
+function buildJsController(slug: string, pascal: string, hasAuth: boolean): string {
+  if (hasAuth) {
+    return `import {
+  create${pascal}Record,
+  get${pascal}Record,
+  list${pascal}Records,
+} from "../services/${slug}.service.js";
+
+export async function list${pascal}(_req, res, next) {
+  try {
+    const data = await list${pascal}Records();
+    res.status(200).json({ success: true, data });
+  } catch (error) {
+    next(error);
+  }
+}
+
+export async function get${pascal}ById(req, res, next) {
+  try {
+    const id = String(req.params.id);
+    const data = await get${pascal}Record(id);
+    if (!data) {
+      res.status(404).json({ success: false, error: { message: "${pascal} not found" } });
+      return;
+    }
+    res.status(200).json({ success: true, data });
+  } catch (error) {
+    next(error);
+  }
+}
+
+export async function create${pascal}(req, res, next) {
+  try {
+    const userId = req.authenticatedUser?.id;
+    if (!userId) {
+      res.status(401).json({ success: false, error: { message: "Unauthorized" } });
+      return;
+    }
+    // Ignore client-supplied ownership fields — identity comes from the token.
+    const { authorId: _ignoredAuthorId, ...body } = req.body;
+    void _ignoredAuthorId;
+    const data = await create${pascal}Record({ title: body.title, authorId: userId });
+    res.status(201).json({ success: true, data });
+  } catch (error) {
+    next(error);
+  }
+}
+`;
+  }
+
+  return `import {
+  create${pascal}Record,
+  get${pascal}Record,
+  list${pascal}Records,
+} from "../services/${slug}.service.js";
+
+export async function list${pascal}(_req, res, next) {
+  try {
+    const data = await list${pascal}Records();
+    res.status(200).json({ success: true, data });
+  } catch (error) {
+    next(error);
+  }
+}
+
+export async function get${pascal}ById(req, res, next) {
+  try {
+    const id = String(req.params.id);
+    const data = await get${pascal}Record(id);
+    if (!data) {
+      res.status(404).json({ success: false, error: { message: "${pascal} not found" } });
+      return;
+    }
+    res.status(200).json({ success: true, data });
+  } catch (error) {
+    next(error);
+  }
+}
+
+export async function create${pascal}(req, res, next) {
+  try {
+    const data = await create${pascal}Record(req.body);
+    res.status(201).json({ success: true, data });
+  } catch (error) {
+    next(error);
+  }
+}
+`;
 }
 
 function buildServiceContent(
@@ -205,15 +305,18 @@ function buildServiceContent(
   fields: ZodField[],
   hasAuth: boolean,
 ): string {
+  const ts = isTypeScript(config);
   const orm = config.orm;
   const { camel, pascal, slug } = names;
   const titleField = fields.find((f) => f.name === "title")?.name ?? fields[0]?.name ?? "title";
   const createInput = hasAuth
     ? `{ ${titleField}: string; authorId: string }`
     : `{ ${titleField}: string }`;
+  const createParam = ts ? `input: ${createInput}` : "input";
   const createData = hasAuth
     ? `{ ${titleField}: input.${titleField}, authorId: input.authorId }`
     : `{ ${titleField}: input.${titleField} }`;
+  const idParam = ts ? "id: string" : "id";
 
   if (orm === "prisma") {
     return `import { db } from "../db/client.js";
@@ -222,17 +325,20 @@ export async function list${pascal}Records() {
   return db.${camel}.findMany({ orderBy: { createdAt: "desc" } });
 }
 
-export async function get${pascal}Record(id: string) {
+export async function get${pascal}Record(${idParam}) {
   return db.${camel}.findUnique({ where: { id } });
 }
 
-export async function create${pascal}Record(input: ${createInput}) {
+export async function create${pascal}Record(${createParam}) {
   return db.${camel}.create({ data: ${createData} });
 }
 `;
   }
 
   if (orm === "drizzle") {
+    const insertIdLine = ts
+      ? "const id = Number((result as unknown as [{ insertId: number }])[0]?.insertId);"
+      : "const id = Number(result[0]?.insertId);";
     if (config.database === "mysql") {
       return `import { eq } from "drizzle-orm";
 import { db } from "../db/client.js";
@@ -242,14 +348,14 @@ export async function list${pascal}Records() {
   return db.select().from(${camel});
 }
 
-export async function get${pascal}Record(id: string) {
+export async function get${pascal}Record(${idParam}) {
   const rows = await db.select().from(${camel}).where(eq(${camel}.id, Number(id))).limit(1);
   return rows[0] ?? null;
 }
 
-export async function create${pascal}Record(input: ${createInput}) {
+export async function create${pascal}Record(${createParam}) {
   const result = await db.insert(${camel}).values(${createData});
-  const id = Number((result as unknown as [{ insertId: number }])[0]?.insertId);
+  ${insertIdLine}
   return get${pascal}Record(String(id));
 }
 `;
@@ -262,12 +368,12 @@ export async function list${pascal}Records() {
   return db.select().from(${camel});
 }
 
-export async function get${pascal}Record(id: string) {
+export async function get${pascal}Record(${idParam}) {
   const rows = await db.select().from(${camel}).where(eq(${camel}.id, Number(id))).limit(1);
   return rows[0] ?? null;
 }
 
-export async function create${pascal}Record(input: ${createInput}) {
+export async function create${pascal}Record(${createParam}) {
   const rows = await db.insert(${camel}).values(${createData}).returning();
   return rows[0] ?? null;
 }
@@ -281,11 +387,11 @@ export async function list${pascal}Records() {
   return ${pascal}Model.find().sort({ createdAt: -1 }).lean();
 }
 
-export async function get${pascal}Record(id: string) {
+export async function get${pascal}Record(${idParam}) {
   return ${pascal}Model.findById(id).lean();
 }
 
-export async function create${pascal}Record(input: ${createInput}) {
+export async function create${pascal}Record(${createParam}) {
   const created = await ${pascal}Model.create(${createData});
   return created.toObject();
 }
@@ -295,7 +401,8 @@ export async function create${pascal}Record(input: ${createInput}) {
   const authorField = hasAuth ? "\n  authorId: string;" : "";
   const authorAssign = hasAuth ? "\n    authorId: input.authorId," : "";
 
-  return `type ${pascal}Record = {
+  if (ts) {
+    return `type ${pascal}Record = {
   id: string;
   ${titleField}: string;${authorField}
   createdAt: string;
@@ -307,12 +414,34 @@ export async function list${pascal}Records() {
   return [...store];
 }
 
-export async function get${pascal}Record(id: string) {
+export async function get${pascal}Record(${idParam}) {
   return store.find((row) => row.id === id) ?? null;
 }
 
-export async function create${pascal}Record(input: ${createInput}) {
+export async function create${pascal}Record(${createParam}) {
   const row: ${pascal}Record = {
+    id: crypto.randomUUID(),
+    ${titleField}: input.${titleField},${authorAssign}
+    createdAt: new Date().toISOString(),
+  };
+  store.unshift(row);
+  return row;
+}
+`;
+  }
+
+  return `const store = [];
+
+export async function list${pascal}Records() {
+  return [...store];
+}
+
+export async function get${pascal}Record(${idParam}) {
+  return store.find((row) => row.id === id) ?? null;
+}
+
+export async function create${pascal}Record(${createParam}) {
+  const row = {
     id: crypto.randomUUID(),
     ${titleField}: input.${titleField},${authorAssign}
     createdAt: new Date().toISOString(),
@@ -326,7 +455,8 @@ export async function create${pascal}Record(input: ${createInput}) {
 /** Relative ESM import from server.ts into a routes file. */
 export function serverRouteImportSource(config: RootJson, slug: string): string {
   const serverDir = config.aliases.server.replace(/\/[^/]+$/, "") || "src";
-  const routesFile = `${config.aliases.routes}/${slug}.routes.ts`;
+  const ext = sourceExtension(config);
+  const routesFile = `${config.aliases.routes}/${slug}.routes.${ext}`;
   if (serverDir === "src" && config.aliases.routes.startsWith("src/")) {
     return `./routes/${slug}.routes.js`;
   }

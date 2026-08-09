@@ -1,0 +1,32 @@
+import { env } from "./config/env.js";
+import { logger } from "./utils/logger.js";
+import { createServer } from "./server.js";
+{{#if isMongoose}}
+import { connectDb } from "./db/client.js";
+{{/if}}
+
+async function main() {
+{{#if isMongoose}}
+  await connectDb();
+{{/if}}
+  const app = createServer();
+
+  const server = app.listen(env.PORT, () => {
+    logger.info(`{{projectName}} listening on http://localhost:${env.PORT}`);
+  });
+
+  function shutdown(signal) {
+    logger.info(`${signal} received — shutting down gracefully`);
+    server.close(() => {
+      process.exit(0);
+    });
+  }
+
+  process.on("SIGTERM", () => shutdown("SIGTERM"));
+  process.on("SIGINT", () => shutdown("SIGINT"));
+}
+
+main().catch((error) => {
+  logger.error("Failed to start server", error);
+  process.exit(1);
+});

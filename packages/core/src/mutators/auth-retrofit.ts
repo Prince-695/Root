@@ -2,6 +2,7 @@ import { readFile } from "node:fs/promises";
 import path from "node:path";
 import type { RootJson } from "../config/root-json.js";
 import type { Operation } from "../engine/operations.js";
+import { sourceExtension } from "../providers/language.js";
 import {
   buildResourceFiles,
   defaultResourceZodFields,
@@ -30,9 +31,11 @@ export async function planAuthRetrofit(
     `Auth retrofit: protecting ${resourceModules.length} existing resource(s) with authenticate on POST and authorId ownership.`,
   );
 
+  const ext = sourceExtension(config);
+
   for (const [name] of resourceModules) {
     const names = resolveResourceNames(name);
-    const routeRel = `${config.aliases.routes}/${names.slug}.routes.ts`;
+    const routeRel = `${config.aliases.routes}/${names.slug}.routes.${ext}`;
     const routeAbs = path.join(projectRoot, routeRel);
 
     try {
@@ -73,7 +76,7 @@ export async function planAuthRetrofit(
     } else if (config.orm === "mongoose") {
       ops.push({
         type: "createFile",
-        path: `src/models/${names.slug}.model.ts`,
+        path: `src/models/${names.slug}.model.${ext}`,
         content: buildMongooseModelFile(names.slug, ormFields),
       });
     }

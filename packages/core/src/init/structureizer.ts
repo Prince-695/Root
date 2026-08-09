@@ -1,11 +1,12 @@
 import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
-import { fileURLToPath } from "node:url";
 import { writeRootJson } from "../config/root-json.js";
+import { resolveTemplatesRoot } from "../providers/templates-root.js";
 import { renderTemplateFile } from "../templates/renderer.js";
 import {
   type InitAnswers,
   answersToRootJson,
+  isSupportedExpressJsStack,
   isSupportedExpressTsStack,
   unsupportedStackMessage,
 } from "./answers.js";
@@ -42,8 +43,6 @@ const EXPRESS_TS_TEMPLATES: TemplateSpec[] = [
   },
   { template: "src/routes/health.routes.ts.hbs", output: "src/routes/health.routes.ts" },
   { template: "src/routes/index.ts.hbs", output: "src/routes/index.ts" },
-
-  // DB clients
   {
     template: "src/db/prisma.ts.hbs",
     output: "src/db/client.ts",
@@ -64,15 +63,11 @@ const EXPRESS_TS_TEMPLATES: TemplateSpec[] = [
     output: "src/db/client.ts",
     when: (a) => a.orm === "none",
   },
-
-  // Prisma schema
   {
     template: "prisma/schema.prisma.hbs",
     output: "prisma/schema.prisma",
     when: (a) => a.orm === "prisma",
   },
-
-  // Drizzle
   {
     template: "drizzle/schema.ts.hbs",
     output: "src/db/schema.ts",
@@ -83,14 +78,11 @@ const EXPRESS_TS_TEMPLATES: TemplateSpec[] = [
     output: "drizzle.config.ts",
     when: (a) => a.orm === "drizzle",
   },
-
-  // Mongoose model placeholder
   {
     template: "src/models/.gitkeep.hbs",
     output: "src/models/.gitkeep",
     when: (a) => a.orm === "mongoose",
   },
-
   {
     template: "docker-compose.yml.hbs",
     output: "docker-compose.yml",
@@ -113,22 +105,94 @@ const EXPRESS_TS_TEMPLATES: TemplateSpec[] = [
   },
 ];
 
-export function getExpressTsTemplatesRoot(): string {
-  const here = path.dirname(fileURLToPath(import.meta.url));
-  return path.join(here, "..", "..", "templates", "express-ts");
-}
+const EXPRESS_JS_TEMPLATES: TemplateSpec[] = [
+  { template: "package.json.hbs", output: "package.json" },
+  { template: "gitignore.hbs", output: ".gitignore" },
+  { template: "env.example.hbs", output: ".env.example" },
+  { template: "README.md.hbs", output: "README.md" },
+  { template: "src/index.js.hbs", output: "src/index.js" },
+  { template: "src/server.js.hbs", output: "src/server.js" },
+  { template: "src/config/env.js.hbs", output: "src/config/env.js" },
+  { template: "src/schema.js.hbs", output: "src/schema.js" },
+  { template: "src/utils/logger.js.hbs", output: "src/utils/logger.js" },
+  { template: "src/middleware/errorHandler.js.hbs", output: "src/middleware/errorHandler.js" },
+  { template: "src/middleware/logger.js.hbs", output: "src/middleware/logger.js" },
+  { template: "src/middleware/validate.js.hbs", output: "src/middleware/validate.js" },
+  {
+    template: "src/controllers/health.controller.js.hbs",
+    output: "src/controllers/health.controller.js",
+  },
+  { template: "src/routes/health.routes.js.hbs", output: "src/routes/health.routes.js" },
+  { template: "src/routes/index.js.hbs", output: "src/routes/index.js" },
+  {
+    template: "src/db/prisma.js.hbs",
+    output: "src/db/client.js",
+    when: (a) => a.orm === "prisma",
+  },
+  {
+    template: "src/db/drizzle.js.hbs",
+    output: "src/db/client.js",
+    when: (a) => a.orm === "drizzle",
+  },
+  {
+    template: "src/db/mongoose.js.hbs",
+    output: "src/db/client.js",
+    when: (a) => a.orm === "mongoose",
+  },
+  {
+    template: "src/db/none.js.hbs",
+    output: "src/db/client.js",
+    when: (a) => a.orm === "none",
+  },
+  {
+    template: "prisma/schema.prisma.hbs",
+    output: "prisma/schema.prisma",
+    when: (a) => a.orm === "prisma",
+  },
+  {
+    template: "drizzle/schema.js.hbs",
+    output: "src/db/schema.js",
+    when: (a) => a.orm === "drizzle",
+  },
+  {
+    template: "drizzle.config.js.hbs",
+    output: "drizzle.config.js",
+    when: (a) => a.orm === "drizzle",
+  },
+  {
+    template: "src/models/.gitkeep.hbs",
+    output: "src/models/.gitkeep",
+    when: (a) => a.orm === "mongoose",
+  },
+  {
+    template: "docker-compose.yml.hbs",
+    output: "docker-compose.yml",
+    when: (a) => a.docker && a.database !== "none",
+  },
+  {
+    template: "github/workflows/ci.yml.hbs",
+    output: ".github/workflows/ci.yml",
+    when: (a) => a.githubActions,
+  },
+  {
+    template: "vitest.config.js.hbs",
+    output: "vitest.config.js",
+    when: (a) => a.testing === "vitest",
+  },
+  {
+    template: "tests/health.test.js.hbs",
+    output: "tests/health.test.js",
+    when: (a) => a.testing === "vitest",
+  },
+];
 
-export async function structureizeExpressTs(options: {
+async function structureizeFromTemplates(options: {
   targetDir: string;
   answers: InitAnswers;
+  templatesRoot: string;
+  templates: TemplateSpec[];
 }): Promise<StructureizeResult> {
-  const { targetDir, answers } = options;
-
-  if (!isSupportedExpressTsStack(answers)) {
-    throw new Error(unsupportedStackMessage(answers));
-  }
-
-  const templatesRoot = getExpressTsTemplatesRoot();
+  const { targetDir, answers, templatesRoot, templates } = options;
   const context = buildStackTemplateContext({
     projectName: answers.projectName,
     database: answers.database,
@@ -141,7 +205,7 @@ export async function structureizeExpressTs(options: {
 
   const filesWritten: string[] = [];
 
-  for (const spec of EXPRESS_TS_TEMPLATES) {
+  for (const spec of templates) {
     if (spec.when && !spec.when(answers)) continue;
 
     const templatePath = path.join(templatesRoot, spec.template);
@@ -156,10 +220,53 @@ export async function structureizeExpressTs(options: {
   const rootJsonPath = await writeRootJson(targetDir, rootJson);
   filesWritten.push("root.json");
 
-  // Ensure directory aliases exist even when no template wrote into them yet (e.g. services).
   for (const key of ["routes", "controllers", "services", "middleware", "db"] as const) {
     await mkdir(path.join(targetDir, rootJson.aliases[key]), { recursive: true });
   }
 
   return { filesWritten, rootJsonPath };
+}
+
+export function getExpressTsTemplatesRoot(): string {
+  return resolveTemplatesRoot("express-ts");
+}
+
+export function getExpressJsTemplatesRoot(): string {
+  return resolveTemplatesRoot("express-js");
+}
+
+export async function structureizeExpressTs(options: {
+  targetDir: string;
+  answers: InitAnswers;
+}): Promise<StructureizeResult> {
+  const { targetDir, answers } = options;
+
+  if (!isSupportedExpressTsStack(answers)) {
+    throw new Error(unsupportedStackMessage(answers));
+  }
+
+  return structureizeFromTemplates({
+    targetDir,
+    answers,
+    templatesRoot: getExpressTsTemplatesRoot(),
+    templates: EXPRESS_TS_TEMPLATES,
+  });
+}
+
+export async function structureizeExpressJs(options: {
+  targetDir: string;
+  answers: InitAnswers;
+}): Promise<StructureizeResult> {
+  const { targetDir, answers } = options;
+
+  if (!isSupportedExpressJsStack(answers)) {
+    throw new Error(unsupportedStackMessage(answers));
+  }
+
+  return structureizeFromTemplates({
+    targetDir,
+    answers,
+    templatesRoot: getExpressJsTemplatesRoot(),
+    templates: EXPRESS_JS_TEMPLATES,
+  });
 }

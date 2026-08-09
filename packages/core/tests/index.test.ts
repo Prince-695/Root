@@ -10,7 +10,7 @@ import {
 describe("@root/core", () => {
   it("exposes stable engine identity", () => {
     expect(ROOT_ENGINE_NAME).toBe("root");
-    expect(ROOT_ENGINE_VERSION).toBe("0.0.0");
+    expect(ROOT_ENGINE_VERSION).toBe("0.1.0");
   });
 
   it("lists the Phase 0 command surface", () => {
@@ -19,7 +19,7 @@ describe("@root/core", () => {
 
   it("builds a welcome banner", () => {
     expect(getEngineBanner()).toContain("root");
-    expect(getEngineBanner()).toContain("0.0.0");
+    expect(getEngineBanner()).toContain("0.1.0");
   });
 
   it("type-guards known commands", () => {

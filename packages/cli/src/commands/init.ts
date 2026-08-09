@@ -1,5 +1,5 @@
 import * as p from "@clack/prompts";
-import { addAuth, structureizeExpressTs } from "@root/core";
+import { addAuth, structureizeProject } from "@root/core";
 import type { Command } from "commander";
 import { getGlobalFlags, logVerbose } from "../global-flags.js";
 import { detectPackageManager, installDependencies } from "../init/install.js";
@@ -61,7 +61,7 @@ export function registerInitCommand(program: Command): void {
               `Target: ${targetDir}`,
               createdFolder ? "Would create folder: yes" : "Would create folder: no",
               `Stack: ${answers.language} / ${answers.framework} / ${answers.database} / ${answers.orm}`,
-              "Files: Express TS layered template (~20 files) + root.json",
+              "Files: Express layered template (~20 files) + root.json",
               "",
               "Re-run without --dry-run to generate.",
             ].join("\n"),
@@ -74,7 +74,7 @@ export function registerInitCommand(program: Command): void {
         const started = Date.now();
 
         try {
-          const result = await structureizeExpressTs({ targetDir, answers });
+          const result = await structureizeProject({ targetDir, answers });
           let authOps = 0;
           if (answers.auth === "jwt") {
             const authResult = await addAuth({
@@ -119,8 +119,8 @@ export function registerInitCommand(program: Command): void {
               "  pnpm dev",
               "",
               "Then:",
-              answers.auth === "jwt" ? undefined : "  pnpm dlx root@latest add auth",
-              "  pnpm dlx root@latest add route post",
+              answers.auth === "jwt" ? undefined : "  pnpm dlx root-scaffold@latest add auth",
+              "  pnpm dlx root-scaffold@latest add route post",
             ]
               .filter((line): line is string => line !== undefined)
               .join("\n"),

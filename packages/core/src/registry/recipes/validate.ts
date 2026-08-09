@@ -1,3 +1,4 @@
+import { isTypeScript, sourceExtension } from "../../providers/language.js";
 import type { Recipe } from "../types.js";
 
 /** Middleware stub for request validation. */
@@ -11,11 +12,9 @@ export const validateRecipe: Recipe = {
     }
 
     const mwDir = ctx.graph.config.aliases.middleware;
-    return [
-      {
-        type: "createFile",
-        path: `${mwDir}/validate.ts`,
-        content: `import type { NextFunction, Request, Response } from "express";
+    const ext = sourceExtension(ctx.graph.config);
+    const content = isTypeScript(ctx.graph.config)
+      ? `import type { NextFunction, Request, Response } from "express";
 import type { ZodSchema } from "zod";
 
 export function validate(schema: ZodSchema) {
@@ -29,7 +28,25 @@ export function validate(schema: ZodSchema) {
     next();
   };
 }
-`,
+`
+      : `export function validate(schema) {
+  return (req, _res, next) => {
+    const parsed = schema.safeParse(req.body);
+    if (!parsed.success) {
+      next(parsed.error);
+      return;
+    }
+    req.body = parsed.data;
+    next();
+  };
+}
+`;
+
+    return [
+      {
+        type: "createFile",
+        path: `${mwDir}/validate.${ext}`,
+        content,
       },
       {
         type: "updateManifest",

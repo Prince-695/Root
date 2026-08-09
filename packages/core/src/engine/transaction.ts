@@ -23,6 +23,7 @@ import {
   buildMongooseModelFile,
 } from "../mutators/orm-registry.js";
 import { appendResourceSchema, writeAuthSchemas } from "../mutators/schema-registry.js";
+import { sourceExtension } from "../providers/language.js";
 import type { Operation } from "./operations.js";
 
 type JournalEntry =
@@ -211,6 +212,7 @@ export class Transaction {
       }
       case "updateOrm": {
         const config = await loadRootJson(this.projectRoot);
+        const ext = sourceExtension(config);
         if (op.kind === "prisma-model") {
           const rel = "prisma/schema.prisma";
           const current = await readFile(this.abs(rel), "utf8");
@@ -221,7 +223,7 @@ export class Transaction {
           return;
         }
         if (op.kind === "drizzle-table") {
-          const rel = "src/db/schema.ts";
+          const rel = `src/db/schema.${ext}`;
           const current = await readFile(this.abs(rel), "utf8");
           const next = appendDrizzleTable(current, op.resourceName, op.fields, config.database);
           if (next !== current) {
@@ -230,7 +232,7 @@ export class Transaction {
           return;
         }
         // mongoose-model
-        const rel = `src/models/${op.resourceName}.model.ts`;
+        const rel = `src/models/${op.resourceName}.model.${ext}`;
         const existing = await readMaybe(this.abs(rel));
         if (existing) {
           return;

@@ -1,0 +1,61 @@
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "npm dist-tag (latest or next)"
+        required: true
+        default: "next"
+        type: choice
+        options:
+          - next
+          - latest
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  publish:
+    name: Publish root-scaffold
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.28.1
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          registry-url: https://registry.npmjs.org
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Pack audit
+        run: pnpm pack:audit
+
+      - name: Publish or dry-run
+        working-directory: release/root-scaffold
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          DIST_TAG: ${{ github.event.inputs.tag || 'latest' }}
+        run: |
+          if [ -z "${NODE_AUTH_TOKEN}" ]; then
+            echo "NPM_TOKEN secret missing — npm publish --dry-run"
+            npm publish --dry-run --access public --tag "$DIST_TAG"
+          else
+            npm publish --access public --tag "$DIST_TAG"
+            echo "Published root-scaffold with tag $DIST_TAG"
+            echo "Post-publish smoke (from a clean machine):"
+            echo "  pnpm dlx root-scaffold@$DIST_TAG --yes init"
+          fi

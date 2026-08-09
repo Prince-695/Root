@@ -2,6 +2,7 @@ import { access, readFile } from "node:fs/promises";
 import path from "node:path";
 import { type RootJson, loadRootJson } from "../config/root-json.js";
 import { AUTH_BANNER, EXPORTS_BANNER, RESOURCE_BANNER } from "../mutators/schema-registry.js";
+import { sourceExtension } from "../providers/language.js";
 import { toCamelCase } from "../registry/types.js";
 
 export type DoctorIssue = {
@@ -41,37 +42,38 @@ async function expectedModuleFiles(
   type: RootJson["modules"][string]["type"],
 ): Promise<string[]> {
   const { aliases } = config;
+  const ext = sourceExtension(config);
   switch (type) {
     case "auth":
       return [
-        path.join(aliases.middleware, "auth.ts"),
-        path.join(aliases.routes, "auth.routes.ts"),
-        path.join(aliases.controllers, "auth.controller.ts"),
-        path.join(aliases.services, "auth.service.ts"),
+        path.join(aliases.middleware, `auth.${ext}`),
+        path.join(aliases.routes, `auth.routes.${ext}`),
+        path.join(aliases.controllers, `auth.controller.${ext}`),
+        path.join(aliases.services, `auth.service.${ext}`),
       ];
     case "resource":
       return [
-        path.join(aliases.routes, `${name}.routes.ts`),
-        path.join(aliases.controllers, `${name}.controller.ts`),
-        path.join(aliases.services, `${name}.service.ts`),
+        path.join(aliases.routes, `${name}.routes.${ext}`),
+        path.join(aliases.controllers, `${name}.controller.${ext}`),
+        path.join(aliases.services, `${name}.service.${ext}`),
       ];
     case "model":
       if (config.orm === "mongoose") {
-        return [`src/models/${name}.model.ts`];
+        return [`src/models/${name}.model.${ext}`];
       }
       if (config.orm === "prisma") {
         return ["prisma/schema.prisma"];
       }
       if (config.orm === "drizzle") {
-        return ["src/db/schema.ts"];
+        return [`src/db/schema.${ext}`];
       }
       return [aliases.schema];
     case "service":
-      return [path.join(aliases.services, `${name}.service.ts`)];
+      return [path.join(aliases.services, `${name}.service.${ext}`)];
     case "middleware":
-      return [path.join(aliases.middleware, `${name}.ts`)];
+      return [path.join(aliases.middleware, `${name}.${ext}`)];
     case "controller":
-      return [path.join(aliases.controllers, `${name}.controller.ts`)];
+      return [path.join(aliases.controllers, `${name}.controller.${ext}`)];
     default:
       return [];
   }
@@ -244,12 +246,15 @@ export async function runDoctor(options: RunDoctorOptions): Promise<DoctorResult
   }
 
   // 7. Auth consistency
+  const ext = sourceExtension(config);
   const authModule = Boolean(config.modules.auth);
   const authJwt = config.auth === "jwt";
-  const authMw = await exists(path.join(options.projectRoot, config.aliases.middleware, "auth.ts"));
+  const authMw = await exists(
+    path.join(options.projectRoot, config.aliases.middleware, `auth.${ext}`),
+  );
   if (authJwt && !authModule) {
     const msg =
-      'root.json has auth: "jwt" but modules.auth is missing. Run: pnpm dlx root@latest add auth';
+      'root.json has auth: "jwt" but modules.auth is missing. Run: pnpm dlx root-scaffold@latest add auth';
     issues.push(issue("auth-consistency", msg, options.strict ? "error" : "warning"));
     if (options.strict) bump(false);
     else bump(true);
@@ -262,7 +267,7 @@ export async function runDoctor(options: RunDoctorOptions): Promise<DoctorResult
     issues.push(
       issue(
         "auth-consistency",
-        "modules.auth is present but middleware/auth.ts is missing.",
+        `modules.auth is present but middleware/auth.${ext} is missing.`,
         options.strict ? "error" : "warning",
       ),
     );
