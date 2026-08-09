@@ -41,6 +41,79 @@ export {
   type ProjectKind,
 } from "./engine/detector.js";
 
+export {
+  hasAuth,
+  hasModule,
+  listModules,
+  loadModuleGraph,
+  resolveAliasPath,
+  type ModuleGraph,
+  type ModuleGraphProbe,
+} from "./engine/module-graph.js";
+
+export {
+  planInterconnect,
+  planSnapshot,
+  type PlanRequest,
+} from "./engine/interconnect-planner.js";
+
+export {
+  stableStringifyOperations,
+  type CreateFileOp,
+  type EnsureDependencyOp,
+  type ModuleEntry,
+  type Operation,
+  type PatchAnchorOp,
+  type PatchAstImportOp,
+  type RunCommandOp,
+  type UpdateManifestOp,
+  type UpdateSchemaAuthOp,
+  type UpdateSchemaResourceOp,
+  type ZodField,
+} from "./engine/operations.js";
+
+export {
+  Transaction,
+  TransactionError,
+  applyOperations,
+  type TransactionOptions,
+} from "./engine/transaction.js";
+
+export {
+  InjectSyntaxError,
+  addImport,
+  applyAnchorPatch,
+  insertAfterAnchor,
+  validateSyntax,
+} from "./mutators/file-injector.js";
+
+export {
+  AUTH_BANNER,
+  EXPORTS_BANNER,
+  RESOURCE_BANNER,
+  appendResourceSchema,
+  applySchemaUpdates,
+  collectExportNames,
+  defaultResourceFields,
+  ensureBanners,
+  loadSchemaRegistry,
+  rewriteExports,
+  saveSchemaRegistry,
+  writeAuthSchemas,
+  type SchemaRegistry,
+} from "./mutators/schema-registry.js";
+
+export {
+  getRecipe,
+  listRecipeIds,
+  schemaExportName,
+  toCamelCase,
+  toPascalCase,
+  type Recipe,
+  type RecipeContext,
+  type RecipeId,
+} from "./registry/index.js";
+
 export { ERRORS } from "./errors/messages.js";
 
 export {
