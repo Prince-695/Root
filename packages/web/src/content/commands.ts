@@ -24,7 +24,7 @@ export const commands: CommandDoc[] = [
     title: "init — start a backend",
     oneLiner: "Create a brand-new backend project from Root’s templates.",
     overview:
-      "Init is the only command that creates a project. It checks the folder is safe, asks (or defaults) language/framework/database/ORM/auth, then structureizes Express files including a health route, root.json, and an inject anchor in the server so later adds know where to mount routers.",
+      "Init is the only command that creates a project. It checks the folder is safe (empty, or a new named subfolder), asks (or defaults) language/framework/database/ORM/auth/extras, then structureizes Express files: health route, layered folders, root.json contract, .env.example, README, and an inject anchor in the server so later adds know where to mount routers. Optional dependency install runs unless --skip-install. If you chose JWT at init, auth setup may run immediately after structureize.",
     commands: [
       "npx root@latest init",
       "npx root@latest --yes init my-api",
@@ -69,7 +69,7 @@ export const commands: CommandDoc[] = [
     title: "add auth — login capability",
     oneLiner: "Install signup, signin, signout, and token checking (JWT).",
     overview:
-      "Auth is a capability, not a single middleware file. Root adds /auth routes, controllers, services, JWT middleware, schema entries, env hints, and a User model for your ORM. If resources already exist, create routes may be retrofitted to require a Bearer token.",
+      "Auth is a capability, not a single middleware file. Root adds /auth routes (signup, signin, signout), controllers, services, JWT authenticate middleware, Zod schema entries, .env.example hints (ACCESS_TOKEN_SECRET), README notes, and a User model for your ORM (or an in-memory stand-in when orm is none). If resources already exist, mutating routes may be retrofitted to require a Bearer token so you do not leave open creates after bolting login on later.",
     commands: ["npx root@latest add auth", "pnpm dlx root@latest add auth"],
     when: "Inside a Root project when you want login.",
     see: [
@@ -111,7 +111,7 @@ Content-Type: application/json
     oneLiner:
       "Add a full HTTP resource (list, get, create) with schema, data layer, and server mount.",
     overview:
-      "This is the main interconnection path. Root creates routes, controller, and service; appends a Zod schema; updates ORM models when applicable; mounts /api/<name> near the inject anchor; and registers the module in root.json. If auth exists, mutating verbs usually require authenticate.",
+      "This is the main interconnection path — the shadcn-like moment for backends. Root creates routes, controller, and service; appends a Zod schema; updates ORM models when applicable; mounts /api/<name> near the [ROOT-INJECT:ROUTES] anchor; and registers the module in root.json. Duplicate names are refused. If auth exists, mutating verbs usually require authenticate. Dry-run prints the full operation plan without writing.",
     commands: ["npx root@latest add resource post", "pnpm dlx root@latest add resource post"],
     when: "When you need a new noun in your API (posts, notes, invoices…).",
     see: [

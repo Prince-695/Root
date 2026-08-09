@@ -6,27 +6,39 @@ export function WhyUseIt() {
     <>
       <h1>Why use Root?</h1>
       <p className="lede">
-        Adding one API feature by hand often means updating five or six places. Miss one, and the
-        doorbell is dead while the kitchen still looks fine.
+        Hand-wiring a layered Express resource touches router, controller, service, Zod schema, ORM
+        model, <code>app.use</code> mount, and the project manifest. Partial updates leave you with
+        404s, unvalidated bodies, or unauthenticated mutators. Root collapses that into one
+        transactional capability command.
       </p>
 
-      <h2>The pain without Root</h2>
-      <p>Suppose you want a “posts” API. Without a scaffolder that interconnects, you typically:</p>
+      <h2>Failure modes without interconnection</h2>
+      <p>For a <code>posts</code> API you normally must keep these coherent:</p>
       <ol>
-        <li>Create a route file (the URL door)</li>
-        <li>Create a controller (who answers the door)</li>
-        <li>Create a service (who does the work)</li>
-        <li>Add a Zod schema (the order checklist)</li>
-        <li>Add a database model if you use an ORM</li>
         <li>
-          Mount the router in <code>server.ts</code>
+          Router module (<code>*.routes.*</code>) — HTTP verbs and middleware chain
         </li>
-        <li>Remember to register the module somewhere so tools know it exists</li>
+        <li>
+          Controller — request/response mapping
+        </li>
+        <li>
+          Service — domain + persistence
+        </li>
+        <li>
+          Zod schema — runtime validation via <code>validate</code> middleware
+        </li>
+        <li>ORM model / migration surface (Prisma, Drizzle, Mongoose)</li>
+        <li>
+          Server mount near a stable inject point
+        </li>
+        <li>
+          Manifest registration (<code>root.json</code> modules)
+        </li>
       </ol>
       <p>
-        People forget the mount line constantly. Or they add the model but never the schema. Or they
-        add auth later and forget to protect <code>POST</code>. Root’s job is to make that whole
-        checklist one command — and to roll back if any step fails.
+        Common bugs: forgotten <code>app.use</code>, schema never registered, auth added later
+        without guarding <code>POST</code>. Root’s job is to apply the full checklist as one recipe —
+        and roll back if any op fails.
       </p>
 
       <h2>What “interconnection” looks like</h2>
@@ -71,12 +83,31 @@ npx root@latest doctor`}
         </li>
       </ul>
 
+      <h2>Compared to copying a GitHub template</h2>
+      <div className="docs-two-col">
+        <div className="docs-panel">
+          <h3>Static template</h3>
+          <p>
+            Great once. The second feature is still hand-wired. Auth bolted on later often misses
+            protecting creates. Diffs are huge and hard to review.
+          </p>
+        </div>
+        <div className="docs-panel">
+          <h3>Root interconnection</h3>
+          <p>
+            Init gives you the kitchen. Every later capability is a small, reviewable transaction
+            against <em>your</em> project — with dry-run, doctor, and rollback.
+          </p>
+        </div>
+      </div>
+
       <h2>Who it is for</h2>
       <ul>
         <li>People building an API who want a sensible Express start</li>
         <li>People who want JWT login and resources wired correctly</li>
         <li>People who prefer owned code over a locked SaaS template</li>
         <li>Teams that want deterministic scaffolding (no AI guessing)</li>
+        <li>Anyone who has deleted a half-finished route mount at 1am</li>
       </ul>
 
       <h2>What it is not</h2>

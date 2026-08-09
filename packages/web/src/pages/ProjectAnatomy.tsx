@@ -139,6 +139,58 @@ export function ProjectAnatomy() {
 { "success": false, "error": { "message": "…" } }`}
       />
 
+      <h2>Files you should not casually delete</h2>
+      <ul>
+        <li>
+          <code>[ROOT-INJECT:ROUTES]</code> in <code>src/server.*</code> — later adds need it
+        </li>
+        <li>
+          <code>root.json</code> — the contract; corrupt it and add/doctor stop working until fixed
+        </li>
+        <li>
+          Auth middleware once resources depend on it — remove only if you also unwind protected
+          routes
+        </li>
+      </ul>
+
+      <h2>Optional stacks you may see</h2>
+      <div className="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Choice at init</th>
+              <th>Extra paths</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Prisma</td>
+              <td>
+                <code>prisma/schema.prisma</code>, generate scripts
+              </td>
+            </tr>
+            <tr>
+              <td>Drizzle</td>
+              <td>
+                <code>src/db/schema.*</code>
+              </td>
+            </tr>
+            <tr>
+              <td>Mongoose</td>
+              <td>
+                <code>src/models/*.model.*</code>
+              </td>
+            </tr>
+            <tr>
+              <td>Docker extra</td>
+              <td>
+                <code>docker-compose.yml</code> for local DB
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
       <p>
         Deeper: <Link to="/docs/how-it-works">How it works</Link> ·{" "}
         <Link to="/docs/commands">Commands</Link>.

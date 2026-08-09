@@ -1,59 +1,91 @@
 const terms: { term: string; def: string }[] = [
   {
-    term: "Backend / API",
-    def: "The server-side kitchen that answers requests from phones or websites (save a post, log in, list items).",
+    term: "API / HTTP API",
+    def: "Application Programming Interface over HTTP. Clients send requests (GET/POST/…) to routes; the server returns JSON and status codes.",
+  },
+  {
+    term: "CLI",
+    def: "Command-Line Interface. Root’s product surface — you invoke it with npx/pnpm dlx, not a GUI.",
+  },
+  {
+    term: "Scaffolding",
+    def: "Generating project structure and boilerplate from templates (Handlebars in Root’s engine).",
   },
   {
     term: "Capability",
-    def: "A backend feature you add with one command — resource, auth, middleware, service — not a single MVC file kind.",
+    def: "Public add target (resource, auth, middleware, service…). Contrasts with low-level MVC file kinds.",
   },
   {
     term: "Resource",
-    def: "An HTTP noun with list/get/create wiring. Example: add resource post → /api/post plus schema, service, and server mount.",
+    def: "RESTful noun exposed at /api/<name> with list/get/create handlers, Zod validation, and optional ORM persistence.",
   },
   {
-    term: "Interconnection",
-    def: "Updating every related file when you add one capability, as a single planned transaction.",
+    term: "MVC (layered)",
+    def: "Model–View–Controller style split Root uses as routes → controllers → services (+ schema/ORM), even though there is no server-rendered View.",
   },
   {
-    term: "root.json",
-    def: "Root’s notebook for this project: language, database, ORM, auth, and which modules were added.",
+    term: "Middleware",
+    def: "Express functions in the request pipeline (logging, validate, authenticate). Run before the route handler.",
   },
   {
-    term: "Inject anchor",
-    def: "A comment like [ROOT-INJECT:ROUTES] in server.* so Root knows where to plug new routers. Do not delete it.",
-  },
-  {
-    term: "Auth / JWT",
-    def: "Login capability: signup/signin and Bearer tokens. Mutating resource routes often require the token.",
+    term: "JWT / Bearer token",
+    def: "JSON Web Token auth. Client sends Authorization: Bearer <token> on protected mutating routes after signup/signin.",
   },
   {
     term: "ORM",
-    def: "A helper that talks to a database (Prisma, Drizzle, Mongoose) or none for in-memory / no DB.",
+    def: "Object–Relational Mapper (Prisma, Drizzle) or ODM (Mongoose). Maps code models to database tables/collections. orm: none uses in-memory stores.",
   },
   {
-    term: "Schema (Zod)",
-    def: "Rules for what a valid request body looks like. Invalid bodies fail before the controller runs.",
+    term: "Zod schema",
+    def: "Runtime TypeScript-first validators for request bodies. Invalid input fails in validate middleware before the controller.",
   },
   {
-    term: "Doctor",
-    def: "Integrity check for anchors, mounts, schema, auth consistency, and root.json health.",
+    term: "root.json",
+    def: "Project manifest / contract: language, framework, database, orm, auth, aliases, and registered modules.",
   },
   {
-    term: "Diff",
-    def: "Shows drift between root.json expectations and files on disk.",
+    term: "Module graph",
+    def: "In-memory view of root.json modules plus disk probes (e.g. auth present?) used by the planner.",
+  },
+  {
+    term: "Recipe / Planner",
+    def: "Capability → ordered list of filesystem operations (create/patch). The planner expands recipes deterministically.",
+  },
+  {
+    term: "Transaction + rollback",
+    def: "Apply ops under .root.lock; on failure restore the pre-command snapshot so the project is never half-wired.",
+  },
+  {
+    term: "Inject anchor",
+    def: "Stable comment marker such as [ROOT-INJECT:ROUTES] where Root patches app.use(…) mounts. Prefer anchors over brittle regex.",
+  },
+  {
+    term: "Idempotent refuse",
+    def: "Duplicate add resource <name> is rejected instead of double-mounting or silently overwriting.",
   },
   {
     term: "Dry-run",
-    def: "Show the operation plan; write nothing to disk.",
+    def: "Global --dry-run: print the operation plan; no writes. Safe preview of interconnection.",
   },
   {
-    term: "Rollback",
-    def: "If any step in an add fails, Root restores the pre-command snapshot so you are not left half-wired.",
+    term: "Doctor / Diff / Sync",
+    def: "Integrity tooling: doctor = full checks; diff = drift vs disk; sync = verify wiring (auto-repair planned).",
   },
   {
-    term: "npx root@latest",
-    def: "Canonical way to run the CLI. Also: pnpm dlx / yarn dlx / bunx. Local monorepo: pnpm root-cli.",
+    term: "dlx / npx",
+    def: "Run a package without a global install. Canonical: npx root@latest … (also pnpm dlx, yarn dlx, bunx).",
+  },
+  {
+    term: "Monorepo",
+    def: "This repo: packages/cli, packages/core, packages/web under Turborepo + pnpm. Local invoke: pnpm root-cli.",
+  },
+  {
+    term: "AST / mutators",
+    def: "Abstract Syntax Tree edits for precise patches (secondary to anchors). Mutators update schema/ORM/server/manifest.",
+  },
+  {
+    term: "Engines (Node)",
+    def: "CLI requires Node ^22.18 || >=24. Generated apps may declare their own engines independently.",
   },
 ];
 
@@ -62,7 +94,8 @@ export function Glossary() {
     <>
       <h1>Glossary</h1>
       <p className="lede">
-        Plain meanings for words you will see across the manual and CLI output.
+        Technical terms used across the CLI, engine, and this manual. Skim before deep-diving
+        commands if any word looks unfamiliar.
       </p>
       <dl className="glossary">
         {terms.map((t) => (
