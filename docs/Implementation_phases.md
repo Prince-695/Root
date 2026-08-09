@@ -386,10 +386,11 @@ A real developer can create a new folder and get a running Express TS API with p
 
 ### Deliverables Checklist
 
-- [ ] Wizard never offers invalid combo
-- [ ] Each supported combo typechecks after generate
-- [ ] Docker Compose (when selected) matches engine (pg / mysql / mongo images)
-- [ ] `root.json` records `database` + `orm` accurately
+- [x] Wizard never offers invalid combo
+- [x] Each supported combo typechecks after generate
+- [x] Docker Compose (when selected) matches engine (pg / mysql / mongo images)
+- [x] `root.json` records `database` + `orm` accurately
+- [x] Phase note: [`docs/phase/phase-3.md`](./phase/phase-3.md)
 
 ---
 
