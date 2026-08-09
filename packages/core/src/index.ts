@@ -2,9 +2,13 @@
  * @root/core — shared engine surface for the Root CLI.
  */
 
-export const ROOT_ENGINE_NAME = "root" as const;
+import { ROOT_ENGINE_NAME, ROOT_ENGINE_VERSION } from "./constants.js";
 
-export const ROOT_ENGINE_VERSION = "0.0.0" as const;
+export {
+  ROOT_ENGINE_NAME,
+  ROOT_ENGINE_VERSION,
+  ROOT_NPM_PACKAGE,
+} from "./constants.js";
 
 export type RootCommandName = "init" | "add" | "doctor";
 
@@ -185,6 +189,8 @@ export {
   createGoldenInitAnswers,
   createInitAnswers,
   isPhase2SupportedStack,
+  isSupportedExpressJsStack,
+  isSupportedExpressStack,
   isSupportedExpressTsStack,
   unsupportedStackMessage,
   type InitAnswers,
@@ -204,10 +210,31 @@ export {
 } from "./init/stack-matrix.js";
 
 export {
+  getExpressJsTemplatesRoot,
   getExpressTsTemplatesRoot,
+  structureizeExpressJs,
   structureizeExpressTs,
   type StructureizeResult,
 } from "./init/structureizer.js";
+
+export {
+  getStackProvider,
+  isSupportedStack,
+  listStackProviders,
+  resolveStackProvider,
+  structureizeProject,
+} from "./providers/resolve-provider.js";
+
+export {
+  defaultSourceAliases,
+  isTypeScript,
+  localizeSourcePath,
+  sourceExtension,
+  withSourceExt,
+  type SourceExtension,
+} from "./providers/language.js";
+
+export type { StackProvider, StackProviderId, StackProviderStatus } from "./providers/types.js";
 
 export {
   renderTemplateFile,

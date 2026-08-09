@@ -1,4 +1,5 @@
 import type { Operation } from "../../engine/operations.js";
+import { isTypeScript, localizeSourcePath } from "../../providers/language.js";
 import { buildAuthFiles } from "../codegen/auth-files.js";
 import type { Recipe } from "../types.js";
 
@@ -24,14 +25,19 @@ export const authRecipe: Recipe = {
     const mountLine = `app.use("/auth", authRouter);`;
     const addedAt = ctx.addedAt ?? "1970-01-01T00:00:00.000Z";
     const orm = ctx.graph.config.orm;
+    const ts = isTypeScript(ctx.graph.config);
 
-    const ops: Operation[] = [
-      { type: "updateSchema", kind: "auth" },
-      {
+    const ops: Operation[] = [{ type: "updateSchema", kind: "auth" }];
+
+    if (files.typesPath) {
+      ops.push({
         type: "createFile",
         path: files.typesPath,
         content: files.typesContent,
-      },
+      });
+    }
+
+    ops.push(
       {
         type: "createFile",
         path: files.middlewarePath,
@@ -75,7 +81,7 @@ export const authRecipe: Recipe = {
       },
       {
         type: "ensureText",
-        path: "src/config/env.ts",
+        path: localizeSourcePath(ctx.graph.config, "src/config/env.ts"),
         skipIfContains: "ACCESS_TOKEN_SECRET",
         transform: "access-token-env-ts",
       },
@@ -95,19 +101,24 @@ export const authRecipe: Recipe = {
         name: "bcryptjs",
         version: "^2.4.3",
       },
-      {
-        type: "ensureDependency",
-        name: "@types/jsonwebtoken",
-        version: "^9.0.9",
-        dev: true,
-      },
-      {
-        type: "ensureDependency",
-        name: "@types/bcryptjs",
-        version: "^2.4.6",
-        dev: true,
-      },
-    ];
+    );
+
+    if (ts) {
+      ops.push(
+        {
+          type: "ensureDependency",
+          name: "@types/jsonwebtoken",
+          version: "^9.0.9",
+          dev: true,
+        },
+        {
+          type: "ensureDependency",
+          name: "@types/bcryptjs",
+          version: "^2.4.6",
+          dev: true,
+        },
+      );
+    }
 
     if (orm === "prisma") {
       ops.push({

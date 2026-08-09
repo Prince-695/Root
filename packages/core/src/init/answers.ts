@@ -1,4 +1,5 @@
 import { type RootJson, createRootJsonFixture } from "../config/root-json.js";
+import { defaultSourceAliases } from "../providers/language.js";
 import { invalidComboMessage, isValidCombo } from "./stack-matrix.js";
 
 export type InitAnswers = {
@@ -39,10 +40,8 @@ export function createInitAnswers(
   return { ...createGoldenInitAnswers(projectName), ...overrides, projectName };
 }
 
-/** Express TS layered stack with a valid DB×ORM combo. */
-export function isSupportedExpressTsStack(answers: InitAnswers): boolean {
+function isExpressLayeredZod(answers: InitAnswers): boolean {
   return (
-    answers.language === "typescript" &&
     answers.framework === "express" &&
     answers.architecture === "layered-mvc" &&
     answers.validation === "zod" &&
@@ -50,12 +49,26 @@ export function isSupportedExpressTsStack(answers: InitAnswers): boolean {
   );
 }
 
+/** Express TS layered stack with a valid DB×ORM combo. */
+export function isSupportedExpressTsStack(answers: InitAnswers): boolean {
+  return answers.language === "typescript" && isExpressLayeredZod(answers);
+}
+
+/** Express JS layered stack with a valid DB×ORM combo. */
+export function isSupportedExpressJsStack(answers: InitAnswers): boolean {
+  return answers.language === "javascript" && isExpressLayeredZod(answers);
+}
+
+export function isSupportedExpressStack(answers: InitAnswers): boolean {
+  return isSupportedExpressTsStack(answers) || isSupportedExpressJsStack(answers);
+}
+
 /** @deprecated Use isSupportedExpressTsStack */
 export const isPhase2SupportedStack = isSupportedExpressTsStack;
 
 export function unsupportedStackMessage(answers: InitAnswers): string {
   if (
-    answers.language !== "typescript" ||
+    (answers.language !== "typescript" && answers.language !== "javascript") ||
     answers.framework !== "express" ||
     answers.architecture !== "layered-mvc"
   ) {
@@ -63,7 +76,7 @@ export function unsupportedStackMessage(answers: InitAnswers): string {
       "This language/framework/architecture is not generated yet.",
       "",
       `Requested: ${answers.language} / ${answers.framework} / ${answers.architecture}`,
-      "Supported now: typescript / express / layered-mvc",
+      "Supported now: typescript|javascript / express / layered-mvc",
     ].join("\n");
   }
 
@@ -79,6 +92,7 @@ export function unsupportedStackMessage(answers: InitAnswers): string {
 }
 
 export function answersToRootJson(answers: InitAnswers): RootJson {
+  const sourceAliases = defaultSourceAliases(answers.language);
   return createRootJsonFixture({
     projectName: answers.projectName,
     language: answers.language,
@@ -92,6 +106,10 @@ export function answersToRootJson(answers: InitAnswers): RootJson {
     features: {
       docker: answers.docker,
       githubActions: answers.githubActions,
+    },
+    aliases: {
+      schema: sourceAliases.schema,
+      server: sourceAliases.server,
     },
     modules: {},
   });

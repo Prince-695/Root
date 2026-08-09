@@ -1,6 +1,7 @@
 import { access } from "node:fs/promises";
 import path from "node:path";
 import { type RootJson, loadRootJson } from "../config/root-json.js";
+import { sourceExtension } from "../providers/language.js";
 
 export type ModuleGraphProbe = {
   hasSchemaFile: boolean;
@@ -26,10 +27,11 @@ async function fileExists(filePath: string): Promise<boolean> {
 
 export async function loadModuleGraph(projectRoot: string): Promise<ModuleGraph> {
   const config = await loadRootJson(projectRoot);
+  const ext = sourceExtension(config);
   const schemaPath = path.join(projectRoot, config.aliases.schema);
   const serverPath = path.join(projectRoot, config.aliases.server);
-  const authMw = path.join(projectRoot, config.aliases.middleware, "auth.ts");
-  const validateMw = path.join(projectRoot, config.aliases.middleware, "validate.ts");
+  const authMw = path.join(projectRoot, config.aliases.middleware, `auth.${ext}`);
+  const validateMw = path.join(projectRoot, config.aliases.middleware, `validate.${ext}`);
 
   const probe: ModuleGraphProbe = {
     hasSchemaFile: await fileExists(schemaPath),

@@ -1,0 +1,45 @@
+{
+  "name": "{{projectName}}",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "node --watch src/index.js",
+    "start": "node src/index.js",
+    "test": "{{#if testingVitest}}vitest run{{else}}echo \"No tests configured\"{{/if}}"{{#if isPrisma}},
+    "prisma:generate": "prisma generate",
+    "prisma:migrate": "prisma migrate dev"{{/if}}{{#if isDrizzle}},
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate"{{/if}}
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "helmet": "^8.0.0",
+    "morgan": "^1.10.0",
+    "zod": "^3.24.2"{{#if isPrisma}},
+    "@prisma/client": "^6.5.0"{{/if}}{{#if isDrizzle}},
+    "drizzle-orm": "^0.40.0"{{#if isPostgres}},
+    "postgres": "^3.4.5"{{/if}}{{#if isMysql}},
+    "mysql2": "^3.12.0"{{/if}}{{/if}}{{#if isMongoose}},
+    "mongoose": "^8.12.1"{{/if}}{{#if authJwt}},
+    "bcryptjs": "^2.4.3",
+    "jsonwebtoken": "^9.0.2"{{/if}}
+  },
+  "devDependencies": {
+{{#if isPrisma}}
+    "prisma": "^6.5.0"{{#if testingVitest}},{{/if}}
+{{/if}}
+{{#if isDrizzle}}
+    "drizzle-kit": "^0.30.5"{{#if testingVitest}},{{/if}}
+{{/if}}
+{{#if testingVitest}}
+    "vitest": "^3.0.8",
+    "supertest": "^7.0.0"
+{{/if}}
+  }
+}

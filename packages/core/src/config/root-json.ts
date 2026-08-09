@@ -80,7 +80,7 @@ export async function loadRootJson(projectRoot: string): Promise<RootJson> {
     raw = await readFile(filePath, "utf8");
   } catch {
     throw new Error(
-      `No ${ROOT_JSON_FILENAME} found in ${projectRoot}.\nRun: pnpm dlx root@latest init`,
+      `No ${ROOT_JSON_FILENAME} found in ${projectRoot}.\nRun: pnpm dlx root-scaffold@latest init`,
     );
   }
 
@@ -102,7 +102,13 @@ export async function writeRootJson(projectRoot: string, config: RootJson): Prom
 }
 
 /** Fixture helper for tests and future generators. */
-export function createRootJsonFixture(overrides: Partial<RootJson> = {}): RootJson {
+export function createRootJsonFixture(
+  overrides: Omit<Partial<RootJson>, "aliases" | "features" | "inject"> & {
+    aliases?: Partial<RootJson["aliases"]>;
+    features?: Partial<RootJson["features"]>;
+    inject?: Partial<RootJson["inject"]>;
+  } = {},
+): RootJson {
   const {
     aliases: aliasOverrides,
     features: featureOverrides,

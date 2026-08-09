@@ -1,4 +1,5 @@
 import type { RootJson } from "../../config/root-json.js";
+import { isTypeScript, sourceExtension } from "../../providers/language.js";
 
 export type AuthFileBundle = {
   middlewarePath: string;
@@ -14,12 +15,41 @@ export type AuthFileBundle = {
 };
 
 export function buildAuthFiles(config: RootJson): AuthFileBundle {
+  const ext = sourceExtension(config);
+  const ts = isTypeScript(config);
   const mwDir = config.aliases.middleware;
   const routesDir = config.aliases.routes;
   const controllersDir = config.aliases.controllers;
   const servicesDir = config.aliases.services;
 
-  const middlewareContent = `import type { NextFunction, Request, Response } from "express";
+  const routeContent = `import { Router } from "express";
+import { signIn, signOut, signUp } from "../controllers/auth.controller.js";
+import { signInSchema, signUpSchema } from "../schema.js";
+import { validate } from "../middleware/validate.js";
+
+export const authRouter = Router();
+
+authRouter.post("/signup", validate(signUpSchema), signUp);
+authRouter.post("/signin", validate(signInSchema), signIn);
+authRouter.post("/signout", signOut);
+`;
+
+  return {
+    middlewarePath: `${mwDir}/auth.${ext}`,
+    middlewareContent: ts ? buildTsAuthMiddleware() : buildJsAuthMiddleware(),
+    routePath: `${routesDir}/auth.routes.${ext}`,
+    routeContent,
+    controllerPath: `${controllersDir}/auth.controller.${ext}`,
+    controllerContent: ts ? buildTsAuthController() : buildJsAuthController(),
+    servicePath: `${servicesDir}/auth.service.${ext}`,
+    serviceContent: buildAuthService(config),
+    typesPath: ts ? "src/types/express.d.ts" : "",
+    typesContent: ts ? buildAuthTypesContent() : "",
+  };
+}
+
+function buildTsAuthMiddleware(): string {
+  return `import type { NextFunction, Request, Response } from "express";
 import jwt from "jsonwebtoken";
 import { env } from "../config/env.js";
 
@@ -45,8 +75,33 @@ export function authenticate(req: Request, res: Response, next: NextFunction): v
   }
 }
 `;
+}
 
-  const typesContent = `export {};
+function buildJsAuthMiddleware(): string {
+  return `import jwt from "jsonwebtoken";
+import { env } from "../config/env.js";
+
+export function authenticate(req, res, next) {
+  const header = req.headers.authorization;
+  if (!header?.startsWith("Bearer ")) {
+    res.status(401).json({ success: false, error: { message: "Unauthorized" } });
+    return;
+  }
+
+  const token = header.slice("Bearer ".length).trim();
+  try {
+    const payload = jwt.verify(token, env.ACCESS_TOKEN_SECRET);
+    req.authenticatedUser = { id: payload.sub, email: payload.email };
+    next();
+  } catch {
+    res.status(401).json({ success: false, error: { message: "Invalid or expired token" } });
+  }
+}
+`;
+}
+
+function buildAuthTypesContent(): string {
+  return `export {};
 
 declare global {
   namespace Express {
@@ -59,20 +114,10 @@ declare global {
   }
 }
 `;
+}
 
-  const routeContent = `import { Router } from "express";
-import { signIn, signOut, signUp } from "../controllers/auth.controller.js";
-import { signInSchema, signUpSchema } from "../schema.js";
-import { validate } from "../middleware/validate.js";
-
-export const authRouter = Router();
-
-authRouter.post("/signup", validate(signUpSchema), signUp);
-authRouter.post("/signin", validate(signInSchema), signIn);
-authRouter.post("/signout", signOut);
-`;
-
-  const controllerContent = `import type { NextFunction, Request, Response } from "express";
+function buildTsAuthController(): string {
+  return `import type { NextFunction, Request, Response } from "express";
 import { signInUser, signUpUser } from "../services/auth.service.js";
 
 export async function signUp(req: Request, res: Response, next: NextFunction) {
@@ -98,27 +143,57 @@ export async function signOut(_req: Request, res: Response) {
   res.status(200).json({ success: true, data: { signedOut: true } });
 }
 `;
+}
 
-  return {
-    middlewarePath: `${mwDir}/auth.ts`,
-    middlewareContent,
-    routePath: `${routesDir}/auth.routes.ts`,
-    routeContent,
-    controllerPath: `${controllersDir}/auth.controller.ts`,
-    controllerContent,
-    servicePath: `${servicesDir}/auth.service.ts`,
-    serviceContent: buildAuthService(config),
-    typesPath: "src/types/express.d.ts",
-    typesContent,
-  };
+function buildJsAuthController(): string {
+  return `import { signInUser, signUpUser } from "../services/auth.service.js";
+
+export async function signUp(req, res, next) {
+  try {
+    const result = await signUpUser(req.body);
+    res.status(201).json({ success: true, data: result });
+  } catch (error) {
+    next(error);
+  }
+}
+
+export async function signIn(req, res, next) {
+  try {
+    const result = await signInUser(req.body);
+    res.status(200).json({ success: true, data: result });
+  } catch (error) {
+    next(error);
+  }
+}
+
+export async function signOut(_req, res) {
+  // Stateless JWT — client discards the token.
+  res.status(200).json({ success: true, data: { signedOut: true } });
+}
+`;
+}
+
+function statusError(ts: boolean, message: string, status: number): string {
+  if (ts) {
+    return `const error = new Error("${message}") as Error & { status: number };
+    error.status = ${status};
+    throw error;`;
+  }
+  return `const error = new Error("${message}");
+    error.status = ${status};
+    throw error;`;
 }
 
 function buildAuthService(config: RootJson): string {
+  const ts = isTypeScript(config);
+  const inputParam = ts ? "input: { email: string; password: string }" : "input";
+  const signTokenParam = ts ? "user: { id: string; email: string }" : "user";
+
   const common = `import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { env } from "../config/env.js";
 
-function signToken(user: { id: string; email: string }): string {
+function signToken(${signTokenParam}) {
   return jwt.sign({ sub: user.id, email: user.email }, env.ACCESS_TOKEN_SECRET, {
     expiresIn: "7d",
   });
@@ -128,12 +203,10 @@ function signToken(user: { id: string; email: string }): string {
   if (config.orm === "prisma") {
     return `${common}import { db } from "../db/client.js";
 
-export async function signUpUser(input: { email: string; password: string }) {
+export async function signUpUser(${inputParam}) {
   const existing = await db.user.findUnique({ where: { email: input.email } });
   if (existing) {
-    const error = new Error("Email already registered") as Error & { status: number };
-    error.status = 409;
-    throw error;
+    ${statusError(ts, "Email already registered", 409)}
   }
   const passwordHash = await bcrypt.hash(input.password, 10);
   const user = await db.user.create({
@@ -143,12 +216,10 @@ export async function signUpUser(input: { email: string; password: string }) {
   return { token, user: { id: user.id, email: user.email } };
 }
 
-export async function signInUser(input: { email: string; password: string }) {
+export async function signInUser(${inputParam}) {
   const user = await db.user.findUnique({ where: { email: input.email } });
   if (!user || !(await bcrypt.compare(input.password, user.passwordHash))) {
-    const error = new Error("Invalid email or password") as Error & { status: number };
-    error.status = 401;
-    throw error;
+    ${statusError(ts, "Invalid email or password", 401)}
   }
   const token = signToken({ id: user.id, email: user.email });
   return { token, user: { id: user.id, email: user.email } };
@@ -159,12 +230,10 @@ export async function signInUser(input: { email: string; password: string }) {
   if (config.orm === "mongoose") {
     return `${common}import { UserModel } from "../models/user.model.js";
 
-export async function signUpUser(input: { email: string; password: string }) {
+export async function signUpUser(${inputParam}) {
   const existing = await UserModel.findOne({ email: input.email }).lean();
   if (existing) {
-    const error = new Error("Email already registered") as Error & { status: number };
-    error.status = 409;
-    throw error;
+    ${statusError(ts, "Email already registered", 409)}
   }
   const passwordHash = await bcrypt.hash(input.password, 10);
   const user = await UserModel.create({ email: input.email, passwordHash });
@@ -173,12 +242,10 @@ export async function signUpUser(input: { email: string; password: string }) {
   return { token, user: { id, email: user.email } };
 }
 
-export async function signInUser(input: { email: string; password: string }) {
+export async function signInUser(${inputParam}) {
   const user = await UserModel.findOne({ email: input.email });
   if (!user || !(await bcrypt.compare(input.password, user.passwordHash))) {
-    const error = new Error("Invalid email or password") as Error & { status: number };
-    error.status = 401;
-    throw error;
+    ${statusError(ts, "Invalid email or password", 401)}
   }
   const id = String(user._id);
   const token = signToken({ id, email: user.email });
@@ -192,12 +259,10 @@ export async function signInUser(input: { email: string; password: string }) {
 import { db } from "../db/client.js";
 import { users } from "../db/schema.js";
 
-export async function signUpUser(input: { email: string; password: string }) {
+export async function signUpUser(${inputParam}) {
   const existing = await db.select().from(users).where(eq(users.email, input.email)).limit(1);
   if (existing[0]) {
-    const error = new Error("Email already registered") as Error & { status: number };
-    error.status = 409;
-    throw error;
+    ${statusError(ts, "Email already registered", 409)}
   }
   const passwordHash = await bcrypt.hash(input.password, 10);
   const rows = await db
@@ -212,13 +277,11 @@ export async function signUpUser(input: { email: string; password: string }) {
   return { token, user: { id: String(user.id), email: user.email } };
 }
 
-export async function signInUser(input: { email: string; password: string }) {
+export async function signInUser(${inputParam}) {
   const rows = await db.select().from(users).where(eq(users.email, input.email)).limit(1);
   const user = rows[0];
   if (!user || !(await bcrypt.compare(input.password, user.passwordHash))) {
-    const error = new Error("Invalid email or password") as Error & { status: number };
-    error.status = 401;
-    throw error;
+    ${statusError(ts, "Invalid email or password", 401)}
   }
   const token = signToken({ id: String(user.id), email: user.email });
   return { token, user: { id: String(user.id), email: user.email } };
@@ -227,15 +290,14 @@ export async function signInUser(input: { email: string; password: string }) {
   }
 
   // in-memory (orm none)
-  return `${common}
+  if (ts) {
+    return `${common}
 type UserRecord = { id: string; email: string; passwordHash: string };
 const users: UserRecord[] = [];
 
-export async function signUpUser(input: { email: string; password: string }) {
+export async function signUpUser(${inputParam}) {
   if (users.some((u) => u.email === input.email)) {
-    const error = new Error("Email already registered") as Error & { status: number };
-    error.status = 409;
-    throw error;
+    ${statusError(ts, "Email already registered", 409)}
   }
   const passwordHash = await bcrypt.hash(input.password, 10);
   const user: UserRecord = {
@@ -248,12 +310,39 @@ export async function signUpUser(input: { email: string; password: string }) {
   return { token, user: { id: user.id, email: user.email } };
 }
 
-export async function signInUser(input: { email: string; password: string }) {
+export async function signInUser(${inputParam}) {
   const user = users.find((u) => u.email === input.email);
   if (!user || !(await bcrypt.compare(input.password, user.passwordHash))) {
-    const error = new Error("Invalid email or password") as Error & { status: number };
-    error.status = 401;
-    throw error;
+    ${statusError(ts, "Invalid email or password", 401)}
+  }
+  const token = signToken({ id: user.id, email: user.email });
+  return { token, user: { id: user.id, email: user.email } };
+}
+`;
+  }
+
+  return `${common}
+const users = [];
+
+export async function signUpUser(${inputParam}) {
+  if (users.some((u) => u.email === input.email)) {
+    ${statusError(ts, "Email already registered", 409)}
+  }
+  const passwordHash = await bcrypt.hash(input.password, 10);
+  const user = {
+    id: crypto.randomUUID(),
+    email: input.email,
+    passwordHash,
+  };
+  users.push(user);
+  const token = signToken({ id: user.id, email: user.email });
+  return { token, user: { id: user.id, email: user.email } };
+}
+
+export async function signInUser(${inputParam}) {
+  const user = users.find((u) => u.email === input.email);
+  if (!user || !(await bcrypt.compare(input.password, user.passwordHash))) {
+    ${statusError(ts, "Invalid email or password", 401)}
   }
   const token = signToken({ id: user.id, email: user.email });
   return { token, user: { id: user.id, email: user.email } };

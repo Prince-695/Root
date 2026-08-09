@@ -1,3 +1,7 @@
+import { ROOT_NPM_PACKAGE } from "../constants.js";
+
+const dlx = (args: string) => `pnpm dlx ${ROOT_NPM_PACKAGE}@latest ${args}`;
+
 export const ERRORS = {
   initForeignDirectory: (cwd: string) =>
     [
@@ -5,7 +9,7 @@ export const ERRORS = {
       "",
       "Enter a new folder name when prompted (Root will create it), or press Escape only in an empty folder.",
       "Example:",
-      "  pnpm dlx root@latest init",
+      `  ${dlx("init")}`,
       "  → folder name: my-api",
     ].join("\n"),
 
@@ -14,8 +18,8 @@ export const ERRORS = {
       `This directory is already a Root project: ${cwd}`,
       "",
       "Found a valid root.json. Use add/doctor instead of init:",
-      "  pnpm dlx root@latest add route <name>",
-      "  pnpm dlx root@latest doctor",
+      `  ${dlx("add route <name>")}`,
+      `  ${dlx("doctor")}`,
     ].join("\n"),
 
   initInvalidRootJson: (details: string) =>
@@ -44,7 +48,7 @@ export const ERRORS = {
       `Not a Root-managed project: ${cwd}`,
       "",
       "Missing or unreadable root.json. Create a backend first:",
-      "  pnpm dlx root@latest init",
+      `  ${dlx("init")}`,
     ].join("\n"),
 
   addInvalidRootJson: (details: string) =>
@@ -61,9 +65,9 @@ export const ERRORS = {
       "Missing route name.",
       "",
       "Usage:",
-      "  pnpm dlx root@latest add route <name>",
+      `  ${dlx("add route <name>")}`,
       "Example:",
-      "  pnpm dlx root@latest add route post",
+      `  ${dlx("add route post")}`,
     ].join("\n"),
 
   addRequiresName: (component: string) =>
@@ -71,12 +75,12 @@ export const ERRORS = {
       `Missing ${component} name.`,
       "",
       "Usage:",
-      `  pnpm dlx root@latest add ${component} <name>`,
+      `  ${dlx(`add ${component} <name>`)}`,
       "Examples:",
-      "  pnpm dlx root@latest add model comment",
-      "  pnpm dlx root@latest add service mailer",
-      "  pnpm dlx root@latest add middleware rate-limit",
-      "  pnpm dlx root@latest add controller invoice",
+      `  ${dlx("add model comment")}`,
+      `  ${dlx("add service mailer")}`,
+      `  ${dlx("add middleware rate-limit")}`,
+      `  ${dlx("add controller invoice")}`,
     ].join("\n"),
 
   addComponentNotImplemented: (component: string) =>
