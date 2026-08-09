@@ -83,7 +83,7 @@ export function registerInitCommand(program: Command): void {
             const installSpinner = p.spinner();
             installSpinner.start(`Installing dependencies with ${pm}...`);
             try {
-              await installDependencies(targetDir, pm);
+              await installDependencies(targetDir, pm, { orm: answers.orm });
               installSpinner.stop("Dependencies installed");
             } catch (error) {
               installSpinner.stop("Dependency install failed");

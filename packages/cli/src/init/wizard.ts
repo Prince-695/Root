@@ -1,10 +1,39 @@
 import * as p from "@clack/prompts";
 import {
+  type Database,
   type InitAnswers,
+  type Orm,
   createGoldenInitAnswers,
-  isPhase2SupportedStack,
+  isSupportedExpressTsStack,
+  ormOptionsForDatabase,
   unsupportedStackMessage,
 } from "@root/core";
+
+function ormLabel(orm: Orm): string {
+  switch (orm) {
+    case "prisma":
+      return "Prisma";
+    case "drizzle":
+      return "Drizzle";
+    case "mongoose":
+      return "Mongoose";
+    default:
+      return "None";
+  }
+}
+
+function dockerHint(database: Database): string {
+  switch (database) {
+    case "postgresql":
+      return "Docker Compose (Postgres)";
+    case "mysql":
+      return "Docker Compose (MySQL)";
+    case "mongodb":
+      return "Docker Compose (MongoDB)";
+    default:
+      return "Docker Compose";
+  }
+}
 
 export async function runInitWizard(projectName: string): Promise<InitAnswers | null> {
   p.intro("Root — project setup");
@@ -26,7 +55,7 @@ export async function runInitWizard(projectName: string): Promise<InitAnswers | 
   const framework = await p.select({
     message: "Select your framework:",
     options: [
-      { value: "express", label: "Express", hint: "Phase 2 golden path" },
+      { value: "express", label: "Express" },
       { value: "fastify", label: "Fastify", hint: "Coming later", disabled: true },
     ],
   });
@@ -39,7 +68,7 @@ export async function runInitWizard(projectName: string): Promise<InitAnswers | 
     message: "Select architecture style:",
     options: [
       { value: "layered-mvc", label: "Layered MVC", hint: "routes → controllers → services → db" },
-      { value: "minimal", label: "Minimal", hint: "Coming in a later phase", disabled: true },
+      { value: "minimal", label: "Minimal", hint: "Coming later", disabled: true },
     ],
   });
   if (p.isCancel(architecture)) {
@@ -50,10 +79,10 @@ export async function runInitWizard(projectName: string): Promise<InitAnswers | 
   const database = await p.select({
     message: "Select database:",
     options: [
-      { value: "postgresql", label: "PostgreSQL", hint: "Supported now" },
-      { value: "mysql", label: "MySQL", hint: "Phase 3", disabled: true },
-      { value: "mongodb", label: "MongoDB", hint: "Phase 3", disabled: true },
-      { value: "none", label: "None", hint: "Phase 3", disabled: true },
+      { value: "postgresql", label: "PostgreSQL" },
+      { value: "mysql", label: "MySQL" },
+      { value: "mongodb", label: "MongoDB" },
+      { value: "none", label: "None" },
     ],
   });
   if (p.isCancel(database)) {
@@ -61,14 +90,20 @@ export async function runInitWizard(projectName: string): Promise<InitAnswers | 
     return null;
   }
 
+  const db = database as Database;
+  const ormChoices = ormOptionsForDatabase(db);
   const orm = await p.select({
     message: "Select ORM / ODM:",
-    options: [
-      { value: "prisma", label: "Prisma", hint: "Supported now" },
-      { value: "drizzle", label: "Drizzle", hint: "Phase 3", disabled: true },
-      { value: "mongoose", label: "Mongoose", hint: "Phase 3", disabled: true },
-      { value: "none", label: "None", hint: "Phase 3", disabled: true },
-    ],
+    options: ormChoices.map((value) => {
+      const option: { value: Orm; label: string; hint?: string } = {
+        value,
+        label: ormLabel(value),
+      };
+      if (value === "none") {
+        option.hint = "Stub client only";
+      }
+      return option;
+    }),
   });
   if (p.isCancel(orm)) {
     p.cancel("Init cancelled.");
@@ -99,12 +134,14 @@ export async function runInitWizard(projectName: string): Promise<InitAnswers | 
     return null;
   }
 
+  const extraOptions = [
+    ...(db !== "none" ? [{ value: "docker", label: dockerHint(db), hint: "Recommended" }] : []),
+    { value: "githubActions", label: "GitHub Actions CI" },
+  ];
+
   const extras = await p.multiselect({
     message: "Extras (Space to select, Enter to confirm):",
-    options: [
-      { value: "docker", label: "Docker Compose (Postgres)", hint: "Recommended" },
-      { value: "githubActions", label: "GitHub Actions CI" },
-    ],
+    options: extraOptions,
     required: false,
   });
   if (p.isCancel(extras)) {
@@ -117,8 +154,8 @@ export async function runInitWizard(projectName: string): Promise<InitAnswers | 
     language: language as InitAnswers["language"],
     framework: framework as InitAnswers["framework"],
     architecture: architecture as InitAnswers["architecture"],
-    database: database as InitAnswers["database"],
-    orm: orm as InitAnswers["orm"],
+    database: db,
+    orm: orm as Orm,
     auth: auth as InitAnswers["auth"],
     validation: "zod",
     testing: testing as InitAnswers["testing"],
@@ -126,7 +163,7 @@ export async function runInitWizard(projectName: string): Promise<InitAnswers | 
     githubActions: extras.includes("githubActions"),
   };
 
-  if (!isPhase2SupportedStack(answers)) {
+  if (!isSupportedExpressTsStack(answers)) {
     p.log.error(unsupportedStackMessage(answers));
     return null;
   }
