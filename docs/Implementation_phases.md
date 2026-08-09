@@ -27,8 +27,10 @@ This roadmap breaks Root into **long, end-to-end phases**. Root is a high-level 
 **Primary user invocation (always):**
 
 ```bash
-pnpm dlx root@latest <command>
+pnpm dlx root-scaffold@latest <command>
 ```
+
+> Unscoped npm name `root` is taken on the registry. Public preview publishes as **`root-scaffold`** (bin still `root`). Local monorepo: `pnpm root-cli`.
 
 ---
 
@@ -69,7 +71,7 @@ Root is a **pure-engineering terminal CLI** (no AI) that:
 | Concern | Choice | Why |
 |---|---|---|
 | Language | TypeScript (strict) | Safety for FS/AST mutations |
-| Package distribution | npm publish + `bin: root` | Enables `pnpm dlx root@latest` |
+| Package distribution | npm publish + `bin: root` | Enables `pnpm dlx root-scaffold@latest` |
 | CLI parser | Commander.js | Simple, proven |
 | Interactive prompts | @clack/prompts | Modern terminal UX |
 | Templates | Handlebars | Clear separation of structure vs values |
@@ -80,7 +82,7 @@ Root is a **pure-engineering terminal CLI** (no AI) that:
 
 ### 1.3 Target Repository Shape (Turborepo monorepo)
 
-Root is developed as a **pnpm workspaces + Turborepo** monorepo. The publishable CLI is `@root/cli` (bin name `root` for `pnpm dlx root@latest`).
+Root is developed as a **pnpm workspaces + Turborepo** monorepo. The publishable CLI is `@root/cli` (bin name `root` for `pnpm dlx root-scaffold@latest`).
 
 ```
 root/
@@ -496,8 +498,8 @@ The “brain” of Root works on fixtures with proven safety. Higher phases only
 
 ```bash
 mkdir app && cd app
-pnpm dlx root@latest init --yes          # or test harness init
-pnpm dlx root@latest add route post
+pnpm dlx root-scaffold@latest init --yes          # or test harness init
+pnpm dlx root-scaffold@latest add route post
 pnpm dev
 # GET /api/post → 200 (empty list OK)
 # POST /api/post → 201 with valid body (if DB available)
@@ -703,7 +705,7 @@ Root not only generates — it can **diagnose** and **preview**, and survives me
 
 ## Phase 9 — Release Engineering & Public Preview
 
-**Goal:** Publish a preview that real users can run with `pnpm dlx root@latest`.
+**Goal:** Publish a preview that real users can run with `pnpm dlx root-scaffold@latest`.
 
 **Duration:** 2–3 weeks
 
@@ -721,7 +723,7 @@ Root not only generates — it can **diagnose** and **preview**, and survives me
 
 1. Prove pack contents (`npm pack` audit — templates included)
 2. Publish dry-run
-3. Post-publish CI workflow: `pnpm dlx root@<version> init` in clean dir
+3. Post-publish CI workflow: `pnpm dlx root-scaffold@<version> init` in clean dir
 4. Security review of template deps
 5. Landing docs polish
 
@@ -732,7 +734,7 @@ Root not only generates — it can **diagnose** and **preview**, and survives me
 | # | Metric | How to verify | Pass criteria |
 |---|---|---|---|
 | 9.1 | Pack integrity | `npm pack` + inspect tarball | Templates + dist + package.bin present |
-| 9.2 | Registry smoke | From clean env: `pnpm dlx root@<published> init --yes` | Boot health 200 |
+| 9.2 | Registry smoke | From clean env: `pnpm dlx root-scaffold@<published> init --yes` | Boot health 200 |
 | 9.3 | Registry add smoke | `dlx … add auth` + `add route post` | Auth CRUD E2E pass |
 | 9.4 | Node matrix | Run smoke on Node 18, 20, 22 | All pass |
 | 9.5 | PM matrix | pnpm + npm dlx/npx smoke | Both pass |
@@ -741,7 +743,7 @@ Root not only generates — it can **diagnose** and **preview**, and survives me
 | 9.8 | Rollback still proven | Re-run 8.6 sample | Pass |
 
 **End-to-end meaning at Phase 9:**  
-Anyone on the internet can use Root the intended way — `pnpm dlx root@latest init` — and get the MVP journey working.
+Anyone on the internet can use Root the intended way — `pnpm dlx root-scaffold@latest init` — and get the MVP journey working.
 
 **Exit rule:** All 9.x metrics green = **Public Preview** release.
 
@@ -771,7 +773,7 @@ Anyone on the internet can use Root the intended way — `pnpm dlx root@latest i
 
 - New provider package/emitter
 - Pythonic project layout, pydantic schemas registry analogue
-- Invocation still `pnpm dlx root@latest` (CLI remains Node-distributed) generating Python files
+- Invocation still `pnpm dlx root-scaffold@latest` (CLI remains Node-distributed) generating Python files
 
 **Gate 10.3 metrics:** `uvicorn` boot health; add route interconnection; pytest smoke.
 
@@ -851,16 +853,16 @@ Anyone on the internet can use Root the intended way — `pnpm dlx root@latest i
 
 ```bash
 mkdir my-api && cd my-api
-pnpm dlx root@latest init
-# choose: TypeScript, Express, Layered MVC, PostgreSQL, Prisma, JWT, Vitest, Docker
-pnpm dlx root@latest add route post   # if auth not generated at init
+pnpm dlx root-scaffold@latest init
+# choose: TypeScript|JavaScript, Express, Layered MVC, PostgreSQL, Prisma, JWT, Vitest, Docker
+pnpm dlx root-scaffold@latest add route post   # if auth not generated at init
 # OR if auth selected at init, auth already present
 pnpm dev
 # POST /auth/signup
 # POST /auth/signin → token
 # POST /api/post with Authorization: Bearer <token>
 # GET /api/post
-pnpm dlx root@latest doctor
+pnpm dlx root-scaffold@latest doctor
 ```
 
 ### 16.2 Gate Sign-off Template
@@ -882,7 +884,7 @@ Next phase authorized: YES / NO
 
 | Decision | Choice | Alternatives considered |
 |---|---|---|
-| Distribution UX | `pnpm dlx root@latest` | Global install first |
+| Distribution UX | `pnpm dlx root-scaffold@latest` | Global install first |
 | First stack | Express + TypeScript | Nest, Fastify |
 | Validation | Zod | Joi, Yup |
 | ORM matrix | Prisma + Drizzle + Mongoose | TypeORM, Sequelize |

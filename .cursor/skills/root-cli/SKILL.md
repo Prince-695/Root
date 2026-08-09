@@ -14,7 +14,7 @@ Root is a **pure-engineering** terminal CLI (no AI codegen) — shadcn/ui for ba
 
 ## Product invariants
 
-1. Primary UX: `pnpm dlx root@latest …` (local: `pnpm root-cli …` after build).
+1. Primary UX: `pnpm dlx root-scaffold@latest …` (local: `pnpm root-cli …` after build).
 2. **Create mode:** empty folder → `init` structureizes a full backend.
 3. **Modify mode:** existing `root.json` → `add` rewires Module Graph (schema, server, DB, auth, manifest) atomically.
 4. Interconnection is mandatory — orphan generated files are bugs.
