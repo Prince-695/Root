@@ -1,6 +1,6 @@
+import { CommandPlate } from "@/components/CommandPlate";
+import { commands } from "@/content/commands";
 import { Link, useParams } from "react-router-dom";
-import { CommandPlate } from "../components/CommandPlate";
-import { commands } from "../content/commands";
 
 export function CommandPage() {
   const { slug } = useParams();
@@ -22,9 +22,12 @@ export function CommandPage() {
       <h1>{doc.title}</h1>
       <p className="lede">{doc.oneLiner}</p>
 
-      <p className="section-label">What you type</p>
+      <h2>Overview</h2>
+      <p>{doc.overview}</p>
+
+      <h2>What you type</h2>
       {doc.commands.map((code) => (
-        <CommandPlate key={code} code={code} />
+        <CommandPlate key={code} title="terminal" code={code} />
       ))}
 
       <h2>When to use it</h2>
@@ -44,6 +47,18 @@ export function CommandPage() {
         ))}
       </ul>
 
+      {doc.samples && doc.samples.length > 0 ? (
+        <>
+          <h2>Code walkthrough</h2>
+          {doc.samples.map((sample) => (
+            <div key={sample.title}>
+              <CommandPlate title={sample.title} code={sample.code} />
+              {sample.note ? <p className="code-note">{sample.note}</p> : null}
+            </div>
+          ))}
+        </>
+      ) : null}
+
       <h2>What to do next</h2>
       <ul>
         {doc.next.map((item) => (
@@ -53,12 +68,20 @@ export function CommandPage() {
         ))}
       </ul>
 
-      <h2>Common mistakes</h2>
-      <ul>
-        {doc.mistakes.map((item) => (
-          <li key={item}>{item}</li>
-        ))}
-      </ul>
+      {doc.mistakes.length > 0 ? (
+        <>
+          <h2>Common mistakes</h2>
+          <ul>
+            {doc.mistakes.map((item) => (
+              <li key={item}>{item}</li>
+            ))}
+          </ul>
+        </>
+      ) : null}
+
+      <p>
+        <Link to="/docs/commands">← All commands</Link>
+      </p>
     </>
   );
 }
