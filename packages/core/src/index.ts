@@ -42,3 +42,23 @@ export {
 } from "./engine/detector.js";
 
 export { ERRORS } from "./errors/messages.js";
+
+export {
+  answersToRootJson,
+  createGoldenInitAnswers,
+  isPhase2SupportedStack,
+  unsupportedStackMessage,
+  type InitAnswers,
+} from "./init/answers.js";
+
+export {
+  getExpressTsTemplatesRoot,
+  structureizeExpressTs,
+  type StructureizeResult,
+} from "./init/structureizer.js";
+
+export {
+  renderTemplateFile,
+  renderTemplateString,
+  type TemplateContext,
+} from "./templates/renderer.js";

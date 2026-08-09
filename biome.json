@@ -13,6 +13,7 @@
       ".pnpm-store/**",
       ".turbo/**",
       "templates/**",
+      "packages/*/templates/**",
       "docs/**",
       ".agents/**",
       ".cursor/skills/**",
