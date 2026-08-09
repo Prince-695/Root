@@ -56,6 +56,24 @@ export const ERRORS = {
       "Fix the contract file, then retry.",
     ].join("\n"),
 
+  addRouteRequiresName: () =>
+    [
+      "Missing route name.",
+      "",
+      "Usage:",
+      "  pnpm dlx root@latest add route <name>",
+      "Example:",
+      "  pnpm dlx root@latest add route post",
+    ].join("\n"),
+
+  addComponentNotImplemented: (component: string) =>
+    [
+      `Component type "${component}" is not implemented yet.`,
+      "",
+      "Phase 5 supports: route",
+      "Coming later: auth, model, service, middleware, controller",
+    ].join("\n"),
+
   doctorNotRootProject: (cwd: string) =>
     [
       `Not a Root-managed project: ${cwd}`,
