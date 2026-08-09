@@ -1,11 +1,14 @@
+import * as p from "@clack/prompts";
+import { structureizeExpressTs } from "@root/core";
 import type { Command } from "commander";
 import { getGlobalFlags, logVerbose } from "../global-flags.js";
+import { detectPackageManager, installDependencies } from "../init/install.js";
 import { promptFolderName } from "../init/prompt-folder-name.js";
 import { resolveInitTarget } from "../init/resolve-target.js";
+import { resolveInitAnswers } from "../init/wizard.js";
 
 /**
- * Phase 1+: shadcn-style folder prompt + detection.
- * Full wizard/structureizer arrives in Phase 2.
+ * Phase 2: folder resolve → wizard → structureize Express TS golden path.
  */
 export function registerInitCommand(program: Command): void {
   program
@@ -14,63 +17,106 @@ export function registerInitCommand(program: Command): void {
       "Structureize a backend (asks for folder name; Escape = current folder — like shadcn)",
     )
     .argument("[project-name]", "Folder name to create under the current directory (skips prompt)")
-    .action(async (projectName: string | undefined, _options: unknown, command: Command) => {
-      const flags = getGlobalFlags(command);
-      const cwd = process.cwd();
-      logVerbose(flags, `init cwd=${cwd} dryRun=${flags.dryRun} yes=${flags.yes}`);
+    .option("--skip-install", "Skip dependency installation", false)
+    .action(
+      async (
+        projectName: string | undefined,
+        options: { skipInstall?: boolean },
+        command: Command,
+      ) => {
+        const flags = getGlobalFlags(command);
+        const cwd = process.cwd();
+        logVerbose(flags, `init cwd=${cwd} dryRun=${flags.dryRun} yes=${flags.yes}`);
 
-      const resolved = await resolveInitTarget({
-        cwd,
-        projectNameArg: projectName,
-        flags,
-        promptFolderName,
-        dryRun: flags.dryRun,
-      });
+        const resolved = await resolveInitTarget({
+          cwd,
+          projectNameArg: projectName,
+          flags,
+          promptFolderName,
+          dryRun: flags.dryRun,
+        });
 
-      if (!resolved.ok) {
-        console.error(resolved.message);
-        process.exitCode = 1;
-        return;
-      }
+        if (!resolved.ok) {
+          console.error(resolved.message);
+          process.exitCode = 1;
+          return;
+        }
 
-      const { targetDir, projectName: name, createdFolder, detected } = resolved;
-      logVerbose(
-        flags,
-        `targetDir=${targetDir} createdFolder=${createdFolder} entries=${detected.entries.length}`,
-      );
-
-      if (flags.dryRun) {
-        console.log(
-          [
-            "root init — dry-run (no files written)",
-            `Target: ${targetDir}`,
-            createdFolder ? "Would create folder: yes" : "Would create folder: no",
-            `Detected: empty-safe (${detected.entries.length} safe entries)`,
-            `Project name: ${name}`,
-            "",
-            "Would run interactive wizard + structureizer (Phase 2).",
-          ].join("\n"),
+        const { targetDir, projectName: name, createdFolder, detected } = resolved;
+        logVerbose(
+          flags,
+          `targetDir=${targetDir} createdFolder=${createdFolder} entries=${detected.entries.length}`,
         );
-        return;
-      }
 
-      console.log(
-        [
-          "root init — ready for structureizer",
-          `Target: ${targetDir}`,
-          createdFolder ? "Created folder: yes" : "Created folder: no",
-          "Detected: empty-safe directory",
-          `Project name: ${name}`,
-          flags.verbose ? `Safe entries: ${detected.entries.join(", ") || "(none)"}` : undefined,
-          "",
-          "Wizard + Express TypeScript generation arrives in Phase 2.",
-          "This directory is safe to initialize.",
-          "",
-          "Primary UX: pnpm dlx root@latest init",
-          "  → enter a folder name to create it here, or press Escape to use the current folder",
-        ]
-          .filter((line): line is string => line !== undefined)
-          .join("\n"),
-      );
-    });
+        const answers = await resolveInitAnswers(name, flags.yes);
+        if (!answers) {
+          process.exitCode = 1;
+          return;
+        }
+
+        if (flags.dryRun) {
+          console.log(
+            [
+              "root init — dry-run (no files written)",
+              `Target: ${targetDir}`,
+              createdFolder ? "Would create folder: yes" : "Would create folder: no",
+              `Stack: ${answers.language} / ${answers.framework} / ${answers.database} / ${answers.orm}`,
+              "Files: Express TS layered template (~20 files) + root.json",
+              "",
+              "Re-run without --dry-run to generate.",
+            ].join("\n"),
+          );
+          return;
+        }
+
+        const spinner = p.spinner();
+        spinner.start("Generating project structure...");
+        const started = Date.now();
+
+        try {
+          const result = await structureizeExpressTs({ targetDir, answers });
+          const elapsedMs = Date.now() - started;
+          spinner.stop(`Generated ${result.filesWritten.length} files in ${elapsedMs}ms`);
+
+          if (!options.skipInstall) {
+            const pm = await detectPackageManager(cwd);
+            const installSpinner = p.spinner();
+            installSpinner.start(`Installing dependencies with ${pm}...`);
+            try {
+              await installDependencies(targetDir, pm);
+              installSpinner.stop("Dependencies installed");
+            } catch (error) {
+              installSpinner.stop("Dependency install failed");
+              const message = error instanceof Error ? error.message : String(error);
+              console.error(message);
+              console.error("You can install manually inside the project folder.");
+            }
+          }
+
+          p.outro(
+            [
+              `Project ready at ${targetDir}`,
+              "",
+              "Next steps:",
+              `  cd ${targetDir}`,
+              "  cp .env.example .env",
+              answers.docker ? "  docker compose up -d" : undefined,
+              options.skipInstall ? "  pnpm install && pnpm prisma:generate" : undefined,
+              "  pnpm dev",
+              "",
+              "Then:",
+              "  pnpm dlx root@latest add auth",
+              "  pnpm dlx root@latest add route post",
+            ]
+              .filter((line): line is string => line !== undefined)
+              .join("\n"),
+          );
+        } catch (error) {
+          spinner.stop("Generation failed");
+          const message = error instanceof Error ? error.message : String(error);
+          console.error(message);
+          process.exitCode = 1;
+        }
+      },
+    );
 }
