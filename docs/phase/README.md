@@ -8,6 +8,8 @@ After each implementation phase gate turns green, a markdown file is added here:
 | [phase-1.md](./phase-1.md) | CLI shell, detection, `root.json` + Cursor skills |
 | [phase-2.md](./phase-2.md) | Init wizard + Express TS golden path (Postgres + Prisma) |
 | [phase-3.md](./phase-3.md) | Database × ORM matrix (10 combos) |
+| [phase-4.md](./phase-4.md) | Interconnection engine core |
+| [phase-5.md](./phase-5.md) | `add route` end-to-end |
 | … | … |
 
 Each file includes:

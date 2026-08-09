@@ -96,22 +96,44 @@ describe("CLI command guards (Phase 1)", () => {
     expect(err.mock.calls.flat().join("\n")).toMatch(/init/i);
   });
 
-  it("add works on valid Root project", async () => {
+  it("add route interconnects a generated Root project", async () => {
     const dir = await tempDir("cli-add-ok-");
-    await writeFile(
-      path.join(dir, "root.json"),
-      serializeRootJson(createRootJsonFixture({ projectName: "ok-api" })),
-      "utf8",
-    );
+    const { structureizeExpressTs, createInitAnswers } = await import("@root/core");
+    await structureizeExpressTs({
+      targetDir: dir,
+      answers: createInitAnswers("ok-api", { docker: false }),
+    });
     const log = vi.spyOn(console, "log").mockImplementation(() => {});
     const program = createProgram();
 
     await withCwd(dir, async () => {
-      await program.parseAsync(["node", "root", "add", "route", "post"]);
+      await program.parseAsync(["node", "root", "add", "route", "post", "--skip-generate"]);
     });
 
     expect(process.exitCode ?? 0).toBe(0);
-    expect(log.mock.calls.flat().join("\n")).toContain("ok-api");
+    const output = log.mock.calls.flat().join("\n");
+    expect(output).toContain("ok-api");
+    expect(output).toContain("/api/post");
+    await access(path.join(dir, "src/routes/post.routes.ts"));
+  });
+
+  it("add route dry-run lists operations without writing", async () => {
+    const dir = await tempDir("cli-add-dry-");
+    const { structureizeExpressTs, createInitAnswers } = await import("@root/core");
+    await structureizeExpressTs({
+      targetDir: dir,
+      answers: createInitAnswers("dry-api", { docker: false }),
+    });
+    const log = vi.spyOn(console, "log").mockImplementation(() => {});
+    const program = createProgram();
+
+    await withCwd(dir, async () => {
+      await program.parseAsync(["node", "root", "--dry-run", "add", "route", "post"]);
+    });
+
+    expect(process.exitCode ?? 0).toBe(0);
+    expect(log.mock.calls.flat().join("\n")).toMatch(/dry-run/i);
+    await expect(access(path.join(dir, "src/routes/post.routes.ts"))).rejects.toThrow();
   });
 
   it("doctor validates root.json and fails on invalid contract", async () => {

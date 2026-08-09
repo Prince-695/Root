@@ -11,7 +11,7 @@ import { SCHEMA_FIXTURE, SERVER_FIXTURE } from "./fixtures/server-fixture.js";
 
 async function projectFixture(): Promise<string> {
   const dir = await mkdtemp(path.join(os.tmpdir(), "root-tx-"));
-  await writeRootJson(dir, createRootJsonFixture());
+  await writeRootJson(dir, createRootJsonFixture({ database: "none", orm: "none" }));
   await mkdir(path.join(dir, "src", "routes"), { recursive: true });
   await mkdir(path.join(dir, "src", "middleware"), { recursive: true });
   await writeFile(path.join(dir, "src", "server.ts"), SERVER_FIXTURE, "utf8");

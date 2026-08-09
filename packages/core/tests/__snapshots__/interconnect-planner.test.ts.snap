@@ -28,7 +28,17 @@ exports[`InterconnectPlanner > orders schema → validate → resource deps dete
   {
     "type": "createFile",
     "path": "src/routes/posts.routes.ts",
-    "content": "import { Router } from \\"express\\";\\nimport { postsSchema } from \\"../schema.js\\";\\nimport { validate } from \\"../middleware/validate.js\\";\\n\\nexport const postsRouter = Router();\\n\\npostsRouter.post(\\"/\\", validate(postsSchema), (_req, res) => {\\n  res.status(201).json({ ok: true, resource: \\"posts\\" });\\n});\\n"
+    "content": "import { Router } from \\"express\\";\\nimport {\\n  createPosts,\\n  getPostsById,\\n  listPosts,\\n} from \\"../controllers/posts.controller.js\\";\\nimport { postsSchema } from \\"../schema.js\\";\\nimport { validate } from \\"../middleware/validate.js\\";\\n\\nexport const postsRouter = Router();\\n\\npostsRouter.get(\\"/\\", listPosts);\\npostsRouter.get(\\"/:id\\", getPostsById);\\npostsRouter.post(\\"/\\", validate(postsSchema), createPosts);\\n"
+  },
+  {
+    "type": "createFile",
+    "path": "src/controllers/posts.controller.ts",
+    "content": "import type { Request, Response, NextFunction } from \\"express\\";\\nimport {\\n  createPostsRecord,\\n  getPostsRecord,\\n  listPostsRecords,\\n} from \\"../services/posts.service.js\\";\\n\\nexport async function listPosts(_req: Request, res: Response, next: NextFunction) {\\n  try {\\n    const data = await listPostsRecords();\\n    res.status(200).json({ success: true, data });\\n  } catch (error) {\\n    next(error);\\n  }\\n}\\n\\nexport async function getPostsById(req: Request, res: Response, next: NextFunction) {\\n  try {\\n    const id = String(req.params.id);\\n    const data = await getPostsRecord(id);\\n    if (!data) {\\n      res.status(404).json({ success: false, error: { message: \\"Posts not found\\" } });\\n      return;\\n    }\\n    res.status(200).json({ success: true, data });\\n  } catch (error) {\\n    next(error);\\n  }\\n}\\n\\nexport async function createPosts(req: Request, res: Response, next: NextFunction) {\\n  try {\\n    const data = await createPostsRecord(req.body as { title: string });\\n    res.status(201).json({ success: true, data });\\n  } catch (error) {\\n    next(error);\\n  }\\n}\\n"
+  },
+  {
+    "type": "createFile",
+    "path": "src/services/posts.service.ts",
+    "content": "import { db } from \\"../db/client.js\\";\\n\\nexport async function listPostsRecords() {\\n  return db.posts.findMany({ orderBy: { createdAt: \\"desc\\" } });\\n}\\n\\nexport async function getPostsRecord(id: string) {\\n  return db.posts.findUnique({ where: { id } });\\n}\\n\\nexport async function createPostsRecord(input: { title: string }) {\\n  return db.posts.create({ data: { title: input.title } });\\n}\\n"
   },
   {
     "type": "patchFile",
@@ -50,6 +60,17 @@ exports[`InterconnectPlanner > orders schema → validate → resource deps dete
   {
     "type": "updateSchema",
     "kind": "resource",
+    "resourceName": "posts",
+    "fields": [
+      {
+        "name": "title",
+        "zodType": "z.string()"
+      }
+    ]
+  },
+  {
+    "type": "updateOrm",
+    "kind": "prisma-model",
     "resourceName": "posts",
     "fields": [
       {

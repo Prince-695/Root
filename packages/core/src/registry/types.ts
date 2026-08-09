@@ -5,10 +5,12 @@ export type RecipeId = "schema" | "validate" | "resource" | "auth";
 
 export type RecipeContext = {
   graph: ModuleGraph;
-  /** PascalCase or kebab resource name, e.g. "posts" */
+  /** Resource name (slug), e.g. "post" */
   resourceName?: string;
   fields?: ZodField[];
   mountPath?: string;
+  /** ISO timestamp written into root.json modules entry */
+  addedAt?: string;
 };
 
 export type Recipe = {

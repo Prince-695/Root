@@ -63,6 +63,13 @@ export type RunCommandOp = {
   args: string[];
 };
 
+export type UpdateOrmOp = {
+  type: "updateOrm";
+  kind: "prisma-model" | "drizzle-table" | "mongoose-model";
+  resourceName: string;
+  fields: ZodField[];
+};
+
 export type Operation =
   | CreateFileOp
   | PatchAnchorOp
@@ -71,7 +78,8 @@ export type Operation =
   | UpdateSchemaResourceOp
   | UpdateManifestOp
   | EnsureDependencyOp
-  | RunCommandOp;
+  | RunCommandOp
+  | UpdateOrmOp;
 
 export function stableStringifyOperations(ops: Operation[]): string {
   return JSON.stringify(ops, null, 2);

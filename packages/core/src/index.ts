@@ -67,10 +67,31 @@ export {
   type PatchAstImportOp,
   type RunCommandOp,
   type UpdateManifestOp,
+  type UpdateOrmOp,
   type UpdateSchemaAuthOp,
   type UpdateSchemaResourceOp,
   type ZodField,
 } from "./engine/operations.js";
+
+export {
+  AddRouteError,
+  addRoute,
+  type AddRouteOptions,
+  type AddRouteResult,
+} from "./add/route.js";
+
+export {
+  appendDrizzleTable,
+  appendPrismaModel,
+  buildMongooseModelFile,
+} from "./mutators/orm-registry.js";
+
+export {
+  buildResourceFiles,
+  defaultResourceZodFields,
+  resolveResourceNames,
+  type ResourceNames,
+} from "./registry/codegen/resource-files.js";
 
 export {
   Transaction,

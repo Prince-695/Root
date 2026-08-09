@@ -1,9 +1,9 @@
-import { ERRORS, detectProject } from "@root/core";
+import { AddRouteError, ERRORS, addRoute, detectProject } from "@root/core";
 import type { Command } from "commander";
 import { getGlobalFlags, logVerbose } from "../global-flags.js";
 
 /**
- * Phase 1: require Root project. Interconnection recipes arrive in Phases 5–7.
+ * Modify-mode entry. Phase 5: `add route <name>` with full interconnection.
  */
 export function registerAddCommand(program: Command): void {
   program
@@ -13,10 +13,12 @@ export function registerAddCommand(program: Command): void {
       "<component>",
       "Component type: route | auth | model | service | middleware | controller",
     )
-    .argument("[name]", "Component name (required for most types)")
+    .argument("[name]", "Component name (required for route)")
+    .option("--skip-generate", "Skip prisma generate after ORM model updates", false)
     .action(
       async (component: string, name: string | undefined, _options: unknown, command: Command) => {
         const flags = getGlobalFlags(command);
+        const local = command.opts() as { skipGenerate?: boolean };
         const cwd = process.cwd();
         logVerbose(flags, `add cwd=${cwd} component=${component} name=${name ?? ""}`);
 
@@ -34,30 +36,61 @@ export function registerAddCommand(program: Command): void {
           return;
         }
 
-        if (flags.dryRun) {
-          console.log(
-            [
-              "root add — dry-run (no files written)",
-              `Project: ${detected.config.projectName}`,
-              `Component: ${component}${name ? ` (${name})` : ""}`,
-              "",
-              "Would run Interconnect Planner (Phases 4–7).",
-            ].join("\n"),
-          );
+        if (component !== "route") {
+          console.error(ERRORS.addComponentNotImplemented(component));
+          process.exitCode = 1;
           return;
         }
 
-        console.log(
-          [
-            "root add — Root project detected",
-            `Project: ${detected.config.projectName}`,
-            `Stack: ${detected.config.language} / ${detected.config.framework} / ${detected.config.orm}`,
-            `Component: ${component}${name ? ` (${name})` : ""}`,
-            "",
-            "Module Graph interconnection arrives in Phases 4–7.",
-            "Contract is valid; modify-mode is allowed.",
-          ].join("\n"),
-        );
+        if (!name) {
+          console.error(ERRORS.addRouteRequiresName());
+          process.exitCode = 1;
+          return;
+        }
+
+        try {
+          const result = await addRoute({
+            projectRoot: cwd,
+            name,
+            dryRun: flags.dryRun,
+            skipGenerate: Boolean(local.skipGenerate) || flags.dryRun,
+          });
+
+          if (flags.dryRun) {
+            console.log(
+              [
+                "root add route — dry-run (no files written)",
+                `Project: ${detected.config.projectName}`,
+                `Route: ${result.slug}`,
+                `Mount: ${result.mountPath}`,
+                `Operations: ${result.ops.length}`,
+                "",
+                ...result.ops.map((op, i) => `  ${i + 1}. ${op.type}`),
+              ].join("\n"),
+            );
+            return;
+          }
+
+          console.log(
+            [
+              "root add route — interconnected",
+              `Project: ${detected.config.projectName}`,
+              `Route: ${result.slug}`,
+              `Mount: ${result.mountPath}`,
+              `Files/ops: ${result.ops.length}`,
+              "",
+              `Try: GET ${result.mountPath}`,
+              `     POST ${result.mountPath}  { "title": "hello" }`,
+            ].join("\n"),
+          );
+        } catch (error) {
+          if (error instanceof AddRouteError) {
+            console.error(error.message);
+            process.exitCode = 1;
+            return;
+          }
+          throw error;
+        }
       },
     );
 }
