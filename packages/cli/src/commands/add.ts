@@ -8,6 +8,7 @@ import {
   addAuth,
   addRoute,
   detectProject,
+  formatOperationPlan,
 } from "@root/core";
 import type { Command } from "commander";
 import { getGlobalFlags, logVerbose } from "../global-flags.js";
@@ -80,7 +81,7 @@ export function registerAddCommand(program: Command): void {
                   `Project: ${detected.config.projectName}`,
                   `Operations: ${result.ops.length}`,
                   "",
-                  ...result.ops.map((op, i) => `  ${i + 1}. ${op.type}`),
+                  ...formatOperationPlan(result.ops).map((line) => `  ${line}`),
                 ].join("\n"),
               );
               return;
@@ -138,7 +139,7 @@ export function registerAddCommand(program: Command): void {
                   `Name: ${result.slug}`,
                   `Operations: ${result.ops.length}`,
                   "",
-                  ...result.ops.map((op, i) => `  ${i + 1}. ${op.type}`),
+                  ...formatOperationPlan(result.ops).map((line) => `  ${line}`),
                 ].join("\n"),
               );
               return;
@@ -192,7 +193,7 @@ export function registerAddCommand(program: Command): void {
                 `Mount: ${result.mountPath}`,
                 `Operations: ${result.ops.length}`,
                 "",
-                ...result.ops.map((op, i) => `  ${i + 1}. ${op.type}`),
+                ...formatOperationPlan(result.ops).map((line) => `  ${line}`),
               ].join("\n"),
             );
             return;

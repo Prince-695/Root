@@ -156,5 +156,10 @@ export async function structureizeExpressTs(options: {
   const rootJsonPath = await writeRootJson(targetDir, rootJson);
   filesWritten.push("root.json");
 
+  // Ensure directory aliases exist even when no template wrote into them yet (e.g. services).
+  for (const key of ["routes", "controllers", "services", "middleware", "db"] as const) {
+    await mkdir(path.join(targetDir, rootJson.aliases[key]), { recursive: true });
+  }
+
   return { filesWritten, rootJsonPath };
 }

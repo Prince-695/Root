@@ -127,6 +127,22 @@ export {
   type TransactionOptions,
 } from "./engine/transaction.js";
 
+export { formatOperationPlan } from "./engine/plan-format.js";
+
+export {
+  ROOT_LOCK_FILENAME,
+  WriteLockError,
+  withProjectWriteLock,
+} from "./engine/write-lock.js";
+
+export {
+  formatDoctorReport,
+  runDoctor,
+  type DoctorIssue,
+  type DoctorResult,
+  type RunDoctorOptions,
+} from "./doctor/run-doctor.js";
+
 export {
   InjectSyntaxError,
   addImport,
