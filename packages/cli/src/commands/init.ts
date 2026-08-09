@@ -1,5 +1,5 @@
 import * as p from "@clack/prompts";
-import { structureizeExpressTs } from "@root/core";
+import { addAuth, structureizeExpressTs } from "@root/core";
 import type { Command } from "commander";
 import { getGlobalFlags, logVerbose } from "../global-flags.js";
 import { detectPackageManager, installDependencies } from "../init/install.js";
@@ -75,8 +75,22 @@ export function registerInitCommand(program: Command): void {
 
         try {
           const result = await structureizeExpressTs({ targetDir, answers });
+          let authOps = 0;
+          if (answers.auth === "jwt") {
+            const authResult = await addAuth({
+              projectRoot: targetDir,
+              skipGenerate: true,
+              runCommand: async () => {},
+            });
+            authOps = authResult.ops.length;
+            for (const warning of authResult.warnings) {
+              console.error(`Warning: ${warning}`);
+            }
+          }
           const elapsedMs = Date.now() - started;
-          spinner.stop(`Generated ${result.filesWritten.length} files in ${elapsedMs}ms`);
+          spinner.stop(
+            `Generated ${result.filesWritten.length} files${authOps > 0 ? ` + auth (${authOps} ops)` : ""} in ${elapsedMs}ms`,
+          );
 
           if (!options.skipInstall) {
             const pm = await detectPackageManager(cwd);
@@ -105,7 +119,7 @@ export function registerInitCommand(program: Command): void {
               "  pnpm dev",
               "",
               "Then:",
-              "  pnpm dlx root@latest add auth",
+              answers.auth === "jwt" ? undefined : "  pnpm dlx root@latest add auth",
               "  pnpm dlx root@latest add route post",
             ]
               .filter((line): line is string => line !== undefined)

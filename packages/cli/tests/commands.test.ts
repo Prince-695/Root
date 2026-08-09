@@ -117,6 +117,25 @@ describe("CLI command guards (Phase 1)", () => {
     await access(path.join(dir, "src/routes/post.routes.ts"));
   });
 
+  it("add auth interconnects JWT module", async () => {
+    const dir = await tempDir("cli-add-auth-");
+    const { structureizeExpressTs, createInitAnswers } = await import("@root/core");
+    await structureizeExpressTs({
+      targetDir: dir,
+      answers: createInitAnswers("auth-cli", { docker: false, database: "none", orm: "none" }),
+    });
+    const log = vi.spyOn(console, "log").mockImplementation(() => {});
+    const program = createProgram();
+
+    await withCwd(dir, async () => {
+      await program.parseAsync(["node", "root", "add", "auth", "--skip-generate"]);
+    });
+
+    expect(process.exitCode ?? 0).toBe(0);
+    expect(log.mock.calls.flat().join("\n")).toMatch(/\/auth/);
+    await access(path.join(dir, "src/middleware/auth.ts"));
+  });
+
   it("add route dry-run lists operations without writing", async () => {
     const dir = await tempDir("cli-add-dry-");
     const { structureizeExpressTs, createInitAnswers } = await import("@root/core");

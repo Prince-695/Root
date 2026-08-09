@@ -1,9 +1,9 @@
-import { AddRouteError, ERRORS, addRoute, detectProject } from "@root/core";
+import { AddAuthError, AddRouteError, ERRORS, addAuth, addRoute, detectProject } from "@root/core";
 import type { Command } from "commander";
 import { getGlobalFlags, logVerbose } from "../global-flags.js";
 
 /**
- * Modify-mode entry. Phase 5: `add route <name>` with full interconnection.
+ * Modify-mode entry. Phase 5–6: `add route` / `add auth` with full interconnection.
  */
 export function registerAddCommand(program: Command): void {
   program
@@ -33,6 +33,55 @@ export function registerAddCommand(program: Command): void {
         if (detected.kind === "root-project-invalid") {
           console.error(ERRORS.addInvalidRootJson(detected.error.message));
           process.exitCode = 1;
+          return;
+        }
+
+        if (component === "auth") {
+          try {
+            const result = await addAuth({
+              projectRoot: cwd,
+              dryRun: flags.dryRun,
+              skipGenerate: Boolean(local.skipGenerate) || flags.dryRun,
+            });
+
+            if (result.warnings.length > 0) {
+              console.error(result.warnings.map((w) => `Warning: ${w}`).join("\n"));
+            }
+
+            if (flags.dryRun) {
+              console.log(
+                [
+                  "root add auth — dry-run (no files written)",
+                  `Project: ${detected.config.projectName}`,
+                  `Operations: ${result.ops.length}`,
+                  "",
+                  ...result.ops.map((op, i) => `  ${i + 1}. ${op.type}`),
+                ].join("\n"),
+              );
+              return;
+            }
+
+            console.log(
+              [
+                "root add auth — interconnected",
+                `Project: ${detected.config.projectName}`,
+                "Mount: /auth (signup | signin | signout)",
+                `Files/ops: ${result.ops.length}`,
+                "",
+                "Set ACCESS_TOKEN_SECRET in .env, then:",
+                '  POST /auth/signup  { "email", "password" }',
+                '  POST /auth/signin  { "email", "password" }',
+                "  Authorization: Bearer <token> on mutating routes",
+              ].join("\n"),
+            );
+          } catch (error) {
+            if (error instanceof AddAuthError) {
+              console.error(error.message);
+              process.exitCode = 1;
+              return;
+            }
+            throw error;
+          }
           return;
         }
 
