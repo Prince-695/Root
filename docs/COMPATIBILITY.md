@@ -1,6 +1,6 @@
 # Compatibility
 
-## Node.js (CLI / `root-scaffold`)
+## Node.js (CLI / `root`)
 
 | Version | Status |
 |---|---|
@@ -16,10 +16,10 @@ Generated Express apps may still declare `node >= 18` in their own `package.json
 
 | Tool | Invoke CLI | Notes |
 |---|---|---|
-| pnpm | `pnpm dlx root-scaffold@latest …` | Primary |
-| npm | `npx root-scaffold@latest …` | Supported |
-| yarn | `yarn dlx root-scaffold@latest …` | Best-effort |
-| bun | `bunx root-scaffold@latest …` | Best-effort |
+| pnpm | `pnpm dlx root@latest …` | Primary |
+| npm | `npx root@latest …` | Supported |
+| yarn | `yarn dlx root@latest …` | Best-effort |
+| bun | `bunx root@latest …` | Best-effort |
 
 ## Generated app stacks (ready)
 

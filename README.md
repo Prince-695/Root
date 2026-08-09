@@ -1,30 +1,56 @@
 # Root
 
-Pure-engineering backend scaffolding CLI (**no AI**) — shadcn-style interconnection for Express backends.
+Pure-engineering backend scaffolding CLI (**no AI**) — capability-oriented interconnection for Express backends.
 
 ## Quick start (empty folder)
 
 ```bash
 mkdir my-api && cd my-api
-pnpm dlx root-scaffold@latest init
+npx root@latest init
 # choose TypeScript or JavaScript + Express, DB/ORM, optional JWT
 
-pnpm dlx root-scaffold@latest add auth          # if not selected at init
-pnpm dlx root-scaffold@latest add route post
+npx root@latest add auth              # if not selected at init
+npx root@latest add resource post
 pnpm install && pnpm dev
 
 # GET /health
 # POST /auth/signup → POST /auth/signin → token
 # POST /api/post with Authorization: Bearer <token>
-pnpm dlx root-scaffold@latest doctor
+npx root@latest doctor
 ```
 
-> **npm name:** unscoped `root` is already taken on the registry. The publishable package is **`root-scaffold`** (bin still named `root`).  
-> npm / yarn: `npx root-scaffold@latest …` / `yarn dlx root-scaffold@latest …`
+Also: `pnpm dlx root@latest …` · `yarn dlx root@latest …` · `bunx root@latest …`
+
+### Command surface
+
+```bash
+npx root@latest init
+npx root@latest add auth
+npx root@latest add resource <name>
+npx root@latest add database <type>      # planned
+npx root@latest add middleware <name>
+npx root@latest add service <name>
+npx root@latest add job <name>           # planned
+npx root@latest add event <name>         # planned
+npx root@latest add storage <type>       # planned
+npx root@latest add cache <type>         # planned
+npx root@latest add module <name>        # planned
+npx root@latest remove <type> <name>     # planned
+npx root@latest list
+npx root@latest inspect <name>
+npx root@latest diff
+npx root@latest doctor
+npx root@latest sync
+npx root@latest --dry-run <command>
+npx root@latest --help
+npx root@latest --version
+```
+
+Root exposes **backend capabilities** (`resource`, `auth`, `database`, …), not low-level MVC file kinds (`model` / `controller` / `route`).
 
 ## Non-coder docs (web)
 
-Black-and-white Bloom-like docs site (React, no backend, no auth):
+Black-and-white Bloom-like docs site (React + Vite + Tailwind + shadcn, no backend, no auth):
 
 ```bash
 pnpm install
@@ -40,7 +66,7 @@ Or read the same narrative in Markdown: [docs/explanation.md](docs/explanation.m
 |---|---|---|
 | `packages/cli` | `@root/cli` | Commander CLI + `root` bin |
 | `packages/core` | `@root/core` | Engine, templates, mutators |
-| `apps/web` | `@root/web` | Docs / landing site (static) |
+| `packages/web` | `@root/web` | Docs / landing site (static) |
 
 ```bash
 pnpm install
@@ -58,7 +84,7 @@ Default branch for ongoing work: **`main`**.
 
 | Script | Meaning |
 |---|---|
-| `pnpm prepare-publish` | Build vendored `release/root-scaffold` |
+| `pnpm prepare-publish` | Build vendored `release/root` |
 | `pnpm pack:audit` | `npm pack` + assert templates/bin/dist |
 | `pnpm pack:smoke` | dlx from local tarball → init/add/doctor + health |
 | `pnpm web` | Docs site dev server |

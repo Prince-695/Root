@@ -2,11 +2,11 @@
 
 | Field | Value |
 |---|---|
-| **App** | `apps/web` (Vite + React + React Router) |
+| **App** | `packages/web` (Vite + React + React Router + Tailwind + shadcn) |
 | **Backend** | None — static UI only |
 | **Auth** | None |
 | **Visual** | Bloom-like skeuomorphism × brutalism, **black & white only** |
-| **Content source** | [`docs/explanation.md`](./explanation.md) + pages under `apps/web/src/content/` |
+| **Content source** | [`docs/explanation.md`](./explanation.md) + pages under `packages/web/src/content/` |
 
 ---
 

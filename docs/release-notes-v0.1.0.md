@@ -1,20 +1,20 @@
 # Root v0.1.0 — Public Preview
 
-Pure-engineering backend scaffolding CLI (**no AI**). Bin name: `root`. npm package name: **`root-scaffold`** (unscoped `root` is taken on npm).
+Pure-engineering backend scaffolding CLI (**no AI**). Bin name: `root`. npm package name: **`root`** (unscoped `root` is taken on npm).
 
 ## Install (when published to npm)
 
 ```bash
-pnpm dlx root-scaffold@latest init
+pnpm dlx root@latest init
 # or
-npx root-scaffold@latest init
+npx root@latest init
 ```
 
 ## Install from this GitHub Release
 
 ```bash
-# download root-scaffold-0.1.0.tgz from Assets, then:
-pnpm dlx ./root-scaffold-0.1.0.tgz --yes init my-api
+# download root-0.1.0.tgz from Assets, then:
+pnpm dlx ./root-0.1.0.tgz --yes init my-api
 ```
 
 ## Local monorepo (contributors)
@@ -38,9 +38,9 @@ pnpm root-cli --help
 
 ```bash
 mkdir my-api && cd my-api
-pnpm dlx root-scaffold@latest init
-pnpm dlx root-scaffold@latest add auth
-pnpm dlx root-scaffold@latest add route post
+pnpm dlx root@latest init
+pnpm dlx root@latest add auth
+pnpm dlx root@latest add resource post
 pnpm install && pnpm dev
-pnpm dlx root-scaffold@latest doctor
+pnpm dlx root@latest doctor
 ```

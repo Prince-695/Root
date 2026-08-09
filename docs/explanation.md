@@ -59,7 +59,7 @@ If you add one piece and forget another, the kitchen looks fine but the doorbell
 
 1. **Empty folder → working API** — You have nothing. You run `init`. You get a project that answers “are you alive?” at `/health`.  
 2. **Add login** — You run `add auth`. Signup and signin doors appear.  
-3. **Add a resource** — You run `add route post`. Create/list/get posts appear, wired to the schema and server. If login exists, creating a post requires a token.  
+3. **Add a resource** — You run `add resource post`. Create/list/get posts appear, wired to the schema and server. If login exists, creating a post requires a token.  
 4. **Check health of the project** — You run `doctor`. Root tells you if files drifted or mounts are missing.  
 5. **Peek before changing** — You run with `--dry-run`. Root shows the plan and writes nothing.
 
@@ -73,7 +73,7 @@ If you add one piece and forget another, the kitchen looks fine but the doorbell
 | **Terminal / command line** | A text window where you type instructions. |
 | **Node.js** | The engine that runs JavaScript on your computer. Root needs a recent Node (22.18+ or 24+). |
 | **pnpm / npm** | Tools that download packages. Think “app store for code libraries.” |
-| **Package / CLI** | A program you run with a short command. Root’s package name is `root-scaffold`; the command name is `root`. |
+| **Package / CLI** | A program you run with a short command. You run Root with `npx root@latest` (package and command: `root`). |
 | **Folder / project** | A directory of files that make up your API. |
 | **`root.json`** | Root’s notebook about *your* project: language, database, which modules were added. |
 | **Route** | A door URL, like `/api/post`. |
@@ -115,13 +115,13 @@ cd my-api
 When the package is on npm:
 
 ```bash
-pnpm dlx root-scaffold@latest init
+pnpm dlx root@latest init
 ```
 
 Or with npm:
 
 ```bash
-npx root-scaffold@latest init
+npx root@latest init
 ```
 
 From this GitHub repo (contributors):
@@ -150,8 +150,8 @@ Open a browser to `http://localhost:3000/health`. You should see a friendly “o
 ### Step E — Add login and a resource
 
 ```bash
-pnpm dlx root-scaffold@latest add auth
-pnpm dlx root-scaffold@latest add route post
+pnpm dlx root@latest add auth
+pnpm dlx root@latest add resource post
 ```
 
 Restart `pnpm dev` if it was already running.
@@ -166,7 +166,7 @@ Restart `pnpm dev` if it was already running.
 ### Step G — Doctor
 
 ```bash
-pnpm dlx root-scaffold@latest doctor
+pnpm dlx root@latest doctor
 ```
 
 If something is wrong, Root prints plain messages about missing files or mounts.
@@ -177,15 +177,15 @@ If something is wrong, Root prints plain messages about missing files or mounts.
 
 | Goal | Command |
 |---|---|
-| Run latest from npm (pnpm) | `pnpm dlx root-scaffold@latest <command>` |
-| Run latest from npm (npm) | `npx root-scaffold@latest <command>` |
-| Init with defaults | `pnpm dlx root-scaffold@latest --yes init` |
-| Init into a named folder | `pnpm dlx root-scaffold@latest init my-api` |
-| Skip installing deps during init | `pnpm dlx root-scaffold@latest init --skip-install` |
+| Run latest from npm (pnpm) | `pnpm dlx root@latest <command>` |
+| Run latest from npm (npm) | `npx root@latest <command>` |
+| Init with defaults | `pnpm dlx root@latest --yes init` |
+| Init into a named folder | `pnpm dlx root@latest init my-api` |
+| Skip installing deps during init | `pnpm dlx root@latest init --skip-install` |
 | Local from this monorepo | `pnpm root-cli <command>` (after `pnpm build`) |
-| From a downloaded release `.tgz` | `pnpm dlx ./root-scaffold-0.1.0.tgz --yes init my-api` |
+| From a downloaded release `.tgz` | `pnpm dlx ./root-0.1.0.tgz --yes init my-api` |
 
-> The **program** you run is named `root`. The **npm package** is named `root-scaffold` because the name `root` was already taken on npm.
+> Invoke with `npx root@latest` (also `pnpm dlx` / `yarn dlx` / `bunx`). Local monorepo: `pnpm root-cli`.
 
 ---
 
@@ -196,9 +196,9 @@ If something is wrong, Root prints plain messages about missing files or mounts.
 **What you type**
 
 ```bash
-pnpm dlx root-scaffold@latest init
+pnpm dlx root@latest init
 # or
-pnpm dlx root-scaffold@latest --yes init my-api
+pnpm dlx root@latest --yes init my-api
 ```
 
 **What it means in real life**  
@@ -239,7 +239,7 @@ Copy `.env.example` → `.env`, install, run `pnpm dev`, hit `/health`.
 **What you type**
 
 ```bash
-pnpm dlx root-scaffold@latest add auth
+pnpm dlx root@latest add auth
 ```
 
 **What it means**  
@@ -266,12 +266,12 @@ Set `ACCESS_TOKEN_SECRET` in `.env`. Restart the server. Try signup/signin.
 
 ---
 
-### 8.3 `add route <name>` — add a resource door
+### 8.3 `add resource <name>` — add an API resource
 
 **What you type**
 
 ```bash
-pnpm dlx root-scaffold@latest add route post
+pnpm dlx root@latest add resource post
 ```
 
 **What it means**  
@@ -294,33 +294,44 @@ Restart (if needed), call `GET /api/post`, then `POST` with a token if auth is o
 
 **Common mistakes**
 
-- Duplicate names (`add route post` twice).  
+- Duplicate names (`add resource post` twice).  
 - Removing the `[ROOT-INJECT:ROUTES]` comment from the server file (doctor will complain).
 
 ---
 
-### 8.4 Atomic adds — one shelf at a time
+### 8.4 Other capabilities
 
 ```bash
-pnpm dlx root-scaffold@latest add model comment
-pnpm dlx root-scaffold@latest add service mailer
-pnpm dlx root-scaffold@latest add middleware rate-limit
-pnpm dlx root-scaffold@latest add controller invoice
+npx root@latest add middleware rate-limit
+npx root@latest add service mailer
+npx root@latest list
+npx root@latest inspect post
+npx root@latest diff
+npx root@latest sync
 ```
 
-**What they mean**  
-Create **only** that piece. Root may warn that it is not fully wired to HTTP yet (unlike `add route`, which wires the full path).
+Middleware/service create shared filters or business-logic modules — they do **not** open a public URL by themselves. Use `add resource` for that. `list` / `inspect` / `diff` / `sync` help you see and verify what Root registered.
 
-**When to use**  
-When you know you want a partial building block and will connect it yourself (or with a later `add route`).
+Planned (names reserved; not implemented yet):
+
+```bash
+npx root@latest add database postgres
+npx root@latest add job send-email
+npx root@latest add event order.created
+npx root@latest add storage s3
+npx root@latest add cache redis
+npx root@latest add module billing
+npx root@latest remove resource post
+```
+
 
 ---
 
 ### 8.5 `doctor` — inspect the kitchen
 
 ```bash
-pnpm dlx root-scaffold@latest doctor
-pnpm dlx root-scaffold@latest doctor --strict
+pnpm dlx root@latest doctor
+pnpm dlx root@latest doctor --strict
 ```
 
 **What it means**  
@@ -336,7 +347,7 @@ After manual edits, merges, or weird errors.
 ### 8.6 `--dry-run` — peek without building
 
 ```bash
-pnpm dlx root-scaffold@latest --dry-run add route comment
+pnpm dlx root@latest --dry-run add resource comment
 ```
 
 **What it means**  
@@ -368,7 +379,7 @@ You
                      └─ on failure → rollback
 ```
 
-That is why `add route` feels magical: it is not one file — it is a **transaction** across many files.
+That is why `add resource` feels magical: it is not one file — it is a **transaction** across many files.
 
 ---
 
@@ -396,12 +407,12 @@ After `init`, you will see something like:
 ## 11. Use-case story: “I want a notes API”
 
 1. `mkdir notes-api && cd notes-api`  
-2. `pnpm dlx root-scaffold@latest --yes init` (or answer the wizard)  
-3. `pnpm dlx root-scaffold@latest add auth`  
-4. `pnpm dlx root-scaffold@latest add route note`  
+2. `pnpm dlx root@latest --yes init` (or answer the wizard)  
+3. `pnpm dlx root@latest add auth`  
+4. `pnpm dlx root@latest add resource note`  
 5. `cp .env.example .env` → set secrets → `pnpm install` → `pnpm dev`  
 6. Sign up → sign in → create a note with the token → list notes  
-7. `pnpm dlx root-scaffold@latest doctor`  
+7. `pnpm dlx root@latest doctor`  
 
 You now have a small, owned backend — not a black box SaaS.
 
@@ -412,6 +423,6 @@ You now have a small, owned backend — not a black box SaaS.
 - **You own the code.** Root is a starter + updater, not a landlord.  
 - **No AI.** Recipes are deterministic.  
 - **Interconnection is the product.** One command, many files, rollback on failure.  
-- **Package name** `root-scaffold`, **command** `root`.  
+- Invoke: `npx root@latest` · capabilities: `add resource`, `add auth`, …  
 
 When something feels scary, run `--dry-run` first, then `doctor` after.
