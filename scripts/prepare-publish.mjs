@@ -102,7 +102,7 @@ const published = {
   },
   files: ["dist", "vendor"],
   engines: {
-    node: ">=18",
+    node: "^22.18.0 || >=24",
   },
   publishConfig: {
     access: "public",

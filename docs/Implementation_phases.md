@@ -715,7 +715,7 @@ Root not only generates — it can **diagnose** and **preview**, and survives me
 - Package name finalized; bin `root` works via dlx
 - README quickstart **only** shows empty-folder dlx flow
 - Versioning policy (semver); changelog
-- Compatibility matrix documented (Node 18/20/22)
+- Compatibility matrix documented (Node 22/24)
 - Optional: `root@next` tag for canaries
 - Smoke test after publish from a clean machine / CI job using **dlx against registry**
 
@@ -736,7 +736,7 @@ Root not only generates — it can **diagnose** and **preview**, and survives me
 | 9.1 | Pack integrity | `npm pack` + inspect tarball | Templates + dist + package.bin present |
 | 9.2 | Registry smoke | From clean env: `pnpm dlx root-scaffold@<published> init --yes` | Boot health 200 |
 | 9.3 | Registry add smoke | `dlx … add auth` + `add route post` | Auth CRUD E2E pass |
-| 9.4 | Node matrix | Run smoke on Node 18, 20, 22 | All pass |
+| 9.4 | Node matrix | Run smoke on Node 22, 24 | All pass |
 | 9.5 | PM matrix | pnpm + npm dlx/npx smoke | Both pass |
 | 9.6 | Docs accuracy | Follow README exactly on clean machine | Success without undocumented steps |
 | 9.7 | No AI claim audit | README/PRD/CLI strings | No AI marketing; “pure engineering” clear |

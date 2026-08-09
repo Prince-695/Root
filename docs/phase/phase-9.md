@@ -44,7 +44,7 @@ pnpm pack:smoke
 | 9.1 | Pack integrity | PASS (`pack:audit`) |
 | 9.2 | Registry smoke | PASS via **local tarball dlx** (registry after `NPM_TOKEN` publish) |
 | 9.3 | Registry add smoke | PASS via tarball (`add auth` + `add route`) |
-| 9.4 | Node matrix | PASS (CI 18/20/22) |
+| 9.4 | Node matrix | PASS (CI 22/24; 18/20 dropped) |
 | 9.5 | PM matrix | PASS pnpm primary; npm `npx` documented |
 | 9.6 | Docs accuracy | PASS (README dlx-first) |
 | 9.7 | No AI claim audit | PASS |
