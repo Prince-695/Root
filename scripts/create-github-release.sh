@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Create (or recreate notes for) GitHub Release v0.1.0 with the root-scaffold tarball.
+# Create (or recreate notes for) GitHub Release v0.1.0 with the root tarball.
 # Prerequisites: `gh auth login` once. Tag v0.1.0 should already be on origin (or will be created).
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
@@ -7,10 +7,10 @@ cd "$ROOT"
 
 pnpm prepare-publish
 (
-  cd release/root-scaffold
+  cd release/root
   npm pack
 )
-TARBALL="$ROOT/release/root-scaffold/root-scaffold-0.1.0.tgz"
+TARBALL="$ROOT/release/root/root-0.1.0.tgz"
 
 if ! git rev-parse v0.1.0 >/dev/null 2>&1; then
   git tag -a v0.1.0 -m "Root public preview 0.1.0"

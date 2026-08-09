@@ -4,7 +4,7 @@ import { fileURLToPath } from "node:url";
 
 /**
  * Resolve a provider templates directory for both monorepo `@root/core`
- * layouts and the published `root-scaffold` pack (templates next to dist).
+ * layouts and the published `root` pack (templates next to dist).
  */
 export function resolveTemplatesRoot(providerFolder: string): string {
   const here = path.dirname(fileURLToPath(import.meta.url));

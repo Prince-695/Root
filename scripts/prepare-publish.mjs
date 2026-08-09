@@ -1,11 +1,9 @@
 #!/usr/bin/env node
 import { execSync } from "node:child_process";
 /**
- * Build a self-contained publish directory for `root-scaffold`.
- *
- * Unscoped `root` / `root-cli` are taken on npm. Public preview package:
- * `root-scaffold` (bin: root). Core is vendored + CLI imports rewritten so a
- * single tarball works with `pnpm dlx` (npm pack strips nested node_modules).
+ * Build a self-contained publish directory for `root` (bin: root).
+ * Core is vendored + CLI imports rewritten so a single tarball works with
+ * `npx root@latest` / `pnpm dlx root@latest`.
  */
 import {
   cpSync,
@@ -21,7 +19,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-const out = path.join(root, "release", "root-scaffold");
+const out = path.join(root, "release", "root");
 const version = "0.1.0";
 
 function readJson(filePath) {
@@ -92,7 +90,7 @@ const cliPkg = readJson(path.join(root, "packages/cli/package.json"));
 const corePkg = readJson(path.join(root, "packages/core/package.json"));
 
 const published = {
-  name: "root-scaffold",
+  name: "root",
   version,
   description:
     "Root — pure-engineering backend scaffolding CLI (shadcn-style for backend). Bin: root.",
@@ -125,20 +123,19 @@ if (existsSync(licenseSrc)) {
 
 writeFileSync(
   path.join(out, "README.md"),
-  `# root-scaffold
+  `# root
 
 Pure-engineering backend scaffolding CLI (**no AI**).
 
 \`\`\`bash
 mkdir my-api && cd my-api
-pnpm dlx root-scaffold@latest init
-pnpm dlx root-scaffold@latest add auth
-pnpm dlx root-scaffold@latest add route post
-pnpm dlx root-scaffold@latest doctor
+npx root@latest init
+npx root@latest add auth
+npx root@latest add resource post
+npx root@latest doctor
 \`\`\`
 
-> npm name note: unscoped \`root\` is already taken on the registry, so the publishable
-> package is \`root-scaffold\` (bin still named \`root\`).
+Also: \`pnpm dlx root@latest\`, \`yarn dlx root@latest\`, \`bunx root@latest\`.
 
 Local monorepo development uses \`pnpm root-cli\` instead of dlx.
 `,

@@ -25,12 +25,17 @@ describe("CLI command guards (Phase 1)", () => {
     vi.restoreAllMocks();
   });
 
-  it("help documents init, add, and doctor", () => {
+  it("help documents capability commands", () => {
     const program = createProgram();
     const byName = Object.fromEntries(program.commands.map((cmd) => [cmd.name(), cmd]));
     expect(program.helpInformation()).toContain("init");
     expect(byName.init?.helpInformation()).toMatch(/folder name|Escape|shadcn/i);
-    expect(byName.add?.helpInformation()).toContain("component");
+    expect(byName.add?.helpInformation()).toMatch(/resource|capability/i);
+    expect(byName.list?.name()).toBe("list");
+    expect(byName.inspect?.name()).toBe("inspect");
+    expect(byName.diff?.name()).toBe("diff");
+    expect(byName.sync?.name()).toBe("sync");
+    expect(byName.remove?.name()).toBe("remove");
     expect(byName.doctor?.helpInformation()).toContain("integrity");
   });
 
@@ -89,14 +94,14 @@ describe("CLI command guards (Phase 1)", () => {
     const program = createProgram();
 
     await withCwd(dir, async () => {
-      await program.parseAsync(["node", "root", "add", "route", "post"]);
+      await program.parseAsync(["node", "root", "add", "resource", "post"]);
     });
 
     expect(process.exitCode).toBe(1);
     expect(err.mock.calls.flat().join("\n")).toMatch(/init/i);
   });
 
-  it("add route interconnects a generated Root project", async () => {
+  it("add resource interconnects a generated Root project", async () => {
     const dir = await tempDir("cli-add-ok-");
     const { structureizeExpressTs, createInitAnswers } = await import("@root/core");
     await structureizeExpressTs({
@@ -107,7 +112,7 @@ describe("CLI command guards (Phase 1)", () => {
     const program = createProgram();
 
     await withCwd(dir, async () => {
-      await program.parseAsync(["node", "root", "add", "route", "post", "--skip-generate"]);
+      await program.parseAsync(["node", "root", "add", "resource", "post", "--skip-generate"]);
     });
 
     expect(process.exitCode ?? 0).toBe(0);
@@ -117,7 +122,7 @@ describe("CLI command guards (Phase 1)", () => {
     await access(path.join(dir, "src/routes/post.routes.ts"));
   });
 
-  it("add model / service register atomic modules", async () => {
+  it("add service registers a service capability", async () => {
     const dir = await tempDir("cli-add-atomic-");
     const { structureizeExpressTs, createInitAnswers } = await import("@root/core");
     await structureizeExpressTs({
@@ -129,7 +134,6 @@ describe("CLI command guards (Phase 1)", () => {
     const program = createProgram();
 
     await withCwd(dir, async () => {
-      await program.parseAsync(["node", "root", "add", "model", "note", "--skip-generate"]);
       await program.parseAsync(["node", "root", "add", "service", "mailer", "--skip-generate"]);
     });
 
@@ -174,7 +178,46 @@ describe("CLI command guards (Phase 1)", () => {
     await access(path.join(dir, "src/middleware/auth.ts"));
   });
 
-  it("add route dry-run lists operations without writing", async () => {
+  it("add route alias maps to resource", async () => {
+    const dir = await tempDir("cli-add-alias-");
+    const { structureizeExpressTs, createInitAnswers } = await import("@root/core");
+    await structureizeExpressTs({
+      targetDir: dir,
+      answers: createInitAnswers("alias-api", { docker: false, database: "none", orm: "none" }),
+    });
+    const log = vi.spyOn(console, "log").mockImplementation(() => {});
+    const err = vi.spyOn(console, "error").mockImplementation(() => {});
+    const program = createProgram();
+
+    await withCwd(dir, async () => {
+      await program.parseAsync(["node", "root", "add", "route", "note", "--skip-generate"]);
+    });
+
+    expect(process.exitCode ?? 0).toBe(0);
+    expect(err.mock.calls.flat().join("\n")).toMatch(/add resource/i);
+    expect(log.mock.calls.flat().join("\n")).toMatch(/add resource/);
+    await access(path.join(dir, "src/routes/note.routes.ts"));
+  });
+
+  it("add database reports not implemented", async () => {
+    const dir = await tempDir("cli-add-planned-");
+    const { structureizeExpressTs, createInitAnswers } = await import("@root/core");
+    await structureizeExpressTs({
+      targetDir: dir,
+      answers: createInitAnswers("planned-api", { docker: false, database: "none", orm: "none" }),
+    });
+    const err = vi.spyOn(console, "error").mockImplementation(() => {});
+    const program = createProgram();
+
+    await withCwd(dir, async () => {
+      await program.parseAsync(["node", "root", "add", "database", "postgres"]);
+    });
+
+    expect(process.exitCode).toBe(1);
+    expect(err.mock.calls.flat().join("\n")).toMatch(/not available yet/i);
+  });
+
+  it("add resource dry-run lists operations without writing", async () => {
     const dir = await tempDir("cli-add-dry-");
     const { structureizeExpressTs, createInitAnswers } = await import("@root/core");
     await structureizeExpressTs({
@@ -185,12 +228,40 @@ describe("CLI command guards (Phase 1)", () => {
     const program = createProgram();
 
     await withCwd(dir, async () => {
-      await program.parseAsync(["node", "root", "--dry-run", "add", "route", "post"]);
+      await program.parseAsync(["node", "root", "--dry-run", "add", "resource", "post"]);
     });
 
     expect(process.exitCode ?? 0).toBe(0);
     expect(log.mock.calls.flat().join("\n")).toMatch(/dry-run/i);
     await expect(access(path.join(dir, "src/routes/post.routes.ts"))).rejects.toThrow();
+  });
+
+  it("list and inspect work on a project with a resource", async () => {
+    const dir = await tempDir("cli-list-");
+    const { structureizeExpressTs, createInitAnswers, addRoute } = await import("@root/core");
+    await structureizeExpressTs({
+      targetDir: dir,
+      answers: createInitAnswers("list-api", { docker: false, database: "none", orm: "none" }),
+    });
+    await addRoute({
+      projectRoot: dir,
+      name: "post",
+      skipGenerate: true,
+      runCommand: async () => {},
+    });
+    const log = vi.spyOn(console, "log").mockImplementation(() => {});
+    const program = createProgram();
+
+    await withCwd(dir, async () => {
+      await program.parseAsync(["node", "root", "list"]);
+      await program.parseAsync(["node", "root", "inspect", "post"]);
+    });
+
+    expect(process.exitCode ?? 0).toBe(0);
+    const out = log.mock.calls.flat().join("\n");
+    expect(out).toMatch(/root list/);
+    expect(out).toMatch(/\bpost\b/);
+    expect(out).toMatch(/root inspect/);
   });
 
   it("doctor validates root.json and fails on invalid contract", async () => {

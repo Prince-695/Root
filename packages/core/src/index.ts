@@ -8,11 +8,30 @@ export {
   ROOT_ENGINE_NAME,
   ROOT_ENGINE_VERSION,
   ROOT_NPM_PACKAGE,
+  rootInvoke,
+  rootInvokeAll,
 } from "./constants.js";
 
-export type RootCommandName = "init" | "add" | "doctor";
+export type RootCommandName =
+  | "init"
+  | "add"
+  | "remove"
+  | "list"
+  | "inspect"
+  | "diff"
+  | "doctor"
+  | "sync";
 
-export const ROOT_COMMANDS: readonly RootCommandName[] = ["init", "add", "doctor"] as const;
+export const ROOT_COMMANDS: readonly RootCommandName[] = [
+  "init",
+  "add",
+  "remove",
+  "list",
+  "inspect",
+  "diff",
+  "doctor",
+  "sync",
+] as const;
 
 /** Human-readable one-liner used by the CLI welcome/help path. */
 export function getEngineBanner(): string {

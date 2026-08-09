@@ -107,7 +107,7 @@ export async function addRoute(options: AddRouteOptions): Promise<AddRouteResult
       throw new AddRouteError(error.message, "locked");
     }
     const message = error instanceof Error ? error.message : String(error);
-    throw new AddRouteError(`add route failed and was rolled back: ${message}`, "apply-failed");
+    throw new AddRouteError(`add resource failed and was rolled back: ${message}`, "apply-failed");
   }
 
   return { ops, slug: names.slug, mountPath: names.mountPath, dryRun: false };

@@ -1,4 +1,4 @@
-/** Shared naming rules for add route/model/service/middleware/controller. */
+/** Shared naming rules for add resource/service/middleware (and internal atomic kinds). */
 export function normalizeModuleName(name: string): string {
   return name
     .trim()

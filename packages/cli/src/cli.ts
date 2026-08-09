@@ -3,27 +3,50 @@ import { pathToFileURL } from "node:url";
 import { getEngineBanner } from "@root/core";
 import { Command } from "commander";
 import { registerAddCommand } from "./commands/add.js";
+import { registerDiffCommand } from "./commands/diff.js";
 import { registerDoctorCommand } from "./commands/doctor.js";
 import { registerInitCommand } from "./commands/init.js";
+import { registerInspectCommand } from "./commands/inspect.js";
+import { registerListCommand } from "./commands/list.js";
+import { registerRemoveCommand } from "./commands/remove.js";
+import { registerSyncCommand } from "./commands/sync.js";
 
 export function createProgram(): Command {
   const program = new Command();
 
   program
     .name("root")
-    .description(
-      "Pure-engineering backend scaffolding CLI (shadcn-style for backend). Primary UX: pnpm dlx root-scaffold@latest",
-    )
+    .description("Pure-engineering backend scaffolding CLI. Primary UX: npx root@latest <command>")
     .version("0.1.0")
     .option("-v, --verbose", "Enable verbose logging", false)
     .option("--dry-run", "Preview actions without writing files", false)
     .option("--yes", "Skip confirmation prompts where safe", false);
 
   program.addHelpText("beforeAll", `${getEngineBanner()}\n`);
+  program.addHelpText(
+    "after",
+    [
+      "",
+      "Examples:",
+      "  $ npx root@latest init",
+      "  $ npx root@latest add auth",
+      "  $ npx root@latest add resource post",
+      "  $ npx root@latest list",
+      "  $ npx root@latest doctor",
+      "  $ npx root@latest --dry-run add resource comment",
+      "",
+      "Also: pnpm dlx root@latest … · yarn dlx root@latest … · bunx root@latest …",
+    ].join("\n"),
+  );
 
   registerInitCommand(program);
   registerAddCommand(program);
+  registerRemoveCommand(program);
+  registerListCommand(program);
+  registerInspectCommand(program);
+  registerDiffCommand(program);
   registerDoctorCommand(program);
+  registerSyncCommand(program);
 
   return program;
 }

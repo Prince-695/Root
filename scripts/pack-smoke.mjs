@@ -33,7 +33,7 @@ function freePort() {
 }
 
 execSync("node scripts/prepare-publish.mjs", { cwd: root, stdio: "inherit" });
-const releaseDir = path.join(root, "release", "root-scaffold");
+const releaseDir = path.join(root, "release", "root");
 const packJson = execSync("npm pack --json", { cwd: releaseDir, encoding: "utf8" });
 const [{ filename }] = JSON.parse(packJson);
 const tarball = path.join(releaseDir, filename);
@@ -85,7 +85,7 @@ const server = app.listen(${port}, "127.0.0.1", async () => {
   run("pnpm exec tsx _smoke_probe.mts", project);
 
   run(`pnpm dlx ${JSON.stringify(tarball)} add auth`, project);
-  run(`pnpm dlx ${JSON.stringify(tarball)} add route post`, project);
+  run(`pnpm dlx ${JSON.stringify(tarball)} add resource post`, project);
   run(`pnpm dlx ${JSON.stringify(tarball)} doctor`, project);
 
   const rootJson = JSON.parse(readFileSync(path.join(project, "root.json"), "utf8"));

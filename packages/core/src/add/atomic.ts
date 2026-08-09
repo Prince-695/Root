@@ -69,7 +69,7 @@ function warningsFor(
   const warnings: string[] = [];
   if (kind === "service") {
     warnings.push(
-      `Service "${slug}" is not wired to HTTP yet. Add a controller/route (or use \`add route ${slug}\`) to expose it.`,
+      `Service "${slug}" is not wired to HTTP yet. Use \`add resource ${slug}\` to expose it over HTTP.`,
     );
   }
   if (kind === "controller") {
@@ -78,7 +78,7 @@ function warningsFor(
     );
     if (!hasRoute) {
       warnings.push(
-        `Controller "${slug}" has no matching route module. Create \`add route ${slug}\` (or a route file) to mount handlers.`,
+        `Controller "${slug}" has no matching resource module. Use \`add resource ${slug}\` to mount handlers.`,
       );
     }
   }
@@ -89,7 +89,7 @@ function warningsFor(
   }
   if (kind === "model") {
     warnings.push(
-      `Model "${slug}" updates schema/ORM only — no HTTP surface. Use \`add route ${slug}\` for a full resource.`,
+      `Model "${slug}" updates schema/ORM only — no HTTP surface. Use \`add resource ${slug}\` for a full resource.`,
     );
   }
   return warnings;

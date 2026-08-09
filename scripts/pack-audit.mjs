@@ -12,7 +12,7 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 
 execSync("node scripts/prepare-publish.mjs", { cwd: root, stdio: "inherit" });
 
-const releaseDir = path.join(root, "release", "root-scaffold");
+const releaseDir = path.join(root, "release", "root");
 const packDir = mkdtempSync(path.join(tmpdir(), "root-pack-"));
 
 try {
@@ -62,7 +62,7 @@ try {
   }
 
   const pkg = JSON.parse(readFileSync(path.join(base, "package.json"), "utf8"));
-  if (pkg.name !== "root-scaffold" || !pkg.bin?.root) {
+  if (pkg.name !== "root" || !pkg.bin?.root) {
     console.error("Pack audit FAILED: bad package.json name/bin");
     process.exit(1);
   }

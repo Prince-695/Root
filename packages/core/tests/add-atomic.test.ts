@@ -70,7 +70,7 @@ describe("atomic adds (Phase 7)", () => {
       skipGenerate: true,
       runCommand: async () => {},
     });
-    expect(controller.warnings.some((w) => /no matching route/i.test(w))).toBe(true);
+    expect(controller.warnings.some((w) => /no matching resource/i.test(w))).toBe(true);
     await access(path.join(dir, "src/controllers/invoice.controller.ts"));
 
     const root = JSON.parse(await readFile(path.join(dir, "root.json"), "utf8")) as {

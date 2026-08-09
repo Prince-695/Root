@@ -119,8 +119,8 @@ export function registerInitCommand(program: Command): void {
               "  pnpm dev",
               "",
               "Then:",
-              answers.auth === "jwt" ? undefined : "  pnpm dlx root-scaffold@latest add auth",
-              "  pnpm dlx root-scaffold@latest add route post",
+              answers.auth === "jwt" ? undefined : "  npx root@latest add auth",
+              "  npx root@latest add resource post",
             ]
               .filter((line): line is string => line !== undefined)
               .join("\n"),

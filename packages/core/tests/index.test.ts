@@ -13,8 +13,17 @@ describe("@root/core", () => {
     expect(ROOT_ENGINE_VERSION).toBe("0.1.0");
   });
 
-  it("lists the Phase 0 command surface", () => {
-    expect(ROOT_COMMANDS).toEqual(["init", "add", "doctor"]);
+  it("lists the public command surface", () => {
+    expect(ROOT_COMMANDS).toEqual([
+      "init",
+      "add",
+      "remove",
+      "list",
+      "inspect",
+      "diff",
+      "doctor",
+      "sync",
+    ]);
   });
 
   it("builds a welcome banner", () => {
@@ -25,6 +34,7 @@ describe("@root/core", () => {
   it("type-guards known commands", () => {
     expect(isRootCommand("init")).toBe(true);
     expect(isRootCommand("add")).toBe(true);
+    expect(isRootCommand("list")).toBe(true);
     expect(isRootCommand("doctor")).toBe(true);
     expect(isRootCommand("unknown")).toBe(false);
   });

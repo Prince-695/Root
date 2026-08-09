@@ -2,223 +2,288 @@ import {
   AddAtomicError,
   AddAuthError,
   AddRouteError,
-  type AtomicKind,
   ERRORS,
   addAtomic,
   addAuth,
   addRoute,
-  detectProject,
   formatOperationPlan,
 } from "@root/core";
 import type { Command } from "commander";
 import { getGlobalFlags, logVerbose } from "../global-flags.js";
+import { requireRootProject } from "../lib/require-root-project.js";
 
-const ATOMIC_KINDS = new Set<AtomicKind>(["model", "service", "middleware", "controller"]);
+/** Public capability surface (backend capabilities, not MVC file kinds). */
+const READY_CAPABILITIES = new Set(["resource", "auth", "middleware", "service"]);
+
+const PLANNED_CAPABILITIES = new Set(["database", "job", "event", "storage", "cache", "module"]);
+
+/** Hidden aliases → public capability (kept for one release). */
+const ALIASES: Record<string, string> = {
+  route: "resource",
+};
 
 /**
- * Modify-mode entry: route, auth, and atomic model/service/middleware/controller.
+ * `root add <capability> [name]` — capability-oriented interconnection.
  */
 export function registerAddCommand(program: Command): void {
   program
     .command("add")
-    .description("Register a module into an existing Root project (full interconnection)")
+    .description("Add a backend capability with full interconnection")
     .argument(
-      "<component>",
-      "Component type: route | auth | model | service | middleware | controller",
+      "<capability>",
+      "resource | auth | database | middleware | service | job | event | storage | cache | module",
     )
-    .argument("[name]", "Component name (required except for auth)")
-    .option("--skip-generate", "Skip prisma generate after ORM model updates", false)
+    .argument("[name]", "Name or type argument (required except for auth)")
+    .option("--skip-generate", "Skip prisma generate after ORM updates", false)
     .addHelpText(
       "after",
       [
         "",
         "Examples:",
         "  $ root add auth",
-        "  $ root add route post",
-        "  $ root add model comment",
-        "  $ root add service mailer",
+        "  $ root add resource post",
         "  $ root add middleware rate-limit",
-        "  $ root add controller invoice",
+        "  $ root add service mailer",
+        "  $ root add database postgres   (planned)",
+        "",
+        "Runners:",
+        "  npx root@latest add resource post",
+        "  pnpm dlx root@latest add auth",
+        "  yarn dlx root@latest add resource post",
+        "  bunx root@latest add resource post",
       ].join("\n"),
     )
     .action(
-      async (component: string, name: string | undefined, _options: unknown, command: Command) => {
+      async (
+        capabilityArg: string,
+        name: string | undefined,
+        _options: unknown,
+        command: Command,
+      ) => {
         const flags = getGlobalFlags(command);
         const local = command.opts() as { skipGenerate?: boolean };
         const cwd = process.cwd();
-        logVerbose(flags, `add cwd=${cwd} component=${component} name=${name ?? ""}`);
 
-        const detected = await detectProject(cwd);
-
-        if (detected.kind === "empty-safe" || detected.kind === "foreign") {
-          console.error(ERRORS.addRequiresRootProject(detected.cwd));
-          process.exitCode = 1;
-          return;
-        }
-
-        if (detected.kind === "root-project-invalid") {
-          console.error(ERRORS.addInvalidRootJson(detected.error.message));
-          process.exitCode = 1;
-          return;
-        }
-
-        if (component === "auth") {
-          try {
-            const result = await addAuth({
-              projectRoot: cwd,
-              dryRun: flags.dryRun,
-              skipGenerate: Boolean(local.skipGenerate) || flags.dryRun,
-            });
-
-            if (result.warnings.length > 0) {
-              console.error(result.warnings.map((w) => `Warning: ${w}`).join("\n"));
-            }
-
-            if (flags.dryRun) {
-              console.log(
-                [
-                  "root add auth — dry-run (no files written)",
-                  `Project: ${detected.config.projectName}`,
-                  `Operations: ${result.ops.length}`,
-                  "",
-                  ...formatOperationPlan(result.ops).map((line) => `  ${line}`),
-                ].join("\n"),
-              );
-              return;
-            }
-
-            console.log(
-              [
-                "root add auth — interconnected",
-                `Project: ${detected.config.projectName}`,
-                "Mount: /auth (signup | signin | signout)",
-                `Files/ops: ${result.ops.length}`,
-                "",
-                "Set ACCESS_TOKEN_SECRET in .env, then:",
-                '  POST /auth/signup  { "email", "password" }',
-                '  POST /auth/signin  { "email", "password" }',
-                "  Authorization: Bearer <token> on mutating routes",
-              ].join("\n"),
-            );
-          } catch (error) {
-            if (error instanceof AddAuthError) {
-              console.error(error.message);
-              process.exitCode = 1;
-              return;
-            }
-            throw error;
-          }
-          return;
-        }
-
-        if (ATOMIC_KINDS.has(component as AtomicKind)) {
-          if (!name) {
-            console.error(ERRORS.addRequiresName(component));
-            process.exitCode = 1;
-            return;
-          }
-
-          try {
-            const result = await addAtomic({
-              projectRoot: cwd,
-              kind: component as AtomicKind,
-              name,
-              dryRun: flags.dryRun,
-              skipGenerate: Boolean(local.skipGenerate) || flags.dryRun,
-            });
-
-            if (result.warnings.length > 0) {
-              console.error(result.warnings.map((w) => `Warning: ${w}`).join("\n"));
-            }
-
-            if (flags.dryRun) {
-              console.log(
-                [
-                  `root add ${component} — dry-run (no files written)`,
-                  `Project: ${detected.config.projectName}`,
-                  `Name: ${result.slug}`,
-                  `Operations: ${result.ops.length}`,
-                  "",
-                  ...formatOperationPlan(result.ops).map((line) => `  ${line}`),
-                ].join("\n"),
-              );
-              return;
-            }
-
-            console.log(
-              [
-                `root add ${component} — registered`,
-                `Project: ${detected.config.projectName}`,
-                `Name: ${result.slug}`,
-                `Files/ops: ${result.ops.length}`,
-              ].join("\n"),
-            );
-          } catch (error) {
-            if (error instanceof AddAtomicError) {
-              console.error(error.message);
-              process.exitCode = 1;
-              return;
-            }
-            throw error;
-          }
-          return;
-        }
-
-        if (component !== "route") {
-          console.error(ERRORS.addComponentNotImplemented(component));
-          process.exitCode = 1;
-          return;
-        }
-
-        if (!name) {
-          console.error(ERRORS.addRouteRequiresName());
-          process.exitCode = 1;
-          return;
-        }
-
-        try {
-          const result = await addRoute({
-            projectRoot: cwd,
-            name,
-            dryRun: flags.dryRun,
-            skipGenerate: Boolean(local.skipGenerate) || flags.dryRun,
-          });
-
-          if (flags.dryRun) {
-            console.log(
-              [
-                "root add route — dry-run (no files written)",
-                `Project: ${detected.config.projectName}`,
-                `Route: ${result.slug}`,
-                `Mount: ${result.mountPath}`,
-                `Operations: ${result.ops.length}`,
-                "",
-                ...formatOperationPlan(result.ops).map((line) => `  ${line}`),
-              ].join("\n"),
-            );
-            return;
-          }
-
-          console.log(
-            [
-              "root add route — interconnected",
-              `Project: ${detected.config.projectName}`,
-              `Route: ${result.slug}`,
-              `Mount: ${result.mountPath}`,
-              `Files/ops: ${result.ops.length}`,
-              "",
-              `Try: GET ${result.mountPath}`,
-              `     POST ${result.mountPath}  { "title": "hello" }`,
-            ].join("\n"),
+        let capability = capabilityArg.toLowerCase();
+        const aliasTarget = ALIASES[capability];
+        if (aliasTarget) {
+          console.error(
+            `Note: "add ${capability}" is now "add ${aliasTarget}". Using ${aliasTarget}.`,
           );
-        } catch (error) {
-          if (error instanceof AddRouteError) {
-            console.error(error.message);
+          capability = aliasTarget;
+        }
+
+        logVerbose(flags, `add cwd=${cwd} capability=${capability} name=${name ?? ""}`);
+
+        const project = await requireRootProject(cwd, "add");
+        if (!project) return;
+
+        if (PLANNED_CAPABILITIES.has(capability)) {
+          console.error(ERRORS.addCapabilityNotImplemented(capability));
+          process.exitCode = 1;
+          return;
+        }
+
+        if (!READY_CAPABILITIES.has(capability)) {
+          console.error(ERRORS.addUnknownCapability(capability));
+          process.exitCode = 1;
+          return;
+        }
+
+        if (capability === "auth") {
+          await runAddAuth(project.config.projectName, cwd, flags.dryRun, local.skipGenerate);
+          return;
+        }
+
+        if (capability === "resource") {
+          if (!name) {
+            console.error(ERRORS.addResourceRequiresName());
             process.exitCode = 1;
             return;
           }
-          throw error;
+          await runAddResource(
+            project.config.projectName,
+            cwd,
+            name,
+            flags.dryRun,
+            local.skipGenerate,
+          );
+          return;
+        }
+
+        if (capability === "middleware" || capability === "service") {
+          if (!name) {
+            console.error(ERRORS.addRequiresName(capability));
+            process.exitCode = 1;
+            return;
+          }
+          await runAddAtomic(
+            project.config.projectName,
+            cwd,
+            capability,
+            name,
+            flags.dryRun,
+            local.skipGenerate,
+          );
         }
       },
     );
+}
+
+async function runAddAuth(
+  projectName: string,
+  cwd: string,
+  dryRun: boolean,
+  skipGenerate?: boolean,
+): Promise<void> {
+  try {
+    const result = await addAuth({
+      projectRoot: cwd,
+      dryRun,
+      skipGenerate: Boolean(skipGenerate) || dryRun,
+    });
+
+    if (result.warnings.length > 0) {
+      console.error(result.warnings.map((w) => `Warning: ${w}`).join("\n"));
+    }
+
+    if (dryRun) {
+      console.log(
+        [
+          "root add auth — dry-run (no files written)",
+          `Project: ${projectName}`,
+          `Operations: ${result.ops.length}`,
+          "",
+          ...formatOperationPlan(result.ops).map((line) => `  ${line}`),
+        ].join("\n"),
+      );
+      return;
+    }
+
+    console.log(
+      [
+        "root add auth — interconnected",
+        `Project: ${projectName}`,
+        "Mount: /auth (signup | signin | signout)",
+        `Files/ops: ${result.ops.length}`,
+        "",
+        "Set ACCESS_TOKEN_SECRET in .env, then:",
+        '  POST /auth/signup  { "email", "password" }',
+        '  POST /auth/signin  { "email", "password" }',
+        "  Authorization: Bearer <token> on mutating resources",
+      ].join("\n"),
+    );
+  } catch (error) {
+    if (error instanceof AddAuthError) {
+      console.error(error.message);
+      process.exitCode = 1;
+      return;
+    }
+    throw error;
+  }
+}
+
+async function runAddResource(
+  projectName: string,
+  cwd: string,
+  name: string,
+  dryRun: boolean,
+  skipGenerate?: boolean,
+): Promise<void> {
+  try {
+    const result = await addRoute({
+      projectRoot: cwd,
+      name,
+      dryRun,
+      skipGenerate: Boolean(skipGenerate) || dryRun,
+    });
+
+    if (dryRun) {
+      console.log(
+        [
+          "root add resource — dry-run (no files written)",
+          `Project: ${projectName}`,
+          `Resource: ${result.slug}`,
+          `Mount: ${result.mountPath}`,
+          `Operations: ${result.ops.length}`,
+          "",
+          ...formatOperationPlan(result.ops).map((line) => `  ${line}`),
+        ].join("\n"),
+      );
+      return;
+    }
+
+    console.log(
+      [
+        "root add resource — interconnected",
+        `Project: ${projectName}`,
+        `Resource: ${result.slug}`,
+        `Mount: ${result.mountPath}`,
+        `Files/ops: ${result.ops.length}`,
+        "",
+        `Try: GET ${result.mountPath}`,
+        `     POST ${result.mountPath}  { "title": "hello" }`,
+      ].join("\n"),
+    );
+  } catch (error) {
+    if (error instanceof AddRouteError) {
+      console.error(error.message);
+      process.exitCode = 1;
+      return;
+    }
+    throw error;
+  }
+}
+
+async function runAddAtomic(
+  projectName: string,
+  cwd: string,
+  kind: "middleware" | "service",
+  name: string,
+  dryRun: boolean,
+  skipGenerate?: boolean,
+): Promise<void> {
+  try {
+    const result = await addAtomic({
+      projectRoot: cwd,
+      kind,
+      name,
+      dryRun,
+      skipGenerate: Boolean(skipGenerate) || dryRun,
+    });
+
+    if (result.warnings.length > 0) {
+      console.error(result.warnings.map((w) => `Warning: ${w}`).join("\n"));
+    }
+
+    if (dryRun) {
+      console.log(
+        [
+          `root add ${kind} — dry-run (no files written)`,
+          `Project: ${projectName}`,
+          `Name: ${result.slug}`,
+          `Operations: ${result.ops.length}`,
+          "",
+          ...formatOperationPlan(result.ops).map((line) => `  ${line}`),
+        ].join("\n"),
+      );
+      return;
+    }
+
+    console.log(
+      [
+        `root add ${kind} — registered`,
+        `Project: ${projectName}`,
+        `Name: ${result.slug}`,
+        `Files/ops: ${result.ops.length}`,
+      ].join("\n"),
+    );
+  } catch (error) {
+    if (error instanceof AddAtomicError) {
+      console.error(error.message);
+      process.exitCode = 1;
+      return;
+    }
+    throw error;
+  }
 }

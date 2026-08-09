@@ -142,7 +142,7 @@ export async function runDoctor(options: RunDoctorOptions): Promise<DoctorResult
       issues.push(
         issue(
           "anchor-missing",
-          `Inject anchor "${config.inject.routesAnchor}" not found in ${serverRel}. Re-add the Root inject comment so \`add route\` can mount routers.`,
+          `Inject anchor "${config.inject.routesAnchor}" not found in ${serverRel}. Re-add the Root inject comment so \`add resource\` can mount routers.`,
         ),
       );
     }
@@ -254,7 +254,7 @@ export async function runDoctor(options: RunDoctorOptions): Promise<DoctorResult
   );
   if (authJwt && !authModule) {
     const msg =
-      'root.json has auth: "jwt" but modules.auth is missing. Run: pnpm dlx root-scaffold@latest add auth';
+      'root.json has auth: "jwt" but modules.auth is missing. Run: pnpm dlx root@latest add auth';
     issues.push(issue("auth-consistency", msg, options.strict ? "error" : "warning"));
     if (options.strict) bump(false);
     else bump(true);

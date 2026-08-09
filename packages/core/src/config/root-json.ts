@@ -80,7 +80,7 @@ export async function loadRootJson(projectRoot: string): Promise<RootJson> {
     raw = await readFile(filePath, "utf8");
   } catch {
     throw new Error(
-      `No ${ROOT_JSON_FILENAME} found in ${projectRoot}.\nRun: pnpm dlx root-scaffold@latest init`,
+      `No ${ROOT_JSON_FILENAME} found in ${projectRoot}.\nRun: pnpm dlx root@latest init`,
     );
   }
 

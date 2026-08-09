@@ -2,8 +2,7 @@ import type { RootJson } from "../config/root-json.js";
 import type { ZodField } from "../engine/operations.js";
 import { toCamelCase, toPascalCase } from "../registry/types.js";
 
-const PRISMA_BANNER =
-  "// Models are added by `pnpm dlx root-scaffold@latest add model|route <name>`";
+const PRISMA_BANNER = "// Models are added by `npx root@latest add resource <name>`";
 
 function createFields(fields: ZodField[]): ZodField[] {
   return fields.filter((f) => !["id", "createdAt", "updatedAt"].includes(f.name));
