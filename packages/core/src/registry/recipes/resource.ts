@@ -1,11 +1,16 @@
 import type { Operation } from "../../engine/operations.js";
+import {
+  buildResourceFiles,
+  defaultResourceZodFields,
+  resolveResourceNames,
+  serverRouteImportSource,
+} from "../codegen/resource-files.js";
 import type { Recipe } from "../types.js";
-import { schemaExportName, toCamelCase } from "../types.js";
 
-/** Registers a CRUD-ish resource: schema + route file + server mount. */
+/** Registers a layered resource: schema + MVC files + server mount + ORM model. */
 export const resourceRecipe: Recipe = {
   id: "resource",
-  description: "Named API resource with Zod schema and Express route mount",
+  description: "Named API resource with Zod schema, MVC files, and Express route mount",
   registryDependencies: ["schema", "validate"],
   plan(ctx) {
     const resourceName = ctx.resourceName;
@@ -13,42 +18,44 @@ export const resourceRecipe: Recipe = {
       throw new Error("resource recipe requires resourceName");
     }
 
-    const fields = ctx.fields ?? [{ name: "title", zodType: "z.string().min(1)" }];
-    const camel = toCamelCase(resourceName);
-    const exportName = schemaExportName(resourceName);
-    const mountPath = ctx.mountPath ?? `/api/${camel}`;
-    const routesDir = ctx.graph.config.aliases.routes;
-    const routeFile = `${routesDir}/${camel}.routes.ts`;
-    const routerExport = `${camel}Router`;
-    const serverRel = ctx.graph.config.aliases.server;
-    const anchor = ctx.graph.config.inject.routesAnchor;
-    const mountLine = `app.use("${mountPath}", ${routerExport});`;
-
-    if (ctx.graph.config.modules[resourceName]) {
+    const names = resolveResourceNames(resourceName, ctx.mountPath);
+    if (ctx.graph.config.modules[names.slug]) {
       return [];
     }
+
+    const fields = ctx.fields ?? defaultResourceZodFields();
+    const files = buildResourceFiles({
+      config: ctx.graph.config,
+      names,
+      fields,
+    });
+    const serverRel = ctx.graph.config.aliases.server;
+    const anchor = ctx.graph.config.inject.routesAnchor;
+    const mountLine = `app.use("${names.mountPath}", ${names.routerExport});`;
+    const addedAt = ctx.addedAt ?? "1970-01-01T00:00:00.000Z";
 
     const ops: Operation[] = [
       {
         type: "createFile",
-        path: routeFile,
-        content: `import { Router } from "express";
-import { ${exportName} } from "../schema.js";
-import { validate } from "../middleware/validate.js";
-
-export const ${routerExport} = Router();
-
-${routerExport}.post("/", validate(${exportName}), (_req, res) => {
-  res.status(201).json({ ok: true, resource: "${camel}" });
-});
-`,
+        path: files.routePath,
+        content: files.routeContent,
+      },
+      {
+        type: "createFile",
+        path: files.controllerPath,
+        content: files.controllerContent,
+      },
+      {
+        type: "createFile",
+        path: files.servicePath,
+        content: files.serviceContent,
       },
       {
         type: "patchFile",
         path: serverRel,
         kind: "ast-import",
-        source: `./routes/${camel}.routes.js`,
-        specifiers: [routerExport],
+        source: serverRouteImportSource(ctx.graph.config, names.slug),
+        specifiers: [names.routerExport],
       },
       {
         type: "patchFile",
@@ -61,18 +68,48 @@ ${routerExport}.post("/", validate(${exportName}), (_req, res) => {
       {
         type: "updateSchema",
         kind: "resource",
-        resourceName,
+        resourceName: names.slug,
         fields,
       },
-      {
-        type: "updateManifest",
-        moduleName: resourceName,
-        entry: {
-          type: "resource",
-          addedAt: "1970-01-01T00:00:00.000Z",
-        },
-      },
     ];
+
+    const orm = ctx.graph.config.orm;
+    if (orm === "prisma") {
+      ops.push({
+        type: "updateOrm",
+        kind: "prisma-model",
+        resourceName: names.slug,
+        fields,
+      });
+      ops.push({
+        type: "runCommand",
+        command: "pnpm",
+        args: ["exec", "prisma", "generate"],
+      });
+    } else if (orm === "drizzle") {
+      ops.push({
+        type: "updateOrm",
+        kind: "drizzle-table",
+        resourceName: names.slug,
+        fields,
+      });
+    } else if (orm === "mongoose") {
+      ops.push({
+        type: "updateOrm",
+        kind: "mongoose-model",
+        resourceName: names.slug,
+        fields,
+      });
+    }
+
+    ops.push({
+      type: "updateManifest",
+      moduleName: names.slug,
+      entry: {
+        type: "resource",
+        addedAt,
+      },
+    });
 
     return ops;
   },

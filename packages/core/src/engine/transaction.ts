@@ -12,6 +12,11 @@ import {
   applyAnchorPatch,
   validateSyntax,
 } from "../mutators/file-injector.js";
+import {
+  appendDrizzleTable,
+  appendPrismaModel,
+  buildMongooseModelFile,
+} from "../mutators/orm-registry.js";
 import { appendResourceSchema, writeAuthSchemas } from "../mutators/schema-registry.js";
 import type { Operation } from "./operations.js";
 
@@ -167,6 +172,35 @@ export class Transaction {
         if (this.runCommand) {
           await this.runCommand(op.command, op.args);
         }
+        return;
+      }
+      case "updateOrm": {
+        const config = await loadRootJson(this.projectRoot);
+        if (op.kind === "prisma-model") {
+          const rel = "prisma/schema.prisma";
+          const current = await readFile(this.abs(rel), "utf8");
+          const next = appendPrismaModel(current, op.resourceName, op.fields);
+          if (next !== current) {
+            await this.writeTracked(rel, next);
+          }
+          return;
+        }
+        if (op.kind === "drizzle-table") {
+          const rel = "src/db/schema.ts";
+          const current = await readFile(this.abs(rel), "utf8");
+          const next = appendDrizzleTable(current, op.resourceName, op.fields, config.database);
+          if (next !== current) {
+            await this.writeTracked(rel, next);
+          }
+          return;
+        }
+        // mongoose-model
+        const rel = `src/models/${op.resourceName}.model.ts`;
+        const existing = await readMaybe(this.abs(rel));
+        if (existing) {
+          return;
+        }
+        await this.writeTracked(rel, buildMongooseModelFile(op.resourceName, op.fields));
         return;
       }
       default: {

@@ -1,3 +1,4 @@
+import { resolveResourceNames } from "../registry/codegen/resource-files.js";
 import { type RecipeContext, type RecipeId, getRecipe } from "../registry/index.js";
 import type { ModuleGraph } from "./module-graph.js";
 import { hasAuth, hasModule } from "./module-graph.js";
@@ -9,6 +10,7 @@ export type PlanRequest = {
   resourceName?: string;
   fields?: RecipeContext["fields"];
   mountPath?: string;
+  addedAt?: string;
   /** When true, include runCommand ops from recipes (default false). */
   allowRunCommand?: boolean;
 };
@@ -30,8 +32,13 @@ export function planInterconnect(request: PlanRequest): Operation[] {
         return graph.probe.hasValidateMiddleware || hasModule(graph, "validate");
       case "auth":
         return hasAuth(graph);
-      case "resource":
-        return Boolean(request.resourceName && hasModule(graph, request.resourceName));
+      case "resource": {
+        if (!request.resourceName) {
+          return false;
+        }
+        const slug = resolveResourceNames(request.resourceName).slug;
+        return hasModule(graph, slug);
+      }
       default:
         return false;
     }
@@ -68,6 +75,9 @@ export function planInterconnect(request: PlanRequest): Operation[] {
     }
     if (request.mountPath !== undefined) {
       ctx.mountPath = request.mountPath;
+    }
+    if (request.addedAt !== undefined) {
+      ctx.addedAt = request.addedAt;
     }
     const planned = recipe.plan(ctx);
 
