@@ -10,6 +10,9 @@
 
 Engines field: `node >= 18`.
 
+> The CLI uses **Babel 7** for AST injection so Node 18/20 remain supported.
+> Babel 8 requires Node `^22.18 || >=24` and is intentionally not used yet.
+
 ## Package managers (dlx / install)
 
 | Tool | Invoke CLI | Notes |

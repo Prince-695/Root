@@ -26,10 +26,10 @@
     "access": "public"
   },
   "dependencies": {
-    "@babel/generator": "^8.0.0",
-    "@babel/parser": "^8.0.4",
-    "@babel/traverse": "^8.0.4",
-    "@babel/types": "^8.0.4",
+    "@babel/generator": "^7.28.0",
+    "@babel/parser": "^7.28.0",
+    "@babel/traverse": "^7.28.0",
+    "@babel/types": "^7.28.0",
     "handlebars": "^4.7.9",
     "zod": "^3.24.2"
   },

@@ -1,7 +1,41 @@
-import generate from "@babel/generator";
+import { createRequire } from "node:module";
 import { parse } from "@babel/parser";
-import traverse from "@babel/traverse";
+import type { NodePath } from "@babel/traverse";
 import * as t from "@babel/types";
+
+/**
+ * Babel 7 packages are CJS. Load generate/traverse via require so they work on
+ * Node 18/20 (Babel 8 requires Node ^22.18).
+ */
+const require = createRequire(import.meta.url);
+
+function loadCjsCallable<T>(id: string): T {
+  const mod = require(id) as T | { default: T };
+  if (typeof mod === "function") {
+    return mod;
+  }
+  if (mod && typeof mod === "object" && "default" in mod && typeof mod.default === "function") {
+    return mod.default;
+  }
+  throw new Error(`Expected callable CJS export from ${id}`);
+}
+
+const generate =
+  loadCjsCallable<
+    (
+      ast: t.File,
+      opts?: { retainLines?: boolean; compact?: boolean; jsescOption?: { minimal?: boolean } },
+    ) => { code: string }
+  >("@babel/generator");
+const traverse =
+  loadCjsCallable<
+    (
+      parent: t.File,
+      opts: {
+        ImportDeclaration?: (path: NodePath<t.ImportDeclaration>) => void;
+      },
+    ) => void
+  >("@babel/traverse");
 
 export class InjectSyntaxError extends Error {
   constructor(message: string) {

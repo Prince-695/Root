@@ -18,3 +18,4 @@ All notable changes to Root (`root-scaffold`) are documented here.
 
 - Unscoped npm name `root` is taken; public invocation is `pnpm dlx root-scaffold@latest`
 - Fastify, FastAPI, and Spring Boot remain planned providers
+- AST injection stays on **Babel 7** so Node 18/20 CI (and `engines: >=18`) remain valid; Babel 8 needs Node 22.18+
