@@ -1,6 +1,5 @@
 /**
  * @root/core — shared engine surface for the Root CLI.
- * Phase 0 exposes identity helpers only; generation arrives in later phases.
  */
 
 export const ROOT_ENGINE_NAME = "root" as const;
@@ -20,3 +19,26 @@ export function getEngineBanner(): string {
 export function isRootCommand(value: string): value is RootCommandName {
   return (ROOT_COMMANDS as readonly string[]).includes(value);
 }
+
+export {
+  ROOT_JSON_FILENAME,
+  RootJsonValidationError,
+  createRootJsonFixture,
+  loadRootJson,
+  parseRootJson,
+  rootJsonSchema,
+  serializeRootJson,
+  writeRootJson,
+  type RootJson,
+} from "./config/root-json.js";
+
+export {
+  SAFE_EMPTY_ENTRIES,
+  detectProject,
+  isRootJsonValidationError,
+  readRootJsonRaw,
+  type DetectedProject,
+  type ProjectKind,
+} from "./engine/detector.js";
+
+export { ERRORS } from "./errors/messages.js";

@@ -227,10 +227,13 @@ Developer clones repo → installs → runs help → CI validates the same. Foun
 
 - Implement Commander command registration: `init`, `add`, `doctor`
 - Global flags: `--verbose`, `--dry-run`, `--yes`, `--version`
+- Implement **shadcn-style init folder UX**:
+  - prompt for folder name; Escape → current folder; name → create subfolder
+  - works from non-empty cwd when a new folder name is provided
 - Implement **Project Detector**:
   - empty / safe-empty folder
   - Root project (`root.json` present + valid)
-  - foreign non-empty folder (refuse)
+  - foreign non-empty folder (refuse only when targeting that folder, e.g. Escape in foreign cwd)
 - Define Zod schema for `root.json` and load/validate helpers
 - Write `root.json` fixture helpers for tests
 - Error message catalog for detection failures (actionable copy)
@@ -248,10 +251,11 @@ Developer clones repo → installs → runs help → CI validates the same. Foun
 
 ### Deliverables Checklist
 
-- [ ] Detector unit tests cover ≥ 10 filesystem scenarios
-- [ ] Invalid `root.json` fails with path + field errors
-- [ ] `add` without `root.json` exits non-zero with clear message
-- [ ] `init` in foreign project exits non-zero
+- [x] Detector unit tests cover ≥ 10 filesystem scenarios (13 scenarios)
+- [x] Invalid `root.json` fails with path + field errors
+- [x] `add` without `root.json` exits non-zero with clear message
+- [x] `init` in foreign project exits non-zero
+- [x] Phase note: [`docs/phase/phase-1.md`](./phase/phase-1.md)
 
 ---
 
