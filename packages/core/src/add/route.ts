@@ -3,6 +3,7 @@ import { planInterconnect } from "../engine/interconnect-planner.js";
 import { hasModule, loadModuleGraph } from "../engine/module-graph.js";
 import type { Operation } from "../engine/operations.js";
 import { type TransactionOptions, applyOperations } from "../engine/transaction.js";
+import { WriteLockError, withProjectWriteLock } from "../engine/write-lock.js";
 import {
   defaultResourceZodFields,
   resolveResourceNames,
@@ -12,7 +13,7 @@ import { invalidModuleNameMessage, isValidModuleName, normalizeModuleName } from
 export class AddRouteError extends Error {
   constructor(
     message: string,
-    readonly code: "duplicate" | "invalid-name" | "apply-failed",
+    readonly code: "duplicate" | "invalid-name" | "apply-failed" | "locked",
   ) {
     super(message);
     this.name = "AddRouteError";
@@ -98,8 +99,13 @@ export async function addRoute(options: AddRouteOptions): Promise<AddRouteResult
     if (options.failAtIndex !== undefined) {
       applyOpts.failAtIndex = options.failAtIndex;
     }
-    await applyOperations(options.projectRoot, ops, applyOpts);
+    await withProjectWriteLock(options.projectRoot, async () => {
+      await applyOperations(options.projectRoot, ops, applyOpts);
+    });
   } catch (error) {
+    if (error instanceof WriteLockError) {
+      throw new AddRouteError(error.message, "locked");
+    }
     const message = error instanceof Error ? error.message : String(error);
     throw new AddRouteError(`add route failed and was rolled back: ${message}`, "apply-failed");
   }

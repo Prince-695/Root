@@ -3,12 +3,13 @@ import { planInterconnect } from "../engine/interconnect-planner.js";
 import { hasModule, loadModuleGraph } from "../engine/module-graph.js";
 import type { Operation } from "../engine/operations.js";
 import { type TransactionOptions, applyOperations } from "../engine/transaction.js";
+import { WriteLockError, withProjectWriteLock } from "../engine/write-lock.js";
 import { planAuthRetrofit } from "../mutators/auth-retrofit.js";
 
 export class AddAuthError extends Error {
   constructor(
     message: string,
-    readonly code: "duplicate" | "apply-failed",
+    readonly code: "duplicate" | "apply-failed" | "locked",
   ) {
     super(message);
     this.name = "AddAuthError";
@@ -104,8 +105,13 @@ export async function addAuth(options: AddAuthOptions): Promise<AddAuthResult> {
     if (options.failAtIndex !== undefined) {
       applyOpts.failAtIndex = options.failAtIndex;
     }
-    await applyOperations(options.projectRoot, ops, applyOpts);
+    await withProjectWriteLock(options.projectRoot, async () => {
+      await applyOperations(options.projectRoot, ops, applyOpts);
+    });
   } catch (error) {
+    if (error instanceof WriteLockError) {
+      throw new AddAuthError(error.message, "locked");
+    }
     const message = error instanceof Error ? error.message : String(error);
     throw new AddAuthError(`add auth failed and was rolled back: ${message}`, "apply-failed");
   }

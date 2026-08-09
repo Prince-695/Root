@@ -3,6 +3,7 @@ import { planInterconnect } from "../engine/interconnect-planner.js";
 import { hasModule, loadModuleGraph } from "../engine/module-graph.js";
 import type { Operation } from "../engine/operations.js";
 import { type TransactionOptions, applyOperations } from "../engine/transaction.js";
+import { WriteLockError, withProjectWriteLock } from "../engine/write-lock.js";
 import { resolveResourceNames } from "../registry/codegen/resource-files.js";
 import type { RecipeId } from "../registry/index.js";
 import { invalidModuleNameMessage, isValidModuleName, normalizeModuleName } from "./names.js";
@@ -12,7 +13,7 @@ export type AtomicKind = "model" | "service" | "middleware" | "controller";
 export class AddAtomicError extends Error {
   constructor(
     message: string,
-    readonly code: "duplicate" | "invalid-name" | "apply-failed",
+    readonly code: "duplicate" | "invalid-name" | "apply-failed" | "locked",
   ) {
     super(message);
     this.name = "AddAtomicError";
@@ -139,8 +140,13 @@ export async function addAtomic(options: AddAtomicOptions): Promise<AddAtomicRes
     if (options.failAtIndex !== undefined) {
       applyOpts.failAtIndex = options.failAtIndex;
     }
-    await applyOperations(options.projectRoot, ops, applyOpts);
+    await withProjectWriteLock(options.projectRoot, async () => {
+      await applyOperations(options.projectRoot, ops, applyOpts);
+    });
   } catch (error) {
+    if (error instanceof WriteLockError) {
+      throw new AddAtomicError(error.message, "locked");
+    }
     const message = error instanceof Error ? error.message : String(error);
     throw new AddAtomicError(
       `add ${options.kind} failed and was rolled back: ${message}`,
