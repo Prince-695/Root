@@ -197,13 +197,22 @@ Before writing, Root snapshots affected files. On any failure, it restores them.
 
 ## 7. Operating Modes
 
-### 7.1 Create Mode — Empty Folder
+### 7.1 Create Mode — Folder Prompt (shadcn-style)
 
-**Trigger:** `pnpm dlx root@latest init` in a directory that is empty or contains only safe noise (e.g. `.git`, `README.md`).
+**Trigger:** `pnpm dlx root@latest init` from any directory.
 
-**Behavior:**
+**Folder selection (before the stack wizard):**
 
-1. Run full interactive wizard
+1. Prompt: **What is your project / folder name?**
+2. **Enter a name** → Root creates `<cwd>/<name>/` (if needed) and initializes inside it  
+3. **Press Escape / cancel** → continue in the **current folder** (only if that folder is empty/safe)  
+4. Optional CLI skip: `pnpm dlx root@latest init my-api` creates `./my-api` without the folder prompt
+
+This matches shadcn/ui: you do not need an empty cwd first — give a folder name and Root creates it.
+
+**Then:**
+
+1. Run full interactive stack wizard (Phase 2+)
 2. Emit complete project tree for chosen stack
 3. Write `root.json`
 4. Install dependencies with detected package manager
@@ -229,7 +238,8 @@ Before writing, Root snapshots affected files. On any failure, it restores them.
 | Situation | Behavior |
 |---|---|
 | `add` without `root.json` | Error: run `init` first |
-| `init` in non-empty non-Root project | Refuse (v0.1); clear message |
+| `init` in non-empty non-Root project + Escape (stay in cwd) | Refuse; tell user to enter a new folder name |
+| `init` in non-empty dir + folder name | Create subdirectory and init there |
 | `init` when `root.json` already exists | Refuse or offer upgrade path later; v0.1 refuses |
 | Duplicate `add route post` | Idempotent refuse or prompt overwrite — never silent duplicate |
 
