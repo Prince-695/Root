@@ -11,13 +11,13 @@
 
 ## 1. Executive Summary
 
-Root is packable as **`root-scaffold@0.1.0`** (bin: `root`). Unscoped npm name `root` (and `root-cli`) are taken, so the public preview uses the contingency name from the risk register. Local CI proves pack integrity and a clean-folder dlx smoke from the tarball; tagged release workflow publishes when `NPM_TOKEN` is set.
+Root is packable as **`rootcli@0.1.0`** (bin: `root`). Unscoped npm name `root` (and `root-cli`) are taken, so the public preview uses the contingency name from the risk register. Local CI proves pack integrity and a clean-folder dlx smoke from the tarball; tagged release workflow publishes when `NPM_TOKEN` is set.
 
 ---
 
 ## 2. What We Built
 
-- Vendored publish pack: `scripts/prepare-publish.mjs` → `release/root-scaffold`
+- Vendored publish pack: `scripts/prepare-publish.mjs` → `release/rootcli`
 - `pnpm pack:audit` / `pnpm pack:smoke`
 - Versions bumped to `0.1.0`; `CHANGELOG.md`, `LICENSE`, `docs/COMPATIBILITY.md`
 - README quickstart is empty-folder dlx-first (no AI claims)
@@ -32,7 +32,7 @@ Root is packable as **`root-scaffold@0.1.0`** (bin: `root`). Unscoped npm name `
 pnpm pack:audit
 pnpm pack:smoke
 # Optional real publish (requires npm auth):
-# pnpm prepare-publish && cd release/root-scaffold && npm publish --tag next
+# pnpm prepare-publish && cd release/rootcli && npm publish --tag next
 ```
 
 ---

@@ -73,7 +73,7 @@ If you add one piece and forget another, the kitchen looks fine but the doorbell
 | **Terminal / command line** | A text window where you type instructions. |
 | **Node.js** | The engine that runs JavaScript on your computer. Root needs a recent Node (22.18+ or 24+). |
 | **pnpm / npm** | Tools that download packages. Think “app store for code libraries.” |
-| **Package / CLI** | A program you run with a short command. You run Root with `npx root@latest` (package and command: `root`). |
+| **Package / CLI** | A program you run with a short command. You run Root with `npx rootcli@latest` (package and command: `root`). |
 | **Folder / project** | A directory of files that make up your API. |
 | **`root.json`** | Root’s notebook about *your* project: language, database, which modules were added. |
 | **Route** | A door URL, like `/api/post`. |
@@ -115,13 +115,13 @@ cd my-api
 When the package is on npm:
 
 ```bash
-pnpm dlx root@latest init
+pnpm dlx rootcli@latest init
 ```
 
 Or with npm:
 
 ```bash
-npx root@latest init
+npx rootcli@latest init
 ```
 
 From this GitHub repo (contributors):
@@ -150,8 +150,8 @@ Open a browser to `http://localhost:3000/health`. You should see a friendly “o
 ### Step E — Add login and a resource
 
 ```bash
-pnpm dlx root@latest add auth
-pnpm dlx root@latest add resource post
+pnpm dlx rootcli@latest add auth
+pnpm dlx rootcli@latest add resource post
 ```
 
 Restart `pnpm dev` if it was already running.
@@ -166,7 +166,7 @@ Restart `pnpm dev` if it was already running.
 ### Step G — Doctor
 
 ```bash
-pnpm dlx root@latest doctor
+pnpm dlx rootcli@latest doctor
 ```
 
 If something is wrong, Root prints plain messages about missing files or mounts.
@@ -177,15 +177,15 @@ If something is wrong, Root prints plain messages about missing files or mounts.
 
 | Goal | Command |
 |---|---|
-| Run latest from npm (pnpm) | `pnpm dlx root@latest <command>` |
-| Run latest from npm (npm) | `npx root@latest <command>` |
-| Init with defaults | `pnpm dlx root@latest --yes init` |
-| Init into a named folder | `pnpm dlx root@latest init my-api` |
-| Skip installing deps during init | `pnpm dlx root@latest init --skip-install` |
+| Run latest from npm (pnpm) | `pnpm dlx rootcli@latest <command>` |
+| Run latest from npm (npm) | `npx rootcli@latest <command>` |
+| Init with defaults | `pnpm dlx rootcli@latest --yes init` |
+| Init into a named folder | `pnpm dlx rootcli@latest init my-api` |
+| Skip installing deps during init | `pnpm dlx rootcli@latest init --skip-install` |
 | Local from this monorepo | `pnpm root-cli <command>` (after `pnpm build`) |
-| From a downloaded release `.tgz` | `pnpm dlx ./root-0.1.0.tgz --yes init my-api` |
+| From a downloaded release `.tgz` | `pnpm dlx ./rootcli-0.1.0.tgz --yes init my-api` |
 
-> Invoke with `npx root@latest` (also `pnpm dlx` / `yarn dlx` / `bunx`). Local monorepo: `pnpm root-cli`.
+> Invoke with `npx rootcli@latest` (also `pnpm dlx` / `yarn dlx` / `bunx`). Local monorepo: `pnpm root-cli`.
 
 ---
 
@@ -196,9 +196,9 @@ If something is wrong, Root prints plain messages about missing files or mounts.
 **What you type**
 
 ```bash
-pnpm dlx root@latest init
+pnpm dlx rootcli@latest init
 # or
-pnpm dlx root@latest --yes init my-api
+pnpm dlx rootcli@latest --yes init my-api
 ```
 
 **What it means in real life**  
@@ -239,7 +239,7 @@ Copy `.env.example` → `.env`, install, run `pnpm dev`, hit `/health`.
 **What you type**
 
 ```bash
-pnpm dlx root@latest add auth
+pnpm dlx rootcli@latest add auth
 ```
 
 **What it means**  
@@ -271,7 +271,7 @@ Set `ACCESS_TOKEN_SECRET` in `.env`. Restart the server. Try signup/signin.
 **What you type**
 
 ```bash
-pnpm dlx root@latest add resource post
+pnpm dlx rootcli@latest add resource post
 ```
 
 **What it means**  
@@ -302,12 +302,12 @@ Restart (if needed), call `GET /api/post`, then `POST` with a token if auth is o
 ### 8.4 Other capabilities
 
 ```bash
-npx root@latest add middleware rate-limit
-npx root@latest add service mailer
-npx root@latest list
-npx root@latest inspect post
-npx root@latest diff
-npx root@latest sync
+npx rootcli@latest add middleware rate-limit
+npx rootcli@latest add service mailer
+npx rootcli@latest list
+npx rootcli@latest inspect post
+npx rootcli@latest diff
+npx rootcli@latest sync
 ```
 
 Middleware/service create shared filters or business-logic modules — they do **not** open a public URL by themselves. Use `add resource` for that. `list` / `inspect` / `diff` / `sync` help you see and verify what Root registered.
@@ -315,13 +315,13 @@ Middleware/service create shared filters or business-logic modules — they do *
 Planned (names reserved; not implemented yet):
 
 ```bash
-npx root@latest add database postgres
-npx root@latest add job send-email
-npx root@latest add event order.created
-npx root@latest add storage s3
-npx root@latest add cache redis
-npx root@latest add module billing
-npx root@latest remove resource post
+npx rootcli@latest add database postgres
+npx rootcli@latest add job send-email
+npx rootcli@latest add event order.created
+npx rootcli@latest add storage s3
+npx rootcli@latest add cache redis
+npx rootcli@latest add module billing
+npx rootcli@latest remove resource post
 ```
 
 
@@ -330,8 +330,8 @@ npx root@latest remove resource post
 ### 8.5 `doctor` — inspect the kitchen
 
 ```bash
-pnpm dlx root@latest doctor
-pnpm dlx root@latest doctor --strict
+pnpm dlx rootcli@latest doctor
+pnpm dlx rootcli@latest doctor --strict
 ```
 
 **What it means**  
@@ -347,7 +347,7 @@ After manual edits, merges, or weird errors.
 ### 8.6 `--dry-run` — peek without building
 
 ```bash
-pnpm dlx root@latest --dry-run add resource comment
+pnpm dlx rootcli@latest --dry-run add resource comment
 ```
 
 **What it means**  
@@ -407,12 +407,12 @@ After `init`, you will see something like:
 ## 11. Use-case story: “I want a notes API”
 
 1. `mkdir notes-api && cd notes-api`  
-2. `pnpm dlx root@latest --yes init` (or answer the wizard)  
-3. `pnpm dlx root@latest add auth`  
-4. `pnpm dlx root@latest add resource note`  
+2. `pnpm dlx rootcli@latest --yes init` (or answer the wizard)  
+3. `pnpm dlx rootcli@latest add auth`  
+4. `pnpm dlx rootcli@latest add resource note`  
 5. `cp .env.example .env` → set secrets → `pnpm install` → `pnpm dev`  
 6. Sign up → sign in → create a note with the token → list notes  
-7. `pnpm dlx root@latest doctor`  
+7. `pnpm dlx rootcli@latest doctor`  
 
 You now have a small, owned backend — not a black box SaaS.
 
@@ -423,6 +423,6 @@ You now have a small, owned backend — not a black box SaaS.
 - **You own the code.** Root is a starter + updater, not a landlord.  
 - **No AI.** Recipes are deterministic.  
 - **Interconnection is the product.** One command, many files, rollback on failure.  
-- Invoke: `npx root@latest` · capabilities: `add resource`, `add auth`, …  
+- Invoke: `npx rootcli@latest` · capabilities: `add resource`, `add auth`, …  
 
 When something feels scary, run `--dry-run` first, then `doctor` after.
