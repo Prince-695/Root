@@ -4,6 +4,7 @@ import { hasModule, loadModuleGraph } from "../engine/module-graph.js";
 import type { Operation } from "../engine/operations.js";
 import { type TransactionOptions, applyOperations } from "../engine/transaction.js";
 import { WriteLockError, withProjectWriteLock } from "../engine/write-lock.js";
+import { assertNodeStackCapability } from "../providers/stack-guards.js";
 import {
   defaultResourceZodFields,
   resolveResourceNames,
@@ -66,6 +67,7 @@ export async function addRoute(options: AddRouteOptions): Promise<AddRouteResult
 
   const names = resolveResourceNames(normalizeModuleName(options.name));
   const graph = await loadModuleGraph(options.projectRoot);
+  assertNodeStackCapability(graph.config, "resource");
 
   if (hasModule(graph, names.slug)) {
     throw new AddRouteError(

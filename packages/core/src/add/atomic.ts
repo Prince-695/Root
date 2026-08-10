@@ -4,6 +4,7 @@ import { hasModule, loadModuleGraph } from "../engine/module-graph.js";
 import type { Operation } from "../engine/operations.js";
 import { type TransactionOptions, applyOperations } from "../engine/transaction.js";
 import { WriteLockError, withProjectWriteLock } from "../engine/write-lock.js";
+import { assertNodeStackCapability } from "../providers/stack-guards.js";
 import { resolveResourceNames } from "../registry/codegen/resource-files.js";
 import type { RecipeId } from "../registry/index.js";
 import { invalidModuleNameMessage, isValidModuleName, normalizeModuleName } from "./names.js";
@@ -106,6 +107,7 @@ export async function addAtomic(options: AddAtomicOptions): Promise<AddAtomicRes
   const slug = normalizeModuleName(options.name);
   const names = resolveResourceNames(slug);
   const graph = await loadModuleGraph(options.projectRoot);
+  assertNodeStackCapability(graph.config, options.kind);
 
   if (hasModule(graph, names.slug)) {
     throw new AddAtomicError(

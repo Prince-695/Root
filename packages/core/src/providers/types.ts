@@ -5,8 +5,13 @@ import type { StructureizeResult } from "../init/structureizer.js";
 export type StackProviderId =
   | "express-ts"
   | "express-js"
+  | "hono-ts"
+  | "nestjs-ts"
+  | "grpc-ts"
   | "fastify-ts"
   | "fastapi"
+  | "flask"
+  | "go-http"
   | "spring-boot";
 
 export type StackProviderStatus = "ready" | "planned";
@@ -15,10 +20,12 @@ export type StackProvider = {
   id: StackProviderId;
   label: string;
   status: StackProviderStatus;
-  language: InitAnswers["language"] | "python" | "java";
-  framework: InitAnswers["framework"] | "fastapi" | "spring";
+  language: InitAnswers["language"];
+  framework: InitAnswers["framework"];
   /** True when init + add interconnection is implemented. */
   supportsStructureize: boolean;
+  /** True when generated projects must never include Node package files. */
+  forbidsNodeProjectFiles: boolean;
   structureize?(options: {
     targetDir: string;
     answers: InitAnswers;

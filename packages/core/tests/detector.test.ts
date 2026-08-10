@@ -53,11 +53,11 @@ describe("detectProject", () => {
     expect(result.kind).toBe("foreign");
   });
 
-  it("7. package.json present → foreign", async () => {
-    const dir = await tempDir("root-foreign-pkg-");
+  it("7. package.json present → adoptable-node", async () => {
+    const dir = await tempDir("root-adopt-pkg-");
     await writeFile(path.join(dir, "package.json"), "{}\n", "utf8");
     const result = await detectProject(dir);
-    expect(result.kind).toBe("foreign");
+    expect(result.kind).toBe("adoptable-node");
   });
 
   it("8. node_modules present → foreign", async () => {

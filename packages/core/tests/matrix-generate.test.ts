@@ -13,7 +13,7 @@ describe("Phase 3 generation matrix", () => {
       const answers = createInitAnswers(`app-${combo.database}-${combo.orm}`, {
         database: combo.database,
         orm: combo.orm,
-        docker: combo.database !== "none",
+        docker: combo.database !== "none" && combo.database !== "sqlite",
         testing: "none",
         githubActions: false,
       });
@@ -37,7 +37,7 @@ describe("Phase 3 generation matrix", () => {
         expect(envExample).toContain("DATABASE_URL=");
       }
 
-      if (combo.database !== "none") {
+      if (combo.database !== "none" && combo.database !== "sqlite") {
         const compose = await readFile(path.join(dir, "docker-compose.yml"), "utf8");
         if (combo.database === "postgresql") expect(compose).toContain("postgres:");
         if (combo.database === "mysql") expect(compose).toContain("mysql:");
@@ -49,6 +49,7 @@ describe("Phase 3 generation matrix", () => {
         if (combo.database === "postgresql") expect(schema).toContain('provider = "postgresql"');
         if (combo.database === "mysql") expect(schema).toContain('provider = "mysql"');
         if (combo.database === "mongodb") expect(schema).toContain('provider = "mongodb"');
+        if (combo.database === "sqlite") expect(schema).toContain('provider = "sqlite"');
       }
     }
   }, 60_000);

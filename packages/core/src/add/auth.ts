@@ -5,6 +5,7 @@ import type { Operation } from "../engine/operations.js";
 import { type TransactionOptions, applyOperations } from "../engine/transaction.js";
 import { WriteLockError, withProjectWriteLock } from "../engine/write-lock.js";
 import { planAuthRetrofit } from "../mutators/auth-retrofit.js";
+import { assertNodeStackCapability } from "../providers/stack-guards.js";
 
 export class AddAuthError extends Error {
   constructor(
@@ -57,6 +58,7 @@ async function defaultRunCommand(command: string, args: string[], cwd: string): 
  */
 export async function addAuth(options: AddAuthOptions): Promise<AddAuthResult> {
   const graph = await loadModuleGraph(options.projectRoot);
+  assertNodeStackCapability(graph.config, "auth");
 
   if (hasModule(graph, "auth")) {
     throw new AddAuthError(

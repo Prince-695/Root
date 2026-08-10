@@ -7,7 +7,12 @@ import {
   loadRootJson,
 } from "../config/root-json.js";
 
-export type ProjectKind = "empty-safe" | "root-project" | "root-project-invalid" | "foreign";
+export type ProjectKind =
+  | "empty-safe"
+  | "root-project"
+  | "root-project-invalid"
+  | "adoptable-node"
+  | "foreign";
 
 export type DetectedProject =
   | {
@@ -26,6 +31,12 @@ export type DetectedProject =
       cwd: string;
       rootJsonPath: string;
       error: Error;
+    }
+  | {
+      kind: "adoptable-node";
+      cwd: string;
+      entries: string[];
+      packageJsonPath: string;
     }
   | {
       kind: "foreign";
@@ -92,6 +103,16 @@ export async function detectProject(cwd: string = process.cwd()): Promise<Detect
       kind: "empty-safe",
       cwd: absoluteCwd,
       entries,
+    };
+  }
+
+  const packageJsonPath = path.join(absoluteCwd, "package.json");
+  if (await pathExists(packageJsonPath)) {
+    return {
+      kind: "adoptable-node",
+      cwd: absoluteCwd,
+      entries,
+      packageJsonPath,
     };
   }
 

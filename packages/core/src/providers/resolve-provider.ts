@@ -4,7 +4,10 @@ import {
   isSupportedExpressTsStack,
   unsupportedStackMessage,
 } from "../init/answers.js";
+import { isValidCombo } from "../init/stack-matrix.js";
 import { structureizeExpressJs, structureizeExpressTs } from "../init/structureizer.js";
+import { structureizeGrpcTs, structureizeHonoTs, structureizeNestjsTs } from "./node-extra.js";
+import { structureizeFastapi, structureizeFlask, structureizeGoHttp } from "./non-node.js";
 import type { StackProvider, StackProviderId } from "./types.js";
 
 const expressTsProvider: StackProvider = {
@@ -14,6 +17,7 @@ const expressTsProvider: StackProvider = {
   language: "typescript",
   framework: "express",
   supportsStructureize: true,
+  forbidsNodeProjectFiles: false,
   isSupported: isSupportedExpressTsStack,
   unsupportedMessage: unsupportedStackMessage,
   structureize: structureizeExpressTs,
@@ -26,10 +30,56 @@ const expressJsProvider: StackProvider = {
   language: "javascript",
   framework: "express",
   supportsStructureize: true,
+  forbidsNodeProjectFiles: false,
   isSupported: isSupportedExpressJsStack,
   unsupportedMessage: unsupportedStackMessage,
   structureize: structureizeExpressJs,
 };
+
+function nodeExtraProvider(
+  id: StackProviderId,
+  label: string,
+  framework: StackProvider["framework"],
+  structureize: NonNullable<StackProvider["structureize"]>,
+): StackProvider {
+  return {
+    id,
+    label,
+    status: "ready",
+    language: "typescript",
+    framework,
+    supportsStructureize: true,
+    forbidsNodeProjectFiles: false,
+    structureize,
+    isSupported: (a) =>
+      a.language === "typescript" && a.framework === framework && isValidCombo(a.database, a.orm),
+    unsupportedMessage: (a) =>
+      `${label} requires TypeScript + valid DB/ORM. Requested: ${a.language}/${a.framework}/${a.database}/${a.orm}`,
+  };
+}
+
+function nonNodeProvider(
+  id: StackProviderId,
+  label: string,
+  language: StackProvider["language"],
+  framework: StackProvider["framework"],
+  structureize: NonNullable<StackProvider["structureize"]>,
+  ormOk: (orm: InitAnswers["orm"]) => boolean,
+): StackProvider {
+  return {
+    id,
+    label,
+    status: "ready",
+    language,
+    framework,
+    supportsStructureize: true,
+    forbidsNodeProjectFiles: true,
+    structureize,
+    isSupported: (a) => a.language === language && a.framework === framework && ormOk(a.orm),
+    unsupportedMessage: (a) =>
+      `${label} stack mismatch. Requested: ${a.language}/${a.framework}/${a.orm}`,
+  };
+}
 
 function plannedProvider(
   id: StackProviderId,
@@ -44,13 +94,13 @@ function plannedProvider(
     language,
     framework,
     supportsStructureize: false,
+    forbidsNodeProjectFiles: language !== "typescript" && language !== "javascript",
     isSupported: () => false,
     unsupportedMessage: () =>
       [
         `${label} is not available yet.`,
         "",
-        "Supported now: Express + TypeScript, Express + JavaScript.",
-        "Fastify, FastAPI, and Spring Boot are planned stack providers.",
+        "Supported now: Express, Hono, NestJS, gRPC (TS), FastAPI, Flask, Go net/http.",
       ].join("\n"),
   };
 }
@@ -58,8 +108,19 @@ function plannedProvider(
 const PROVIDERS: StackProvider[] = [
   expressTsProvider,
   expressJsProvider,
+  nodeExtraProvider("hono-ts", "Hono + TypeScript", "hono", structureizeHonoTs),
+  nodeExtraProvider("nestjs-ts", "NestJS + TypeScript", "nestjs", structureizeNestjsTs),
+  nodeExtraProvider("grpc-ts", "gRPC + TypeScript", "grpc", structureizeGrpcTs),
+  nonNodeProvider("fastapi", "Python FastAPI", "python", "fastapi", structureizeFastapi, (orm) =>
+    ["sqlalchemy", "none"].includes(orm),
+  ),
+  nonNodeProvider("flask", "Python Flask", "python", "flask", structureizeFlask, (orm) =>
+    ["sqlalchemy", "none"].includes(orm),
+  ),
+  nonNodeProvider("go-http", "Go net/http", "go", "go-http", structureizeGoHttp, (orm) =>
+    ["gorm", "none"].includes(orm),
+  ),
   plannedProvider("fastify-ts", "Fastify + TypeScript", "typescript", "fastify"),
-  plannedProvider("fastapi", "Python FastAPI", "python", "fastapi"),
   plannedProvider("spring-boot", "Java Spring Boot", "java", "spring"),
 ];
 
@@ -83,9 +144,13 @@ export function resolveStackProvider(answers: InitAnswers): StackProvider {
   if (answers.language === "typescript" && answers.framework === "express") {
     return expressTsProvider;
   }
-  if (answers.framework === "fastify") {
-    return getStackProvider("fastify-ts");
-  }
+  if (answers.framework === "hono") return getStackProvider("hono-ts");
+  if (answers.framework === "nestjs") return getStackProvider("nestjs-ts");
+  if (answers.framework === "grpc") return getStackProvider("grpc-ts");
+  if (answers.framework === "fastapi") return getStackProvider("fastapi");
+  if (answers.framework === "flask") return getStackProvider("flask");
+  if (answers.framework === "go-http") return getStackProvider("go-http");
+  if (answers.framework === "fastify") return getStackProvider("fastify-ts");
   return expressTsProvider;
 }
 

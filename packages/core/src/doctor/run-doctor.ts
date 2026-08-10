@@ -254,7 +254,7 @@ export async function runDoctor(options: RunDoctorOptions): Promise<DoctorResult
   );
   if (authJwt && !authModule) {
     const msg =
-      'root.json has auth: "jwt" but modules.auth is missing. Run: pnpm dlx root@latest add auth';
+      'root.json has auth: "jwt" but modules.auth is missing. Run: pnpm dlx rootcli@latest add auth';
     issues.push(issue("auth-consistency", msg, options.strict ? "error" : "warning"));
     if (options.strict) bump(false);
     else bump(true);

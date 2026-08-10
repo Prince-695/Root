@@ -25,7 +25,8 @@
     "@prisma/client": "^6.5.0"{{/if}}{{#if isDrizzle}},
     "drizzle-orm": "^0.40.0"{{#if isPostgres}},
     "postgres": "^3.4.5"{{/if}}{{#if isMysql}},
-    "mysql2": "^3.12.0"{{/if}}{{/if}}{{#if isMongoose}},
+    "mysql2": "^3.12.0"{{/if}}{{#if isSqlite}},
+    "better-sqlite3": "^11.8.1"{{/if}}{{/if}}{{#if isMongoose}},
     "mongoose": "^8.12.1"{{/if}}{{#if authJwt}},
     "bcryptjs": "^2.4.3",
     "jsonwebtoken": "^9.0.2"{{/if}}

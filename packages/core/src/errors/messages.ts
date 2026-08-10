@@ -89,9 +89,11 @@ export const ERRORS = {
       "",
       "Supported now:",
       "  add resource | add auth | add middleware | add service",
+      "  add cache | add queue | add storage | add websocket | add logging | add health | add rate-limit",
+      "  add docker | add github-actions | add kubernetes",
       "",
       "Planned:",
-      "  add database | add job | add event | add storage | add cache | add module",
+      "  add database | add job | add event | add module | add monorepo",
     ].join("\n"),
 
   addUnknownCapability: (capability: string) =>
@@ -99,11 +101,33 @@ export const ERRORS = {
       `Unknown capability "${capability}".`,
       "",
       "Supported:",
-      "  resource | auth | database | middleware | service | job | event | storage | cache | module",
+      "  resource | auth | middleware | service",
+      "  cache | queue | storage | websocket | logging | health | rate-limit",
+      "  docker | github-actions | kubernetes",
       "",
       "Examples:",
       `  ${rootInvoke("add resource post")}`,
       `  ${rootInvoke("add auth")}`,
+      `  ${rootInvoke("add cache redis")}`,
+      `  ${rootInvoke("add docker")}`,
+    ].join("\n"),
+
+  /**
+   * Node-only recipes must not run on Python/Go projects (would write .ts/.js + package.json).
+   * Using npx to invoke the CLI is fine; this guards the *generated project* from Node pollution.
+   */
+  addRequiresNodeStack: (capability: string, language: string, framework: string) =>
+    [
+      `Cannot add "${capability}" to a ${language}/${framework} project.`,
+      "",
+      `"add ${capability}" currently only generates Express (TypeScript/JavaScript) code.`,
+      "Running it here would incorrectly create .ts/.js files or a package.json.",
+      "",
+      "Your app stays language-pure. Use npx only to invoke the Root CLI — that does not",
+      "install Node into this project.",
+      "",
+      "Python/Go auth & resource recipes are not implemented yet.",
+      "Safe today on this stack: add docker | add github-actions | add kubernetes",
     ].join("\n"),
 
   /** @deprecated */

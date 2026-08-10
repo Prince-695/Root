@@ -45,13 +45,18 @@ export function isRootCommand(value: string): value is RootCommandName {
 
 export {
   ROOT_JSON_FILENAME,
+  ROOT_JSON_VERSION,
   RootJsonValidationError,
   createRootJsonFixture,
   loadRootJson,
+  migrateRootJsonInput,
   parseRootJson,
   rootJsonSchema,
   serializeRootJson,
   writeRootJson,
+  type ApplicationArchitecture,
+  type CodeArchitecture,
+  type PackageManagerName,
   type RootJson,
 } from "./config/root-json.js";
 
@@ -215,8 +220,34 @@ export {
   type InitAnswers,
 } from "./init/answers.js";
 
+export { adoptExistingProject, type AdoptResult } from "./init/adopt.js";
+
+export {
+  AddInfraError,
+  addInfra,
+  type AddInfraOptions,
+  type AddInfraResult,
+  type InfraKind,
+} from "./add/infra.js";
+
+export {
+  AddCapabilityError,
+  addCapability,
+  type AddCapabilityOptions,
+  type AddCapabilityResult,
+  type CapabilityKind,
+} from "./add/capability.js";
+
+export {
+  AddMonorepoError,
+  addMonorepo,
+  type AddMonorepoOptions,
+  type AddMonorepoResult,
+} from "./add/monorepo.js";
+
 export {
   SUPPORTED_COMBOS,
+  aliasesForCodeArchitecture,
   buildStackTemplateContext,
   defaultDatabaseUrl,
   invalidComboMessage,
@@ -253,7 +284,16 @@ export {
   type SourceExtension,
 } from "./providers/language.js";
 
-export type { StackProvider, StackProviderId, StackProviderStatus } from "./providers/types.js";
+export {
+  assertNoNodeProjectFiles,
+  FORBIDDEN_NODE_PROJECT_FILES,
+  listTopLevelNames,
+} from "./providers/language-agnostic.js";
+
+export {
+  assertNodeStackCapability,
+  isNodeProjectLanguage,
+} from "./providers/stack-guards.js";
 
 export {
   renderTemplateFile,

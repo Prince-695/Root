@@ -1,0 +1,35 @@
+import cors from "cors";
+import express, { type Express } from "express";
+import helmet from "helmet";
+import { errorHandler } from "./middleware/errorHandler.js";
+import { requestLogger } from "./middleware/logger.js";
+
+/**
+ * Minimal Express app — health inline; resources mount via Root inject anchor.
+ * Prefer `layered-mvc` in the wizard for a fuller routes/controllers/services tree at init.
+ */
+export function createServer(): Express {
+  const app = express();
+
+  app.use(helmet());
+  app.use(cors());
+  app.use(express.json());
+  app.use(requestLogger);
+
+  app.get("/health", (_req, res) => {
+    res.status(200).json({
+      success: true,
+      data: {
+        status: "ok",
+        service: "{{projectName}}",
+        timestamp: new Date().toISOString(),
+      },
+    });
+  });
+
+  // {{routesAnchor}}
+
+  app.use(errorHandler);
+
+  return app;
+}

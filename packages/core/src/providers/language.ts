@@ -3,11 +3,11 @@ import type { RootJson } from "../config/root-json.js";
 export type SourceExtension = "ts" | "js";
 
 export function isTypeScript(config: Pick<RootJson, "language">): boolean {
-  return config.language !== "javascript";
+  return config.language === "typescript";
 }
 
 export function sourceExtension(config: Pick<RootJson, "language">): SourceExtension {
-  return isTypeScript(config) ? "ts" : "js";
+  return config.language === "javascript" ? "js" : "ts";
 }
 
 /** Join a basename with the stack's source extension (e.g. `auth` → `auth.ts`). */

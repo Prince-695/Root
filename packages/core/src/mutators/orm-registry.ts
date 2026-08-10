@@ -2,7 +2,7 @@ import type { RootJson } from "../config/root-json.js";
 import type { ZodField } from "../engine/operations.js";
 import { toCamelCase, toPascalCase } from "../registry/types.js";
 
-const PRISMA_BANNER = "// Models are added by `npx root@latest add resource <name>`";
+const PRISMA_BANNER = "// Models are added by `npx rootcli@latest add resource <name>`";
 
 function createFields(fields: ZodField[]): ZodField[] {
   return fields.filter((f) => !["id", "createdAt", "updatedAt"].includes(f.name));
@@ -107,6 +107,21 @@ ${columns}
     let next = schemaTs;
     if (!next.includes('from "drizzle-orm/mysql-core"')) {
       next = `import { int, mysqlTable, text, timestamp } from "drizzle-orm/mysql-core";\n${next}`;
+    }
+    return `${next.trimEnd()}\n${block}`;
+  }
+
+  if (database === "sqlite") {
+    const block = `
+export const ${exportName} = sqliteTable("${tableName}", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+${columns}
+  createdAt: integer("created_at", { mode: "timestamp" }),
+});
+`;
+    let next = schemaTs;
+    if (!next.includes('from "drizzle-orm/sqlite-core"')) {
+      next = `import { integer, sqliteTable, text } from "drizzle-orm/sqlite-core";\n${next}`;
     }
     return `${next.trimEnd()}\n${block}`;
   }

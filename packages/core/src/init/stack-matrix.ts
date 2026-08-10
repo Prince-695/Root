@@ -8,7 +8,7 @@ export type StackCombo = {
   orm: Orm;
 };
 
-/** PRD §15.2 — valid Express TS combinations. */
+/** Valid Express Node combinations (language-agnostic ORMs for other stacks use provider matrices). */
 export const SUPPORTED_COMBOS: readonly StackCombo[] = [
   { database: "postgresql", orm: "prisma" },
   { database: "postgresql", orm: "drizzle" },
@@ -19,6 +19,9 @@ export const SUPPORTED_COMBOS: readonly StackCombo[] = [
   { database: "mongodb", orm: "mongoose" },
   { database: "mongodb", orm: "prisma" },
   { database: "mongodb", orm: "none" },
+  { database: "sqlite", orm: "prisma" },
+  { database: "sqlite", orm: "drizzle" },
+  { database: "sqlite", orm: "none" },
   { database: "none", orm: "none" },
 ] as const;
 
@@ -38,6 +41,8 @@ export function defaultDatabaseUrl(projectName: string, database: Database): str
       return `mysql://root:root@localhost:3306/${projectName}`;
     case "mongodb":
       return `mongodb://root:root@localhost:27017/${projectName}?authSource=admin`;
+    case "sqlite":
+      return "file:./prisma/dev.db";
     default:
       return "";
   }
@@ -59,9 +64,10 @@ export type StackTemplateContext = {
   isPostgres: boolean;
   isMysql: boolean;
   isMongo: boolean;
+  isSqlite: boolean;
   isNoDb: boolean;
   databaseUrlDefault: string;
-  prismaProvider: "postgresql" | "mysql" | "mongodb" | null;
+  prismaProvider: "postgresql" | "mysql" | "mongodb" | "sqlite" | null;
   dockerEngine: "postgres" | "mysql" | "mongo" | null;
   hasDatabaseUrl: boolean;
 };
@@ -83,6 +89,7 @@ export function buildStackTemplateContext(input: {
   const isPostgres = database === "postgresql";
   const isMysql = database === "mysql";
   const isMongo = database === "mongodb";
+  const isSqlite = database === "sqlite";
   const isNoDb = database === "none";
 
   let prismaProvider: StackTemplateContext["prismaProvider"] = null;
@@ -90,10 +97,11 @@ export function buildStackTemplateContext(input: {
     if (isPostgres) prismaProvider = "postgresql";
     else if (isMysql) prismaProvider = "mysql";
     else if (isMongo) prismaProvider = "mongodb";
+    else if (isSqlite) prismaProvider = "sqlite";
   }
 
   let dockerEngine: StackTemplateContext["dockerEngine"] = null;
-  if (input.docker && !isNoDb) {
+  if (input.docker && !isNoDb && !isSqlite) {
     if (isPostgres) dockerEngine = "postgres";
     else if (isMysql) dockerEngine = "mysql";
     else if (isMongo) dockerEngine = "mongo";
@@ -103,7 +111,7 @@ export function buildStackTemplateContext(input: {
     projectName,
     authJwt: input.auth === "jwt",
     testingVitest: input.testing === "vitest",
-    docker: input.docker,
+    docker: input.docker && !isSqlite,
     githubActions: input.githubActions,
     routesAnchor: "[ROOT-INJECT:ROUTES]",
     database,
@@ -115,6 +123,7 @@ export function buildStackTemplateContext(input: {
     isPostgres,
     isMysql,
     isMongo,
+    isSqlite,
     isNoDb,
     databaseUrlDefault: defaultDatabaseUrl(projectName, database),
     prismaProvider,
@@ -132,6 +141,28 @@ export function invalidComboMessage(database: Database, orm: Orm): string {
       ? `For ${database}, supported ORMs: ${allowed.join(", ")}`
       : "No ORM options for this database.",
     "",
-    "See PRD stack matrix (PostgreSQL/MySQL/MongoDB × Prisma/Drizzle/Mongoose).",
+    "See stack matrix (PostgreSQL/MySQL/MongoDB/SQLite × Prisma/Drizzle/Mongoose).",
   ].join("\n");
+}
+
+/**
+ * Path aliases for Express generators.
+ * Code-architecture preference is stored in root.json `architectureDetail`;
+ * folder remaps for feature-based/clean ship with dedicated templates later —
+ * until then all Express stacks use the layered path contract so add/doctor work.
+ */
+export function aliasesForCodeArchitecture(
+  _code: RootJson["architecture"],
+  language: "typescript" | "javascript",
+): Partial<RootJson["aliases"]> {
+  const ext = language === "javascript" ? "js" : "ts";
+  return {
+    routes: "src/routes",
+    controllers: "src/controllers",
+    services: "src/services",
+    middleware: "src/middleware",
+    schema: `src/schema.${ext}`,
+    server: `src/server.${ext}`,
+    db: "src/db",
+  };
 }

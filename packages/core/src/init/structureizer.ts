@@ -23,6 +23,15 @@ type TemplateSpec = {
   when?: (answers: InitAnswers) => boolean;
 };
 
+/** Layered MVC (and preference aliases) get routes/controllers/health split. Minimal is flatter. */
+function isLayeredLayout(answers: InitAnswers): boolean {
+  return answers.architecture !== "minimal";
+}
+
+function isMinimalLayout(answers: InitAnswers): boolean {
+  return answers.architecture === "minimal";
+}
+
 const EXPRESS_TS_TEMPLATES: TemplateSpec[] = [
   { template: "package.json.hbs", output: "package.json" },
   { template: "tsconfig.json.hbs", output: "tsconfig.json" },
@@ -30,7 +39,16 @@ const EXPRESS_TS_TEMPLATES: TemplateSpec[] = [
   { template: "env.example.hbs", output: ".env.example" },
   { template: "README.md.hbs", output: "README.md" },
   { template: "src/index.ts.hbs", output: "src/index.ts" },
-  { template: "src/server.ts.hbs", output: "src/server.ts" },
+  {
+    template: "src/server.ts.hbs",
+    output: "src/server.ts",
+    when: isLayeredLayout,
+  },
+  {
+    template: "src/server.minimal.ts.hbs",
+    output: "src/server.ts",
+    when: isMinimalLayout,
+  },
   { template: "src/config/env.ts.hbs", output: "src/config/env.ts" },
   { template: "src/schema.ts.hbs", output: "src/schema.ts" },
   { template: "src/utils/logger.ts.hbs", output: "src/utils/logger.ts" },
@@ -40,9 +58,18 @@ const EXPRESS_TS_TEMPLATES: TemplateSpec[] = [
   {
     template: "src/controllers/health.controller.ts.hbs",
     output: "src/controllers/health.controller.ts",
+    when: isLayeredLayout,
   },
-  { template: "src/routes/health.routes.ts.hbs", output: "src/routes/health.routes.ts" },
-  { template: "src/routes/index.ts.hbs", output: "src/routes/index.ts" },
+  {
+    template: "src/routes/health.routes.ts.hbs",
+    output: "src/routes/health.routes.ts",
+    when: isLayeredLayout,
+  },
+  {
+    template: "src/routes/index.ts.hbs",
+    output: "src/routes/index.ts",
+    when: isLayeredLayout,
+  },
   {
     template: "src/db/prisma.ts.hbs",
     output: "src/db/client.ts",
@@ -86,7 +113,7 @@ const EXPRESS_TS_TEMPLATES: TemplateSpec[] = [
   {
     template: "docker-compose.yml.hbs",
     output: "docker-compose.yml",
-    when: (a) => a.docker && a.database !== "none",
+    when: (a) => a.docker && a.database !== "none" && a.database !== "sqlite",
   },
   {
     template: "github/workflows/ci.yml.hbs",
@@ -111,7 +138,16 @@ const EXPRESS_JS_TEMPLATES: TemplateSpec[] = [
   { template: "env.example.hbs", output: ".env.example" },
   { template: "README.md.hbs", output: "README.md" },
   { template: "src/index.js.hbs", output: "src/index.js" },
-  { template: "src/server.js.hbs", output: "src/server.js" },
+  {
+    template: "src/server.js.hbs",
+    output: "src/server.js",
+    when: isLayeredLayout,
+  },
+  {
+    template: "src/server.minimal.js.hbs",
+    output: "src/server.js",
+    when: isMinimalLayout,
+  },
   { template: "src/config/env.js.hbs", output: "src/config/env.js" },
   { template: "src/schema.js.hbs", output: "src/schema.js" },
   { template: "src/utils/logger.js.hbs", output: "src/utils/logger.js" },
@@ -121,9 +157,18 @@ const EXPRESS_JS_TEMPLATES: TemplateSpec[] = [
   {
     template: "src/controllers/health.controller.js.hbs",
     output: "src/controllers/health.controller.js",
+    when: isLayeredLayout,
   },
-  { template: "src/routes/health.routes.js.hbs", output: "src/routes/health.routes.js" },
-  { template: "src/routes/index.js.hbs", output: "src/routes/index.js" },
+  {
+    template: "src/routes/health.routes.js.hbs",
+    output: "src/routes/health.routes.js",
+    when: isLayeredLayout,
+  },
+  {
+    template: "src/routes/index.js.hbs",
+    output: "src/routes/index.js",
+    when: isLayeredLayout,
+  },
   {
     template: "src/db/prisma.js.hbs",
     output: "src/db/client.js",
@@ -167,7 +212,7 @@ const EXPRESS_JS_TEMPLATES: TemplateSpec[] = [
   {
     template: "docker-compose.yml.hbs",
     output: "docker-compose.yml",
-    when: (a) => a.docker && a.database !== "none",
+    when: (a) => a.docker && a.database !== "none" && a.database !== "sqlite",
   },
   {
     template: "github/workflows/ci.yml.hbs",

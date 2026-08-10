@@ -18,3 +18,13 @@ export const healthChecks = mysqlTable("health_checks", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 {{/if}}
+{{#if isSqlite}}
+import { integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
+
+/** Example placeholder table — replace via Root `add resource` later. */
+export const healthChecks = sqliteTable("health_checks", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  note: text("note"),
+  createdAt: integer("created_at", { mode: "timestamp" }),
+});
+{{/if}}
