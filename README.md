@@ -1,8 +1,10 @@
 # Root
 
-Pure-engineering backend scaffolding CLI (**no AI**) — capability-oriented interconnection for Express backends.
+Pure-engineering backend scaffolding CLI (**no AI**) — capability-oriented interconnection for backends.
 
-## Quick start (empty folder)
+**Express (TypeScript/JavaScript) is the complete gold path.** FastAPI, Flask, and Go net/http support **init + add auth + add resource** with language-native files only (never `package.json` in Python/Go projects).
+
+## Quick start (Express)
 
 ```bash
 mkdir my-api && cd my-api
@@ -21,21 +23,56 @@ npx rootcli@latest doctor
 
 Also: `pnpm dlx rootcli@latest …` · `yarn dlx rootcli@latest …` · `bunx rootcli@latest …`
 
+## Quick start (FastAPI / Flask / Go)
+
+```bash
+mkdir py-api && cd py-api
+npx rootcli@latest init
+# language: python · framework: fastapi (or flask) · orm: none|sqlalchemy
+
+npx rootcli@latest add auth
+npx rootcli@latest add resource post
+python -m venv .venv && source .venv/bin/activate
+pip install -r requirements.txt
+uvicorn app.main:app --reload   # Flask: flask --app app run --debug
+
+npx rootcli@latest doctor
+# assert: no package.json in this folder
+```
+
+```bash
+mkdir go-api && cd go-api
+npx rootcli@latest init
+# language: go · framework: go-http · orm: none|gorm
+
+npx rootcli@latest add auth
+npx rootcli@latest add resource post
+go mod tidy && go run .
+npx rootcli@latest doctor
+```
+
+Manual end-to-end matrix for every stack and command: **[test.md](test.md)**.
+
 ### Command surface
 
 ```bash
 npx rootcli@latest init
 npx rootcli@latest add auth
 npx rootcli@latest add resource <name>
-npx rootcli@latest add database <type>      # planned
-npx rootcli@latest add middleware <name>
-npx rootcli@latest add service <name>
-npx rootcli@latest add job <name>           # planned
-npx rootcli@latest add event <name>         # planned
-npx rootcli@latest add storage <type>       # planned
-npx rootcli@latest add cache <type>         # planned
-npx rootcli@latest add module <name>        # planned
-npx rootcli@latest remove <type> <name>     # planned
+npx rootcli@latest add middleware <name>    # Node / Express
+npx rootcli@latest add service <name>       # Node / Express
+npx rootcli@latest add cache <type>         # Node / Express
+npx rootcli@latest add queue <type>         # Node / Express
+npx rootcli@latest add storage <type>       # Node / Express
+npx rootcli@latest add websocket            # Node / Express
+npx rootcli@latest add logging              # Node / Express
+npx rootcli@latest add health               # Node / Express
+npx rootcli@latest add rate-limit           # Node / Express
+npx rootcli@latest add docker               # all stacks
+npx rootcli@latest add github-actions       # all stacks
+npx rootcli@latest add kubernetes          # all stacks
+npx rootcli@latest add monorepo             # Node
+npx rootcli@latest remove <type> <name>
 npx rootcli@latest list
 npx rootcli@latest inspect <name>
 npx rootcli@latest diff
@@ -46,7 +83,7 @@ npx rootcli@latest --help
 npx rootcli@latest --version
 ```
 
-Root exposes **backend capabilities** (`resource`, `auth`, `database`, …), not low-level MVC file kinds (`model` / `controller` / `route`).
+Root exposes **backend capabilities** (`resource`, `auth`, …). Atomic MVC kinds (`model` / `controller` / …) remain Node/Express helpers.
 
 ## Non-coder docs (web)
 
@@ -101,6 +138,7 @@ Default branch for ongoing work: **`main`**.
 
 ## Docs
 
+- [Manual E2E testing](test.md)
 - [Explanation for everyone](docs/explanation.md)
 - [Web interface plan](docs/web-interface-plan.md)
 - [Product Requirements (PRD)](docs/PRD.md)

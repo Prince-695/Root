@@ -33,18 +33,22 @@ Generated Express apps may still declare `node >= 18` in their own `package.json
 
 ## Generated app stacks
 
-| Language | Framework | Status | Node project files? |
-|---|---|---|---|
-| TypeScript | Express | Ready | Yes |
-| JavaScript | Express | Ready | Yes |
-| TypeScript | Hono | Ready (minimal) | Yes |
-| TypeScript | NestJS | Ready (minimal) | Yes |
-| TypeScript | gRPC | Ready (stub) | Yes |
-| Python | FastAPI | Ready | **No** |
-| Python | Flask | Ready | **No** |
-| Go | net/http | Ready | **No** |
-| TypeScript | Fastify | Planned | — |
-| Java | Spring Boot | Planned | — |
+| Language | Framework | Status | init | add auth / resource | Node project files? |
+|---|---|---|---|---|---|
+| TypeScript | Express | Ready | Yes | Yes (full) | Yes |
+| JavaScript | Express | Ready | Yes | Yes (full) | Yes |
+| TypeScript | Hono | Ready (minimal init) | Yes | Via Node recipes (limited) | Yes |
+| TypeScript | NestJS | Ready (minimal init) | Yes | Via Node recipes (limited) | Yes |
+| TypeScript | gRPC | Ready (stub init) | Yes | Limited | Yes |
+| Python | FastAPI | Ready (auth + resource) | Yes | Yes (native Python) | **No** |
+| Python | Flask | Ready (auth + resource) | Yes | Yes (native Python) | **No** |
+| Go | net/http | Ready (auth + resource) | Yes | Yes (native Go) | **No** |
+| TypeScript | Fastify | Planned | — | — | — |
+| Java | Spring Boot | Planned | — | — | — |
+
+**Invariant:** invoking Root with `npx` / `pnpm dlx` does **not** mean the generated Python/Go app becomes a Node project. Those apps must never gain `package.json`, `node_modules`, or `tsconfig.json`.
+
+Capabilities like `add cache`, `add queue`, atomic `middleware`/`service`, etc. remain **Node/Express-oriented**. Infra (`docker`, `github-actions`, `kubernetes`) works across stacks.
 
 ## Databases × ORMs (Express Node)
 
