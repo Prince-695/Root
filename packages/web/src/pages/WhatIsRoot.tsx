@@ -14,11 +14,11 @@ export function WhatIsRoot() {
 
       <h2>Problem statement</h2>
       <p>
-        Hand-rolling a resource means keeping an <strong>MVC-style layered stack</strong> consistent:
-        router → controller → service → validation → persistence → server mount → project manifest.
-        Miss the mount or the schema and you get a 404 or a silent validation hole. Auth bolted on
-        later often forgets to guard mutating verbs (<code>POST</code>/<code>PUT</code>/
-        <code>DELETE</code>).
+        Hand-rolling a resource means keeping an <strong>MVC-style layered stack</strong>{" "}
+        consistent: router → controller → service → validation → persistence → server mount →
+        project manifest. Miss the mount or the schema and you get a 404 or a silent validation
+        hole. Auth bolted on later often forgets to guard mutating verbs (<code>POST</code>/
+        <code>PUT</code>/<code>DELETE</code>).
       </p>
       <p>
         Root treats that checklist as one <strong>capability recipe</strong>. You invoke{" "}
@@ -28,10 +28,11 @@ export function WhatIsRoot() {
 
       <h2>Runtime & distribution</h2>
       <p>
-        Ready providers: <strong>Express + TypeScript</strong> and <strong>Express + JavaScript</strong>
-        . Invoke via package runners (no global install required):
+        Ready providers: <strong>Express + TypeScript</strong> and{" "}
+        <strong>Express + JavaScript</strong>. Invoke via package runners (no global install
+        required):
       </p>
-      <CommandPlate title="terminal" code="npx root@latest init" />
+      <CommandPlate title="terminal" code="npx rootcli@latest init" />
       <p className="code-note">
         Equivalents: <code>pnpm dlx</code>, <code>yarn dlx</code>, <code>bunx</code>. Engines: Node{" "}
         <code>^22.18 || &gt;=24</code>. Monorepo contributors use <code>pnpm root-cli</code> after{" "}
@@ -46,10 +47,10 @@ export function WhatIsRoot() {
       </p>
       <CommandPlate
         title="terminal"
-        code={`npx root@latest add auth
-npx root@latest add resource post
-npx root@latest add middleware rate-limit
-npx root@latest add service mailer`}
+        code={`npx rootcli@latest add auth
+npx rootcli@latest add resource post
+npx rootcli@latest add middleware rate-limit
+npx rootcli@latest add service mailer`}
       />
       <div className="docs-two-col">
         <div className="docs-panel">
@@ -70,9 +71,9 @@ npx root@latest add service mailer`}
         </div>
       </div>
       <p>
-        <code>add middleware</code> / <code>add service</code> emit shared pipeline filters or domain
-        services without registering an HTTP mount — compose them into routers yourself, or use{" "}
-        <code>add resource</code> for a full surface.
+        <code>add middleware</code> / <code>add service</code> emit shared pipeline filters or
+        domain services without registering an HTTP mount — compose them into routers yourself, or
+        use <code>add resource</code> for a full surface.
       </p>
 
       <h2>Manifest: root.json</h2>
@@ -142,7 +143,9 @@ patch   root.json                ← modules.post`}
             </tr>
             <tr>
               <td>Remote control plane</td>
-              <td>No telemetry account; all I/O is local filesystem + optional npm registry fetch.</td>
+              <td>
+                No telemetry account; all I/O is local filesystem + optional npm registry fetch.
+              </td>
             </tr>
             <tr>
               <td>Opaque binary runtime</td>

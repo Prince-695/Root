@@ -13,16 +13,16 @@ export function Install() {
       <h2>1. Node.js (required)</h2>
       <p>
         Install Node <code>^22.18</code> or <code>&gt;=24</code> from{" "}
-        <a href="https://nodejs.org">nodejs.org</a>. The Root CLI engines field rejects older
-        majors (18/20) because the publish toolchain (Babel 8) requires modern Node. Generated apps
-        may still declare a looser engine in their own <code>package.json</code> — that is separate
-        from the CLI runtime.
+        <a href="https://nodejs.org">nodejs.org</a>. The Root CLI engines field rejects older majors
+        (18/20) because the publish toolchain (Babel 8) requires modern Node. Generated apps may
+        still declare a looser engine in their own <code>package.json</code> — that is separate from
+        the CLI runtime.
       </p>
       <CommandPlate title="terminal" code="node -v" />
       <p className="code-note">
         You should see something like <code>v22.18.0</code> or <code>v24.x.x</code>. If the computer
-        says “command not found,” Node is not installed yet. After installing, open a{" "}
-        <em>new</em> terminal window so <code>PATH</code> updates.
+        says “command not found,” Node is not installed yet. After installing, open a <em>new</em>{" "}
+        terminal window so <code>PATH</code> updates.
       </p>
 
       <h2>2. Invoke Root (any package manager)</h2>
@@ -30,13 +30,13 @@ export function Install() {
         Pick the runner you already use. All of these mean: “download and run the latest published{" "}
         <code>root</code> CLI.”
       </p>
-      <CommandPlate title="npm" code="npx root@latest init" />
-      <CommandPlate title="pnpm" code="pnpm dlx root@latest init" />
-      <CommandPlate title="yarn" code="yarn dlx root@latest init" />
-      <CommandPlate title="bun" code="bunx root@latest init" />
+      <CommandPlate title="npm" code="npx rootcli@latest init" />
+      <CommandPlate title="pnpm" code="pnpm dlx rootcli@latest init" />
+      <CommandPlate title="yarn" code="yarn dlx rootcli@latest init" />
+      <CommandPlate title="bun" code="bunx rootcli@latest init" />
       <p className="code-note">
         Package name and bin name are both <code>root</code>. Docs prefer{" "}
-        <code>npx root@latest …</code> as the canonical example. You do <strong>not</strong> need{" "}
+        <code>npx rootcli@latest …</code> as the canonical example. You do <strong>not</strong> need{" "}
         <code>npm i -g root</code>.
       </p>
 
@@ -79,25 +79,25 @@ export function Install() {
       </div>
       <CommandPlate
         title="examples"
-        code={`npx root@latest --yes init my-api
-npx root@latest --dry-run add resource invoice
-npx root@latest --verbose doctor
-npx root@latest --help`}
+        code={`npx rootcli@latest --yes init my-api
+npx rootcli@latest --dry-run add resource invoice
+npx rootcli@latest --verbose doctor
+npx rootcli@latest --help`}
       />
 
       <h2>4. Init options you will use often</h2>
-      <CommandPlate title="defaults + named folder" code="npx root@latest --yes init my-api" />
+      <CommandPlate title="defaults + named folder" code="npx rootcli@latest --yes init my-api" />
       <p className="code-note">
         <code>--yes</code> uses the golden path (TypeScript + Express + Postgres + Prisma).{" "}
-        <code>my-api</code> creates that folder under the current directory and skips the folder-name
-        prompt.
+        <code>my-api</code> creates that folder under the current directory and skips the
+        folder-name prompt.
       </p>
-      <CommandPlate title="skip dependency install" code="npx root@latest init --skip-install" />
+      <CommandPlate title="skip dependency install" code="npx rootcli@latest init --skip-install" />
       <p className="code-note">
         Useful in CI or when you want to edit <code>package.json</code> before{" "}
         <code>pnpm install</code>.
       </p>
-      <CommandPlate title="preview only" code="npx root@latest --dry-run --yes init my-api" />
+      <CommandPlate title="preview only" code="npx rootcli@latest --dry-run --yes init my-api" />
 
       <h2>5. From a local release tarball</h2>
       <p>
@@ -127,13 +127,13 @@ pnpm root-cli --yes init my-api`}
       <h2>7. Verify the CLI</h2>
       <CommandPlate
         title="smoke"
-        code={`npx root@latest --version
-npx root@latest --help`}
+        code={`npx rootcli@latest --version
+npx rootcli@latest --help`}
       />
       <p>
-        You should see the engine banner and the capability command list (
-        <code>init</code>, <code>add</code>, <code>list</code>, <code>inspect</code>,{" "}
-        <code>diff</code>, <code>doctor</code>, <code>sync</code>, …).
+        You should see the engine banner and the capability command list (<code>init</code>,{" "}
+        <code>add</code>, <code>list</code>, <code>inspect</code>, <code>diff</code>,{" "}
+        <code>doctor</code>, <code>sync</code>, …).
       </p>
 
       <div className="callout">

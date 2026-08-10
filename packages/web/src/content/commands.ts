@@ -26,9 +26,9 @@ export const commands: CommandDoc[] = [
     overview:
       "Init is the only command that creates a project. It checks the folder is safe (empty, or a new named subfolder), asks (or defaults) language/framework/database/ORM/auth/extras, then structureizes Express files: health route, layered folders, root.json contract, .env.example, README, and an inject anchor in the server so later adds know where to mount routers. Optional dependency install runs unless --skip-install. If you chose JWT at init, auth setup may run immediately after structureize.",
     commands: [
-      "npx root@latest init",
-      "npx root@latest --yes init my-api",
-      "pnpm dlx root@latest init",
+      "npx rootcli@latest init",
+      "npx rootcli@latest --yes init my-api",
+      "pnpm dlx rootcli@latest init",
     ],
     when: "Only in an empty folder (or a new folder name). Not inside an existing Root project.",
     see: [
@@ -70,7 +70,7 @@ export const commands: CommandDoc[] = [
     oneLiner: "Install signup, signin, signout, and token checking (JWT).",
     overview:
       "Auth is a capability, not a single middleware file. Root adds /auth routes (signup, signin, signout), controllers, services, JWT authenticate middleware, Zod schema entries, .env.example hints (ACCESS_TOKEN_SECRET), README notes, and a User model for your ORM (or an in-memory stand-in when orm is none). If resources already exist, mutating routes may be retrofitted to require a Bearer token so you do not leave open creates after bolting login on later.",
-    commands: ["npx root@latest add auth", "pnpm dlx root@latest add auth"],
+    commands: ["npx rootcli@latest add auth", "pnpm dlx rootcli@latest add auth"],
     when: "Inside a Root project when you want login.",
     see: [
       "POST /auth/signup and /auth/signin become available.",
@@ -112,7 +112,7 @@ Content-Type: application/json
       "Add a full HTTP resource (list, get, create) with schema, data layer, and server mount.",
     overview:
       "This is the main interconnection path — the shadcn-like moment for backends. Root creates routes, controller, and service; appends a Zod schema; updates ORM models when applicable; mounts /api/<name> near the [ROOT-INJECT:ROUTES] anchor; and registers the module in root.json. Duplicate names are refused. If auth exists, mutating verbs usually require authenticate. Dry-run prints the full operation plan without writing.",
-    commands: ["npx root@latest add resource post", "pnpm dlx root@latest add resource post"],
+    commands: ["npx rootcli@latest add resource post", "pnpm dlx rootcli@latest add resource post"],
     when: "When you need a new noun in your API (posts, notes, invoices…).",
     see: [
       "GET /api/<name> and POST /api/<name>",
@@ -130,7 +130,7 @@ Content-Type: application/json
     next: [
       "Call GET /api/post",
       "POST with a token when auth is on",
-      "npx root@latest inspect post",
+      "npx rootcli@latest inspect post",
     ],
     mistakes: [
       "Adding the same name twice.",
@@ -169,7 +169,7 @@ Content-Type: application/json
     oneLiner: "Create a reusable middleware capability (not a full HTTP resource).",
     overview:
       "Creates a middleware module and registers it in root.json. Unlike add resource, this does not open a public URL — you import and mount it where you need it.",
-    commands: ["npx root@latest add middleware rate-limit"],
+    commands: ["npx rootcli@latest add middleware rate-limit"],
     when: "When you need a shared filter (logging, rate limits, custom checks).",
     see: ["A middleware file is created", "You may still need to mount it on a router"],
     files: ["src/middleware/<name>.*", "root.json modules.<name> type middleware"],
@@ -190,7 +190,7 @@ postRoutes.post("/", rateLimit, authenticate, validate(postSchema), ctrl.createP
     oneLiner: "Create a service capability for business logic without wiring HTTP yet.",
     overview:
       "Useful when you want a named logic module (mailer, billing helpers) before or beside HTTP. Root warns that it is not exposed over HTTP until you wire it into a resource/controller.",
-    commands: ["npx root@latest add service mailer"],
+    commands: ["npx rootcli@latest add service mailer"],
     when: "When you want a logic module to call from controllers later.",
     see: ["A service file is created and registered"],
     files: ["src/services/<name>.service.*"],
@@ -204,12 +204,12 @@ postRoutes.post("/", rateLimit, authenticate, validate(postSchema), ctrl.createP
     overview:
       "Root’s public surface already names future capabilities so the UX stays stable. Today they print a clear “not available yet” message instead of inventing half-baked behavior.",
     commands: [
-      "npx root@latest add database postgres",
-      "npx root@latest add job send-email",
-      "npx root@latest add event order.created",
-      "npx root@latest add storage s3",
-      "npx root@latest add cache redis",
-      "npx root@latest add module billing",
+      "npx rootcli@latest add database postgres",
+      "npx rootcli@latest add job send-email",
+      "npx rootcli@latest add event order.created",
+      "npx rootcli@latest add storage s3",
+      "npx rootcli@latest add cache redis",
+      "npx rootcli@latest add module billing",
     ],
     when: "Not implemented yet — try them only to see the reserved message.",
     see: ["A clear “not available yet” message"],
@@ -223,7 +223,7 @@ postRoutes.post("/", rateLimit, authenticate, validate(postSchema), ctrl.createP
     oneLiner: "Print every module Root knows about in root.json.",
     overview:
       "Read-only roster of modules: name, type (resource, auth, …), and added timestamp. Useful after a few adds or when onboarding someone to an existing project.",
-    commands: ["npx root@latest list"],
+    commands: ["npx rootcli@latest list"],
     when: "Anytime you want a roster of what was added.",
     see: ["Name, type, and added timestamp for each module"],
     files: ["Read-only — does not write files"],
@@ -236,7 +236,7 @@ postRoutes.post("/", rateLimit, authenticate, validate(postSchema), ctrl.createP
     oneLiner: "Show type, timestamps, and whether expected files exist.",
     overview:
       "Given a module name, Root prints expected related files with [ok] or [missing] markers, plus expected HTTP mounts for resources and auth.",
-    commands: ["npx root@latest inspect post"],
+    commands: ["npx rootcli@latest inspect post"],
     when: "When debugging a single capability.",
     see: ["[ok] / [missing] markers for related files", "Expected mount path for resources"],
     files: ["Read-only"],
@@ -249,7 +249,7 @@ postRoutes.post("/", rateLimit, authenticate, validate(postSchema), ctrl.createP
     oneLiner: "Compare root.json expectations to files on disk.",
     overview:
       "Drift happens after merges or hand edits. diff reports issues in a focused way; --strict treats auth consistency warnings as errors.",
-    commands: ["npx root@latest diff", "npx root@latest diff --strict"],
+    commands: ["npx rootcli@latest diff", "npx rootcli@latest diff --strict"],
     when: "After manual edits or merges.",
     see: ["A list of drift issues, or “No drift detected”"],
     files: ["Read-only"],
@@ -262,7 +262,7 @@ postRoutes.post("/", rateLimit, authenticate, validate(postSchema), ctrl.createP
     oneLiner: "Full health check for anchors, mounts, schema, and auth consistency.",
     overview:
       "Doctor is the long checklist: valid root.json, inject anchors present, mounts look healthy, schema/ORM consistency, auth wiring. Run it whenever something feels wrong.",
-    commands: ["npx root@latest doctor", "npx root@latest doctor --strict"],
+    commands: ["npx rootcli@latest doctor", "npx rootcli@latest doctor --strict"],
     when: "After edits, or when something feels wrong.",
     see: ["OK, warnings, or errors with plain messages"],
     files: ["Read-only"],
@@ -275,7 +275,7 @@ postRoutes.post("/", rateLimit, authenticate, validate(postSchema), ctrl.createP
     oneLiner: "Today runs integrity checks; auto-repair is planned.",
     overview:
       "sync is the capability-shaped name for “make the project consistent.” Today it reports doctor-style status; future versions may rewrite drift automatically.",
-    commands: ["npx root@latest sync"],
+    commands: ["npx rootcli@latest sync"],
     when: "When you want a sync-shaped command after pulls.",
     see: ["Doctor-style report"],
     files: ["Read-only today"],
@@ -288,7 +288,7 @@ postRoutes.post("/", rateLimit, authenticate, validate(postSchema), ctrl.createP
     oneLiner: "Safely remove a capability with interconnection unwind — not implemented yet.",
     overview:
       "The goal is the reverse of add: unmount, unschema, unmanifest — without leaving orphans. Until then, remove files carefully and verify with doctor/diff.",
-    commands: ["npx root@latest remove resource post"],
+    commands: ["npx rootcli@latest remove resource post"],
     when: "When you want to delete a capability cleanly.",
     see: ["Clear not-implemented message"],
     files: ["None today"],
@@ -301,7 +301,7 @@ postRoutes.post("/", rateLimit, authenticate, validate(postSchema), ctrl.createP
     oneLiner: "Show the operation plan and write nothing.",
     overview:
       "--dry-run is a global flag (place it before the subcommand). Init and add print the planned operations and leave the disk unchanged — perfect before a scary add.",
-    commands: ["npx root@latest --dry-run add resource comment"],
+    commands: ["npx rootcli@latest --dry-run add resource comment"],
     when: "When you are cautious before changing files.",
     see: ["Printed plan; disk unchanged"],
     files: ["None written"],

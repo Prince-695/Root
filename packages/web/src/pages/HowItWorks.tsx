@@ -74,10 +74,10 @@ export function createServer() {
 
       <h2>Auth-aware planning</h2>
       <p>
-        If the module graph reports <code>auth: jwt</code> (or an <code>auth</code> module), resource
-        recipes attach <code>authenticate</code> on mutating verbs and may set ownership from the
-        JWT claims. Adding auth <em>after</em> resources can retrofit existing creates — same
-        interconnection machinery, different recipe branch.
+        If the module graph reports <code>auth: jwt</code> (or an <code>auth</code> module),
+        resource recipes attach <code>authenticate</code> on mutating verbs and may set ownership
+        from the JWT claims. Adding auth <em>after</em> resources can retrofit existing creates —
+        same interconnection machinery, different recipe branch.
       </p>
       <CommandPlate
         title="auth + resource HTTP"
@@ -92,8 +92,8 @@ POST /api/post
         <div className="docs-panel">
           <h3>Dry-run</h3>
           <p>
-            <code>--dry-run</code> runs plan generation and prints ops; skips apply. Use before risky
-            adds in a dirty working tree.
+            <code>--dry-run</code> runs plan generation and prints ops; skips apply. Use before
+            risky adds in a dirty working tree.
           </p>
         </div>
         <div className="docs-panel">
@@ -106,8 +106,9 @@ POST /api/post
       </div>
 
       <div className="callout">
-        Interconnection ≠ “drop a template file.” It is a <strong>planned, locked, reversible</strong>{" "}
-        multi-file mutation against a live project contract.
+        Interconnection ≠ “drop a template file.” It is a{" "}
+        <strong>planned, locked, reversible</strong> multi-file mutation against a live project
+        contract.
       </div>
 
       <p>

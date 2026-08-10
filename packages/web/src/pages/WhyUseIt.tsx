@@ -13,32 +13,28 @@ export function WhyUseIt() {
       </p>
 
       <h2>Failure modes without interconnection</h2>
-      <p>For a <code>posts</code> API you normally must keep these coherent:</p>
+      <p>
+        For a <code>posts</code> API you normally must keep these coherent:
+      </p>
       <ol>
         <li>
           Router module (<code>*.routes.*</code>) — HTTP verbs and middleware chain
         </li>
-        <li>
-          Controller — request/response mapping
-        </li>
-        <li>
-          Service — domain + persistence
-        </li>
+        <li>Controller — request/response mapping</li>
+        <li>Service — domain + persistence</li>
         <li>
           Zod schema — runtime validation via <code>validate</code> middleware
         </li>
         <li>ORM model / migration surface (Prisma, Drizzle, Mongoose)</li>
-        <li>
-          Server mount near a stable inject point
-        </li>
+        <li>Server mount near a stable inject point</li>
         <li>
           Manifest registration (<code>root.json</code> modules)
         </li>
       </ol>
       <p>
         Common bugs: forgotten <code>app.use</code>, schema never registered, auth added later
-        without guarding <code>POST</code>. Root’s job is to apply the full checklist as one recipe —
-        and roll back if any op fails.
+        without guarding <code>POST</code>. Root’s job is to apply the full checklist as one recipe
+        — and roll back if any op fails.
       </p>
 
       <h2>What “interconnection” looks like</h2>
@@ -67,9 +63,9 @@ patch   root.json              ← modules.post`}
       </p>
       <CommandPlate
         title="terminal"
-        code={`npx root@latest add resource invoice
-npx root@latest add auth
-npx root@latest doctor`}
+        code={`npx rootcli@latest add resource invoice
+npx rootcli@latest add auth
+npx rootcli@latest doctor`}
       />
       <ul>
         <li>

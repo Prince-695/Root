@@ -21,9 +21,7 @@ export function FirstProject() {
         <li>
           A <code>post</code> resource at <code>/api/post</code> (list / get / create)
         </li>
-        <li>
-          Protected creates when a Bearer token is required
-        </li>
+        <li>Protected creates when a Bearer token is required</li>
         <li>
           A healthy <code>root doctor</code> report
         </li>
@@ -37,18 +35,18 @@ cd my-api`}
       />
       <p className="code-note">
         Start clean. Init refuses a foreign non-empty directory unless you pass a new folder name
-        (for example <code>npx root@latest init nested-api</code>).
+        (for example <code>npx rootcli@latest init nested-api</code>).
       </p>
 
       <h2>2. Init the kitchen</h2>
-      <CommandPlate title="interactive wizard" code="npx root@latest init" />
+      <CommandPlate title="interactive wizard" code="npx rootcli@latest init" />
       <p>Or skip questions with defaults (TypeScript + Express + Postgres + Prisma):</p>
-      <CommandPlate title="defaults" code="npx root@latest --yes init" />
+      <CommandPlate title="defaults" code="npx rootcli@latest --yes init" />
       <p className="code-note">
-        Init writes Express files, a health route, <code>root.json</code>,{" "}
-        <code>.env.example</code>, README, and the <code>[ROOT-INJECT:ROUTES]</code> anchor in the
-        server. It may install dependencies unless you pass <code>--skip-install</code>. If you
-        chose JWT at init, auth may already be applied.
+        Init writes Express files, a health route, <code>root.json</code>, <code>.env.example</code>
+        , README, and the <code>[ROOT-INJECT:ROUTES]</code> anchor in the server. It may install
+        dependencies unless you pass <code>--skip-install</code>. If you chose JWT at init, auth may
+        already be applied.
       </p>
 
       <h2>3. Environment + run</h2>
@@ -77,7 +75,7 @@ pnpm dev`}
       </p>
 
       <h2>4. Add login (if not chosen at init)</h2>
-      <CommandPlate title="terminal" code="npx root@latest add auth" />
+      <CommandPlate title="terminal" code="npx rootcli@latest add auth" />
       <p>
         This installs JWT signup/signin under <code>/auth</code>, middleware that checks{" "}
         <code>Authorization: Bearer …</code>, schema entries, env hints, and a User model for your
@@ -104,10 +102,8 @@ Content-Type: application/json
       />
 
       <h2>5. Add a resource</h2>
-      <CommandPlate title="terminal" code="npx root@latest add resource post" />
-      <p>
-        Root creates layered files and mounts them. The public surface becomes:
-      </p>
+      <CommandPlate title="terminal" code="npx rootcli@latest add resource post" />
+      <p>Root creates layered files and mounts them. The public surface becomes:</p>
       <CommandPlate
         title="HTTP surface"
         code={`GET  /api/post          → list posts (usually public)
@@ -154,11 +150,11 @@ Content-Type: application/json
       <h2>7. Check the wiring</h2>
       <CommandPlate
         title="terminal"
-        code={`npx root@latest doctor
-npx root@latest list
-npx root@latest inspect post
-npx root@latest diff
-npx root@latest --dry-run add resource comment`}
+        code={`npx rootcli@latest doctor
+npx rootcli@latest list
+npx rootcli@latest inspect post
+npx rootcli@latest diff
+npx rootcli@latest --dry-run add resource comment`}
       />
       <div className="docs-two-col">
         <div className="docs-panel">
@@ -186,8 +182,8 @@ npx root@latest --dry-run add resource comment`}
           <strong>Missing secret</strong> — set <code>ACCESS_TOKEN_SECRET</code> and restart.
         </li>
         <li>
-          <strong>Deleted inject anchor</strong> — restore{" "}
-          <code>[ROOT-INJECT:ROUTES]</code>; doctor will complain if it is gone.
+          <strong>Deleted inject anchor</strong> — restore <code>[ROOT-INJECT:ROUTES]</code>; doctor
+          will complain if it is gone.
         </li>
         <li>
           <strong>Duplicate resource</strong> — Root refuses a second <code>add resource post</code>
