@@ -139,11 +139,15 @@ export function applyAnchorPatch(
   anchor: string,
   insertion: string,
   skipIfContains?: string,
+  /** When set, only Babel-validate JS/TS sources (Python/Go patches skip). */
+  filename?: string,
 ): string {
   const options = skipIfContains === undefined ? {} : { skipIfContains };
   const result = insertAfterAnchor(content, anchor, insertion, options);
-  if (result.changed) {
-    validateSyntax(result.content);
+  const file = filename ?? "virtual.ts";
+  const shouldValidate = /\.(?:[cm]?[jt]s|tsx)$/.test(file) || file === "virtual.ts";
+  if (result.changed && shouldValidate) {
+    validateSyntax(result.content, file);
   }
   return result.content;
 }

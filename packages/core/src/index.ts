@@ -269,6 +269,7 @@ export {
 
 export {
   getStackProvider,
+  getStackProviderForConfig,
   isSupportedStack,
   listStackProviders,
   resolveStackProvider,
@@ -292,7 +293,9 @@ export {
 
 export {
   assertNodeStackCapability,
+  assertStackCapability,
   isNodeProjectLanguage,
+  stackSupportsAuthResource,
 } from "./providers/stack-guards.js";
 
 export {

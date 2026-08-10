@@ -59,6 +59,21 @@ export type EnsureDependencyOp = {
   dev?: boolean;
 };
 
+/** Append a pip requirement line to requirements.txt and/or pyproject.toml. */
+export type EnsurePythonDependencyOp = {
+  type: "ensurePythonDependency";
+  name: string;
+  /** Spec as written in requirements.txt, e.g. `PyJWT>=2.8.0`. */
+  spec: string;
+};
+
+/** Ensure a Go module require line exists in go.mod (version optional). */
+export type EnsureGoModuleOp = {
+  type: "ensureGoModule";
+  path: string;
+  version: string;
+};
+
 export type RunCommandOp = {
   type: "runCommand";
   command: string;
@@ -88,6 +103,8 @@ export type Operation =
   | UpdateSchemaResourceOp
   | UpdateManifestOp
   | EnsureDependencyOp
+  | EnsurePythonDependencyOp
+  | EnsureGoModuleOp
   | RunCommandOp
   | UpdateOrmOp
   | EnsureTextOp;

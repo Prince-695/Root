@@ -19,6 +19,10 @@ export function formatOperationPlan(ops: Operation[]): string[] {
         return `${n} updateManifest ${op.moduleName} (${op.entry.type})`;
       case "ensureDependency":
         return `${n} ensureDependency ${op.name}@${op.version}${op.dev ? " (dev)" : ""}`;
+      case "ensurePythonDependency":
+        return `${n} ensurePythonDependency ${op.spec}`;
+      case "ensureGoModule":
+        return `${n} ensureGoModule ${op.path}@${op.version}`;
       case "runCommand":
         return `${n} runCommand ${op.command} ${op.args.join(" ")}`;
       case "updateOrm":

@@ -126,8 +126,18 @@ export const ERRORS = {
       "Your app stays language-pure. Use npx only to invoke the Root CLI — that does not",
       "install Node into this project.",
       "",
-      "Python/Go auth & resource recipes are not implemented yet.",
-      "Safe today on this stack: add docker | add github-actions | add kubernetes",
+      "Supported on this stack: add auth | add resource | add docker | add github-actions | add kubernetes",
+      `(auth/resource require FastAPI, Flask, or Go net/http — not "${capability}")`,
+    ].join("\n"),
+
+  /** Capability has no planner on this stack yet (e.g. Hono auth deep recipes). */
+  addCapabilityUnsupportedOnStack: (capability: string, language: string, framework: string) =>
+    [
+      `Cannot add "${capability}" to a ${language}/${framework} project.`,
+      "",
+      `This stack does not implement "${capability}" recipes yet.`,
+      "Supported auth/resource stacks: Express (TS/JS), FastAPI, Flask, Go net/http.",
+      "Safe infra on all stacks: add docker | add github-actions | add kubernetes",
     ].join("\n"),
 
   /** @deprecated */

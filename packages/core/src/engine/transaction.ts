@@ -105,7 +105,7 @@ export class Transaction {
         const current = await readFile(abs, "utf8");
         let next: string;
         if (op.kind === "anchor") {
-          next = applyAnchorPatch(current, op.anchor, op.insertion, op.skipIfContains);
+          next = applyAnchorPatch(current, op.anchor, op.insertion, op.skipIfContains, op.path);
         } else {
           const importOpts: Parameters<typeof addImport>[1] = {
             source: op.source,
@@ -199,6 +199,43 @@ export class Transaction {
         pkg[bucket] = { ...current, [op.name]: op.version };
         const next = `${JSON.stringify(pkg, null, 2)}\n`;
         await this.writeTracked(pkgRel, next);
+        return;
+      }
+      case "ensurePythonDependency": {
+        const reqRel = "requirements.txt";
+        const reqCurrent = (await readMaybe(this.abs(reqRel))) ?? "";
+        if (!reqCurrent.includes(op.name)) {
+          const nextReq = `${reqCurrent.replace(/\s*$/, "")}\n${op.spec}\n`;
+          await this.writeTracked(reqRel, nextReq.startsWith("\n") ? nextReq.slice(1) : nextReq);
+        }
+        const pyRel = "pyproject.toml";
+        const pyCurrent = await readMaybe(this.abs(pyRel));
+        if (pyCurrent && !pyCurrent.includes(`"${op.name}`) && !pyCurrent.includes(`"${op.spec}`)) {
+          // Insert into dependencies = [ ... ] list before closing ]
+          const marker = "dependencies = [";
+          const idx = pyCurrent.indexOf(marker);
+          if (idx !== -1) {
+            const after = pyCurrent.indexOf("]", idx);
+            if (after !== -1) {
+              const insert = `\n  "${op.spec}",`;
+              const nextPy = `${pyCurrent.slice(0, after)}${insert}\n${pyCurrent.slice(after)}`;
+              await this.writeTracked(pyRel, nextPy);
+            }
+          }
+        }
+        return;
+      }
+      case "ensureGoModule": {
+        const modRel = "go.mod";
+        const current = (await readMaybe(this.abs(modRel))) ?? "";
+        if (current.includes(op.path)) {
+          return;
+        }
+        const requireBlock = `\nrequire ${op.path} ${op.version}\n`;
+        const next = current.endsWith("\n")
+          ? `${current}${requireBlock.trimStart()}`
+          : `${current}\n${requireBlock.trimStart()}`;
+        await this.writeTracked(modRel, next);
         return;
       }
       case "runCommand": {
