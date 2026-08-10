@@ -12,6 +12,9 @@ async function write(targetDir: string, rel: string, content: string, files: str
   files.push(rel);
 }
 
+const ROUTES_ANCHOR = "[ROOT-INJECT:ROUTES]";
+const IMPORTS_ANCHOR = "[ROOT-INJECT:IMPORTS]";
+
 /** Pure Python FastAPI project — zero Node project files. */
 export async function structureizeFastapi(options: {
   targetDir: string;
@@ -45,6 +48,11 @@ ${answers.orm === "sqlalchemy" ? "sqlalchemy>=2.0.0\ngreenlet>=3.0.0\n" : ""}`,
     filesWritten,
   );
 
+  await write(targetDir, "app/__init__.py", "", filesWritten);
+  await write(targetDir, "app/routers/__init__.py", "", filesWritten);
+  await write(targetDir, "app/schemas/__init__.py", "", filesWritten);
+  await write(targetDir, "app/services/__init__.py", "", filesWritten);
+
   await write(
     targetDir,
     "app/main.py",
@@ -55,6 +63,8 @@ app = FastAPI(title="${name}")
 @app.get("/health")
 def health():
     return {"ok": True}
+
+# ${ROUTES_ANCHOR}
 `,
     filesWritten,
   );
@@ -84,16 +94,16 @@ uvicorn app.main:app --reload
     testing: "pytest",
     packageManager: answers.packageManager === "uv" ? "uv" : "pip",
   });
-  // Python projects use empty Node-style aliases placeholders for doctor compatibility
   rootJson.aliases = {
-    routes: "app",
-    controllers: "app",
-    services: "app",
+    routes: "app/routers",
+    controllers: "app/routers",
+    services: "app/services",
     middleware: "app",
     schema: "app/main.py",
     server: "app/main.py",
     db: "app",
   };
+  rootJson.inject = { routesAnchor: ROUTES_ANCHOR };
   const rootJsonPath = await writeRootJson(targetDir, rootJson);
   filesWritten.push("root.json");
 
@@ -118,6 +128,9 @@ ${answers.orm === "sqlalchemy" ? "sqlalchemy>=2.0.0\n" : ""}`,
     filesWritten,
   );
 
+  await write(targetDir, "routers/__init__.py", "", filesWritten);
+  await write(targetDir, "services/__init__.py", "", filesWritten);
+
   await write(
     targetDir,
     "app.py",
@@ -128,6 +141,8 @@ app = Flask(__name__)
 @app.get("/health")
 def health():
     return jsonify(ok=True)
+
+# ${ROUTES_ANCHOR}
 
 if __name__ == "__main__":
     app.run(debug=True)
@@ -160,14 +175,15 @@ flask --app app run --debug
     packageManager: "pip",
   });
   rootJson.aliases = {
-    routes: ".",
-    controllers: ".",
-    services: ".",
+    routes: "routers",
+    controllers: "routers",
+    services: "services",
     middleware: ".",
     schema: "app.py",
     server: "app.py",
     db: ".",
   };
+  rootJson.inject = { routesAnchor: ROUTES_ANCHOR };
   const rootJsonPath = await writeRootJson(targetDir, rootJson);
   filesWritten.push("root.json");
   await assertNoNodeProjectFiles(targetDir);
@@ -194,6 +210,8 @@ ${answers.orm === "gorm" ? "\nrequire gorm.io/gorm v1.25.12\n" : ""}`,
     filesWritten,
   );
 
+  await write(targetDir, "internal/.keep", "", filesWritten);
+
   await write(
     targetDir,
     "main.go",
@@ -203,14 +221,16 @@ import (
   "encoding/json"
   "log"
   "net/http"
+  // ${IMPORTS_ANCHOR}
 )
 
 func main() {
   mux := http.NewServeMux()
-  mux.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
+  mux.HandleFunc("GET /health", func(w http.ResponseWriter, r *http.Request) {
     w.Header().Set("Content-Type", "application/json")
     _ = json.NewEncoder(w).Encode(map[string]bool{"ok": true})
   })
+  // ${ROUTES_ANCHOR}
   log.Println("listening on :8080")
   log.Fatal(http.ListenAndServe(":8080", mux))
 }
@@ -242,14 +262,15 @@ go run .
     packageManager: "go-mod",
   });
   rootJson.aliases = {
-    routes: ".",
-    controllers: ".",
-    services: ".",
-    middleware: ".",
+    routes: "internal",
+    controllers: "internal",
+    services: "internal",
+    middleware: "internal",
     schema: "main.go",
     server: "main.go",
     db: ".",
   };
+  rootJson.inject = { routesAnchor: ROUTES_ANCHOR };
   const rootJsonPath = await writeRootJson(targetDir, rootJson);
   filesWritten.push("root.json");
   await assertNoNodeProjectFiles(targetDir);
