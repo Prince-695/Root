@@ -115,8 +115,16 @@ export async function runInitWizard(projectName: string): Promise<InitAnswers | 
       { value: "minimal", label: "Minimal", hint: "Recommended — flat app, health inline" },
       { value: "layered-mvc", label: "Layered MVC", hint: "routes → controllers → services" },
       { value: "mvc", label: "MVC", hint: "Same layered contract" },
-      { value: "feature-based", label: "Feature-based", hint: "Preference stored; layered paths for now" },
-      { value: "clean", label: "Clean Architecture", hint: "Preference stored; layered paths for now" },
+      {
+        value: "feature-based",
+        label: "Feature-based",
+        hint: "Preference stored; layered paths for now",
+      },
+      {
+        value: "clean",
+        label: "Clean Architecture",
+        hint: "Preference stored; layered paths for now",
+      },
       { value: "hexagonal", label: "Hexagonal", hint: "Coming soon", disabled: true },
       { value: "ddd", label: "DDD", hint: "Coming soon", disabled: true },
     ],
