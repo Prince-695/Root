@@ -16,7 +16,9 @@ export function createProgram(): Command {
 
   program
     .name("root")
-    .description("Pure-engineering backend scaffolding CLI. Primary UX: npx root@latest <command>")
+    .description(
+      "Pure-engineering backend scaffolding CLI. Primary UX: npx rootcli@latest <command>",
+    )
     .version("0.1.0")
     .option("-v, --verbose", "Enable verbose logging", false)
     .option("--dry-run", "Preview actions without writing files", false)
@@ -28,14 +30,14 @@ export function createProgram(): Command {
     [
       "",
       "Examples:",
-      "  $ npx root@latest init",
-      "  $ npx root@latest add auth",
-      "  $ npx root@latest add resource post",
-      "  $ npx root@latest list",
-      "  $ npx root@latest doctor",
-      "  $ npx root@latest --dry-run add resource comment",
+      "  $ npx rootcli@latest init",
+      "  $ npx rootcli@latest add auth",
+      "  $ npx rootcli@latest add resource post",
+      "  $ npx rootcli@latest list",
+      "  $ npx rootcli@latest doctor",
+      "  $ npx rootcli@latest --dry-run add resource comment",
       "",
-      "Also: pnpm dlx root@latest … · yarn dlx root@latest … · bunx root@latest …",
+      "Also: pnpm dlx rootcli@latest … · yarn dlx rootcli@latest … · bunx rootcli@latest …",
     ].join("\n"),
   );
 

@@ -11,10 +11,8 @@ export async function requireRootProject(
 ): Promise<RootProjectDetected | null> {
   const detected = await detectProject(cwd);
 
-  if (detected.kind === "empty-safe" || detected.kind === "foreign") {
-    console.error(ERRORS.commandRequiresRootProject(detected.cwd, commandLabel));
-    process.exitCode = 1;
-    return null;
+  if (detected.kind === "root-project") {
+    return detected;
   }
 
   if (detected.kind === "root-project-invalid") {
@@ -23,5 +21,7 @@ export async function requireRootProject(
     return null;
   }
 
-  return detected;
+  console.error(ERRORS.commandRequiresRootProject(detected.cwd, commandLabel));
+  process.exitCode = 1;
+  return null;
 }

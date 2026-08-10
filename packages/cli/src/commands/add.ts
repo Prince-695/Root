@@ -1,10 +1,18 @@
 import {
   AddAtomicError,
   AddAuthError,
+  AddCapabilityError,
+  AddInfraError,
+  AddMonorepoError,
   AddRouteError,
+  type CapabilityKind,
   ERRORS,
+  type InfraKind,
   addAtomic,
   addAuth,
+  addCapability,
+  addInfra,
+  addMonorepo,
   addRoute,
   formatOperationPlan,
 } from "@root/core";
@@ -13,13 +21,44 @@ import { getGlobalFlags, logVerbose } from "../global-flags.js";
 import { requireRootProject } from "../lib/require-root-project.js";
 
 /** Public capability surface (backend capabilities, not MVC file kinds). */
-const READY_CAPABILITIES = new Set(["resource", "auth", "middleware", "service"]);
+const READY_CAPABILITIES = new Set([
+  "resource",
+  "auth",
+  "middleware",
+  "service",
+  "cache",
+  "queue",
+  "storage",
+  "websocket",
+  "logging",
+  "health",
+  "rate-limit",
+  "docker",
+  "github-actions",
+  "kubernetes",
+  "monorepo",
+]);
 
-const PLANNED_CAPABILITIES = new Set(["database", "job", "event", "storage", "cache", "module"]);
+const INFRA_CAPABILITIES = new Set<InfraKind>(["docker", "github-actions", "kubernetes"]);
+
+const LIB_CAPABILITIES = new Set<CapabilityKind>([
+  "cache",
+  "queue",
+  "storage",
+  "websocket",
+  "logging",
+  "health",
+  "rate-limit",
+]);
+
+const PLANNED_CAPABILITIES = new Set(["database", "job", "event", "module"]);
 
 /** Hidden aliases → public capability (kept for one release). */
 const ALIASES: Record<string, string> = {
   route: "resource",
+  "github-action": "github-actions",
+  gha: "github-actions",
+  k8s: "kubernetes",
 };
 
 /**
@@ -31,9 +70,9 @@ export function registerAddCommand(program: Command): void {
     .description("Add a backend capability with full interconnection")
     .argument(
       "<capability>",
-      "resource | auth | database | middleware | service | job | event | storage | cache | module",
+      "resource | auth | cache | queue | storage | websocket | logging | docker | …",
     )
-    .argument("[name]", "Name or type argument (required except for auth)")
+    .argument("[name]", "Name or type argument (required except for auth / infra)")
     .option("--skip-generate", "Skip prisma generate after ORM updates", false)
     .addHelpText(
       "after",
@@ -42,15 +81,14 @@ export function registerAddCommand(program: Command): void {
         "Examples:",
         "  $ root add auth",
         "  $ root add resource post",
-        "  $ root add middleware rate-limit",
-        "  $ root add service mailer",
-        "  $ root add database postgres   (planned)",
+        "  $ root add cache redis",
+        "  $ root add docker",
+        "  $ root add github-actions",
+        "  $ root add kubernetes",
         "",
         "Runners:",
-        "  npx root@latest add resource post",
-        "  pnpm dlx root@latest add auth",
-        "  yarn dlx root@latest add resource post",
-        "  bunx root@latest add resource post",
+        "  npx rootcli@latest add resource post",
+        "  pnpm dlx rootcli@latest add auth",
       ].join("\n"),
     )
     .action(
@@ -87,6 +125,54 @@ export function registerAddCommand(program: Command): void {
         if (!READY_CAPABILITIES.has(capability)) {
           console.error(ERRORS.addUnknownCapability(capability));
           process.exitCode = 1;
+          return;
+        }
+
+        if (capability === "monorepo") {
+          try {
+            const result = await addMonorepo({
+              projectRoot: cwd,
+              dryRun: flags.dryRun,
+              tool: "pnpm",
+            });
+            if (result.alreadyPresent) {
+              console.log("✓ monorepo already configured.");
+              return;
+            }
+            if (flags.dryRun) {
+              console.log(
+                [
+                  "root add monorepo — dry-run",
+                  ...formatOperationPlan(result.ops).map((line) => `  ${line}`),
+                ].join("\n"),
+              );
+              return;
+            }
+            console.log(`root add monorepo — configured (${result.ops.length} ops)`);
+          } catch (error) {
+            if (error instanceof AddMonorepoError) {
+              console.error(error.message);
+              process.exitCode = 1;
+              return;
+            }
+            throw error;
+          }
+          return;
+        }
+
+        if (INFRA_CAPABILITIES.has(capability as InfraKind)) {
+          await runAddInfra(project.config.projectName, cwd, capability as InfraKind, flags.dryRun);
+          return;
+        }
+
+        if (LIB_CAPABILITIES.has(capability as CapabilityKind)) {
+          await runAddCapability(
+            project.config.projectName,
+            cwd,
+            capability as CapabilityKind,
+            name,
+            flags.dryRun,
+          );
           return;
         }
 
@@ -128,6 +214,83 @@ export function registerAddCommand(program: Command): void {
         }
       },
     );
+}
+
+async function runAddInfra(
+  projectName: string,
+  cwd: string,
+  kind: InfraKind,
+  dryRun: boolean,
+): Promise<void> {
+  try {
+    const result = await addInfra({ projectRoot: cwd, kind, dryRun });
+    if (result.alreadyPresent) {
+      console.log(`✓ ${kind} already configured.`);
+      return;
+    }
+    if (dryRun) {
+      console.log(
+        [
+          `root add ${kind} — dry-run`,
+          `Project: ${projectName}`,
+          `Operations: ${result.ops.length}`,
+          "",
+          ...formatOperationPlan(result.ops).map((line) => `  ${line}`),
+        ].join("\n"),
+      );
+      return;
+    }
+    console.log(`root add ${kind} — configured (${result.ops.length} ops)`);
+  } catch (error) {
+    if (error instanceof AddInfraError) {
+      console.error(error.message);
+      process.exitCode = 1;
+      return;
+    }
+    throw error;
+  }
+}
+
+async function runAddCapability(
+  projectName: string,
+  cwd: string,
+  kind: CapabilityKind,
+  name: string | undefined,
+  dryRun: boolean,
+): Promise<void> {
+  try {
+    const result = await addCapability({
+      projectRoot: cwd,
+      kind,
+      dryRun,
+      ...(name ? { name } : {}),
+    });
+    if (result.alreadyPresent) {
+      console.log(`✓ ${kind} already exists.`);
+      return;
+    }
+    if (dryRun) {
+      console.log(
+        [
+          `root add ${kind} — dry-run`,
+          `Project: ${projectName}`,
+          `Variant: ${result.slug}`,
+          `Operations: ${result.ops.length}`,
+          "",
+          ...formatOperationPlan(result.ops).map((line) => `  ${line}`),
+        ].join("\n"),
+      );
+      return;
+    }
+    console.log(`root add ${kind} — interconnected (${result.slug}, ${result.ops.length} ops)`);
+  } catch (error) {
+    if (error instanceof AddCapabilityError) {
+      console.error(error.message);
+      process.exitCode = 1;
+      return;
+    }
+    throw error;
+  }
 }
 
 async function runAddAuth(

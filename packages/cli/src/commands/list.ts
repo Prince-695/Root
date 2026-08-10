@@ -26,8 +26,8 @@ export function registerListCommand(program: Command): void {
             `Project: ${config.projectName}`,
             "",
             "No modules registered yet.",
-            "Try: npx root@latest add resource post",
-            "     npx root@latest add auth",
+            "Try: npx rootcli@latest add resource post",
+            "     npx rootcli@latest add auth",
           ].join("\n"),
         );
         return;

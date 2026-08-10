@@ -1,14 +1,19 @@
 import * as p from "@clack/prompts";
-import { addAuth, structureizeProject } from "@root/core";
+import { addAuth, adoptExistingProject, structureizeProject } from "@root/core";
 import type { Command } from "commander";
 import { getGlobalFlags, logVerbose } from "../global-flags.js";
-import { detectPackageManager, installDependencies } from "../init/install.js";
+import {
+  type PackageManager,
+  installDependencies,
+  installNativeDependencies,
+} from "../init/install.js";
+import { buildInitNextSteps } from "../init/next-steps.js";
 import { promptFolderName } from "../init/prompt-folder-name.js";
 import { resolveInitTarget } from "../init/resolve-target.js";
 import { resolveInitAnswers } from "../init/wizard.js";
 
 /**
- * Phase 2: folder resolve → wizard → structureize Express TS golden path.
+ * Init: folder resolve → wizard → structureize (or adopt existing package.json).
  */
 export function registerInitCommand(program: Command): void {
   program
@@ -42,10 +47,10 @@ export function registerInitCommand(program: Command): void {
           return;
         }
 
-        const { targetDir, projectName: name, createdFolder, detected } = resolved;
+        const { targetDir, projectName: name, createdFolder, detected, adoptExisting } = resolved;
         logVerbose(
           flags,
-          `targetDir=${targetDir} createdFolder=${createdFolder} entries=${detected.entries.length}`,
+          `targetDir=${targetDir} createdFolder=${createdFolder} adopt=${adoptExisting} entries=${detected.entries.length}`,
         );
 
         const answers = await resolveInitAnswers(name, flags.yes);
@@ -60,8 +65,11 @@ export function registerInitCommand(program: Command): void {
               "root init — dry-run (no files written)",
               `Target: ${targetDir}`,
               createdFolder ? "Would create folder: yes" : "Would create folder: no",
+              adoptExisting
+                ? "Mode: adopt existing package.json (root.json only)"
+                : "Mode: full structureize",
               `Stack: ${answers.language} / ${answers.framework} / ${answers.database} / ${answers.orm}`,
-              "Files: Express layered template (~20 files) + root.json",
+              `Package manager: ${answers.packageManager}`,
               "",
               "Re-run without --dry-run to generate.",
             ].join("\n"),
@@ -70,13 +78,20 @@ export function registerInitCommand(program: Command): void {
         }
 
         const spinner = p.spinner();
-        spinner.start("Generating project structure...");
+        spinner.start(
+          adoptExisting
+            ? "Adopting project (writing root.json)..."
+            : "Generating project structure...",
+        );
         const started = Date.now();
 
         try {
-          const result = await structureizeProject({ targetDir, answers });
+          const result = adoptExisting
+            ? await adoptExistingProject({ targetDir, answers })
+            : await structureizeProject({ targetDir, answers });
+
           let authOps = 0;
-          if (answers.auth === "jwt") {
+          if (!adoptExisting && answers.auth === "jwt" && isNodeLanguage(answers.language)) {
             const authResult = await addAuth({
               projectRoot: targetDir,
               skipGenerate: true,
@@ -89,48 +104,65 @@ export function registerInitCommand(program: Command): void {
           }
           const elapsedMs = Date.now() - started;
           spinner.stop(
-            `Generated ${result.filesWritten.length} files${authOps > 0 ? ` + auth (${authOps} ops)` : ""} in ${elapsedMs}ms`,
+            `${adoptExisting ? "Adopted" : "Generated"} ${result.filesWritten.length} files${authOps > 0 ? ` + auth (${authOps} ops)` : ""} in ${elapsedMs}ms`,
           );
 
-          if (!options.skipInstall) {
-            const pm = await detectPackageManager(cwd);
-            const installSpinner = p.spinner();
-            installSpinner.start(`Installing dependencies with ${pm}...`);
-            try {
-              await installDependencies(targetDir, pm, { orm: answers.orm });
-              installSpinner.stop("Dependencies installed");
-            } catch (error) {
-              installSpinner.stop("Dependency install failed");
-              const message = error instanceof Error ? error.message : String(error);
-              console.error(message);
-              console.error("You can install manually inside the project folder.");
+          let installed = false;
+          if (!options.skipInstall && !adoptExisting) {
+            if (isNodeLanguage(answers.language)) {
+              const pm = answers.packageManager as PackageManager;
+              const installSpinner = p.spinner();
+              installSpinner.start(`Installing dependencies with ${pm}...`);
+              try {
+                await installDependencies(targetDir, pm, { orm: answers.orm });
+                installSpinner.stop("Dependencies installed");
+                installed = true;
+              } catch (error) {
+                installSpinner.stop("Dependency install failed");
+                const message = error instanceof Error ? error.message : String(error);
+                console.error(message);
+                console.error("You can install manually inside the project folder.");
+              }
+            } else if (answers.language === "python" || answers.language === "go") {
+              const tool =
+                answers.language === "go"
+                  ? "go mod"
+                  : answers.packageManager === "uv"
+                    ? "uv"
+                    : "pip";
+              const installSpinner = p.spinner();
+              installSpinner.start(`Installing dependencies with ${tool}...`);
+              try {
+                await installNativeDependencies(targetDir, answers);
+                installSpinner.stop("Dependencies installed");
+                installed = true;
+              } catch (error) {
+                installSpinner.stop("Dependency install failed (install manually)");
+                const message = error instanceof Error ? error.message : String(error);
+                console.error(message);
+              }
             }
           }
 
           p.outro(
-            [
-              `Project ready at ${targetDir}`,
-              "",
-              "Next steps:",
-              `  cd ${targetDir}`,
-              "  cp .env.example .env",
-              answers.docker ? "  docker compose up -d" : undefined,
-              options.skipInstall ? "  pnpm install && pnpm prisma:generate" : undefined,
-              "  pnpm dev",
-              "",
-              "Then:",
-              answers.auth === "jwt" ? undefined : "  npx root@latest add auth",
-              "  npx root@latest add resource post",
-            ]
-              .filter((line): line is string => line !== undefined)
-              .join("\n"),
+            buildInitNextSteps({
+              targetDir,
+              answers,
+              adoptExisting,
+              skipInstall: Boolean(options.skipInstall),
+              installed,
+            }),
           );
         } catch (error) {
-          spinner.stop("Generation failed");
+          spinner.stop(adoptExisting ? "Adopt failed" : "Generation failed");
           const message = error instanceof Error ? error.message : String(error);
           console.error(message);
           process.exitCode = 1;
         }
       },
     );
+}
+
+function isNodeLanguage(language: string): boolean {
+  return language === "typescript" || language === "javascript";
 }

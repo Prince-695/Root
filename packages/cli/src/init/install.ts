@@ -1,7 +1,7 @@
 import { spawn } from "node:child_process";
 import { access } from "node:fs/promises";
 import path from "node:path";
-import type { Orm } from "@root/core";
+import type { InitAnswers, Orm } from "@root/core";
 
 export type PackageManager = "pnpm" | "npm" | "yarn" | "bun";
 
@@ -72,5 +72,23 @@ export async function installDependencies(
       if (options.orm === "prisma") {
         await run("npx", ["prisma", "generate"], targetDir);
       }
+  }
+}
+
+/** pip/uv/go mod — never npm for non-Node projects. */
+export async function installNativeDependencies(
+  targetDir: string,
+  answers: Pick<InitAnswers, "language" | "packageManager">,
+): Promise<void> {
+  if (answers.language === "python") {
+    if (answers.packageManager === "uv") {
+      await run("uv", ["pip", "install", "-r", "requirements.txt"], targetDir);
+    } else {
+      await run("pip", ["install", "-r", "requirements.txt"], targetDir);
+    }
+    return;
+  }
+  if (answers.language === "go") {
+    await run("go", ["mod", "tidy"], targetDir);
   }
 }

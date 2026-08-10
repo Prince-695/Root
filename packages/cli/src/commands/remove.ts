@@ -55,8 +55,8 @@ export function registerRemoveCommand(program: Command): void {
           "",
           "Interconnected remove (unwind mounts, schema, manifest) is planned.",
           "Until then, remove files carefully and run:",
-          "  npx root@latest doctor",
-          "  npx root@latest diff",
+          "  npx rootcli@latest doctor",
+          "  npx rootcli@latest diff",
         ].join("\n"),
       );
       process.exitCode = 1;
