@@ -2,7 +2,10 @@ import { access, readFile } from "node:fs/promises";
 import path from "node:path";
 import { type RootJson, loadRootJson } from "../config/root-json.js";
 import { AUTH_BANNER, EXPORTS_BANNER, RESOURCE_BANNER } from "../mutators/schema-registry.js";
+import { assertNoNodeProjectFiles } from "../providers/language-agnostic.js";
 import { sourceExtension } from "../providers/language.js";
+import { getStackProviderForConfig } from "../providers/resolve-provider.js";
+import { isNodeProjectLanguage } from "../providers/stack-guards.js";
 import { toCamelCase } from "../registry/types.js";
 
 export type DoctorIssue = {
@@ -41,6 +44,14 @@ async function expectedModuleFiles(
   name: string,
   type: RootJson["modules"][string]["type"],
 ): Promise<string[]> {
+  const provider = getStackProviderForConfig(config);
+  if (provider.moduleFiles) {
+    const custom = provider.moduleFiles(config, name, type);
+    if (custom !== null) {
+      return custom;
+    }
+  }
+
   const { aliases } = config;
   const ext = sourceExtension(config);
   switch (type) {
@@ -79,6 +90,26 @@ async function expectedModuleFiles(
   }
 }
 
+function resourceMounted(server: string, name: string, framework: RootJson["framework"]): boolean {
+  const mountNeedle = `"/api/${name}"`;
+  if (server.includes(mountNeedle) || server.includes(`'/api/${name}'`)) {
+    return true;
+  }
+  if (framework === "fastapi" || framework === "flask") {
+    return (
+      server.includes(`prefix="/api/${name}"`) ||
+      server.includes(`url_prefix="/api/${name}"`) ||
+      server.includes(`"/api/${name}"`)
+    );
+  }
+  if (framework === "go-http") {
+    const pkg = name.replace(/-/g, "");
+    return server.includes(`${pkg}.Register(mux)`) || server.includes(`"/api/${name}"`);
+  }
+  const camel = toCamelCase(name);
+  return server.includes(`${camel}Router`) && server.includes("app.use(");
+}
+
 export type RunDoctorOptions = {
   projectRoot: string;
   /** When true, auth config/module/middleware mismatches are errors. */
@@ -110,6 +141,21 @@ export async function runDoctor(options: RunDoctorOptions): Promise<DoctorResult
     };
   }
 
+  const nodeStack = isNodeProjectLanguage(config.language);
+  const provider = getStackProviderForConfig(config);
+
+  // Language purity for non-Node stacks
+  if (provider.forbidsNodeProjectFiles) {
+    try {
+      await assertNoNodeProjectFiles(options.projectRoot);
+      bump(true);
+    } catch (error) {
+      bump(false);
+      const message = error instanceof Error ? error.message : String(error);
+      issues.push(issue("language-purity", message));
+    }
+  }
+
   // 2. Alias paths
   const dirAliases = ["routes", "controllers", "services", "middleware", "db"] as const;
   for (const key of dirAliases) {
@@ -131,7 +177,7 @@ export async function runDoctor(options: RunDoctorOptions): Promise<DoctorResult
     }
   }
 
-  // 3. Inject anchor
+  // 3. Inject anchor + mounts
   const serverRel = config.aliases.server;
   const serverAbs = path.join(options.projectRoot, serverRel);
   if (await exists(serverAbs)) {
@@ -147,30 +193,31 @@ export async function runDoctor(options: RunDoctorOptions): Promise<DoctorResult
       );
     }
 
-    // 6. Resource mounts (checked with server content)
+    const hasHealth =
+      server.includes("/health") || server.includes('"/health"') || server.includes("'/health'");
+    bump(hasHealth);
+    if (!hasHealth) {
+      issues.push(issue("health-missing", `No /health route found in ${serverRel}.`));
+    }
+
     for (const [name, entry] of Object.entries(config.modules)) {
       if (entry.type !== "resource") continue;
-      const camel = toCamelCase(name);
-      const mountNeedle = `"/api/${name}"`;
-      const routerNeedle = `${camel}Router`;
-      const mounted =
-        server.includes(mountNeedle) ||
-        (server.includes(routerNeedle) && server.includes("app.use("));
+      const mounted = resourceMounted(server, name, config.framework);
       bump(mounted);
       if (!mounted) {
         issues.push(
           issue(
             "mount-missing",
-            `Resource "${name}" has no server mount for ${mountNeedle} in ${serverRel}.`,
+            `Resource "${name}" has no server mount for "/api/${name}" in ${serverRel}.`,
           ),
         );
       }
     }
   }
 
-  // 4. Schema banners ordered
+  // 4. Schema banners (Node / Zod only)
   const schemaAbs = path.join(options.projectRoot, config.aliases.schema);
-  if (await exists(schemaAbs)) {
+  if (nodeStack && (await exists(schemaAbs))) {
     const schema = await readFile(schemaAbs, "utf8");
     const authIdx = schema.indexOf(AUTH_BANNER);
     const resIdx = schema.indexOf(RESOURCE_BANNER);
@@ -227,7 +274,7 @@ export async function runDoctor(options: RunDoctorOptions): Promise<DoctorResult
       }
     }
 
-    if (entry.type === "resource" || entry.type === "model") {
+    if (nodeStack && (entry.type === "resource" || entry.type === "model")) {
       if (await exists(schemaAbs)) {
         const schema = await readFile(schemaAbs, "utf8");
         const exportName = `${toCamelCase(name)}Schema`;
@@ -249,9 +296,19 @@ export async function runDoctor(options: RunDoctorOptions): Promise<DoctorResult
   const ext = sourceExtension(config);
   const authModule = Boolean(config.modules.auth);
   const authJwt = config.auth === "jwt";
-  const authMw = await exists(
-    path.join(options.projectRoot, config.aliases.middleware, `auth.${ext}`),
-  );
+  let authSurface = false;
+  if (nodeStack) {
+    authSurface = await exists(
+      path.join(options.projectRoot, config.aliases.middleware, `auth.${ext}`),
+    );
+  } else if (config.framework === "fastapi") {
+    authSurface = await exists(path.join(options.projectRoot, "app/deps.py"));
+  } else if (config.framework === "flask") {
+    authSurface = await exists(path.join(options.projectRoot, "auth_guard.py"));
+  } else if (config.framework === "go-http") {
+    authSurface = await exists(path.join(options.projectRoot, "internal/auth/auth.go"));
+  }
+
   if (authJwt && !authModule) {
     const msg =
       'root.json has auth: "jwt" but modules.auth is missing. Run: pnpm dlx rootcli@latest add auth';
@@ -263,11 +320,11 @@ export async function runDoctor(options: RunDoctorOptions): Promise<DoctorResult
     issues.push(issue("auth-consistency", msg, options.strict ? "error" : "warning"));
     if (options.strict) bump(false);
     else bump(true);
-  } else if (authModule && !authMw) {
+  } else if (authModule && !authSurface) {
     issues.push(
       issue(
         "auth-consistency",
-        `modules.auth is present but middleware/auth.${ext} is missing.`,
+        "modules.auth is present but auth surface files are missing.",
         options.strict ? "error" : "warning",
       ),
     );

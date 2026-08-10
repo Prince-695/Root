@@ -5,7 +5,9 @@ import type { Operation } from "../engine/operations.js";
 import { type TransactionOptions, applyOperations } from "../engine/transaction.js";
 import { WriteLockError, withProjectWriteLock } from "../engine/write-lock.js";
 import { planAuthRetrofit } from "../mutators/auth-retrofit.js";
-import { assertNodeStackCapability } from "../providers/stack-guards.js";
+import { assertNoNodeProjectFiles } from "../providers/language-agnostic.js";
+import { getStackProviderForConfig } from "../providers/resolve-provider.js";
+import { assertStackCapability } from "../providers/stack-guards.js";
 
 export class AddAuthError extends Error {
   constructor(
@@ -54,11 +56,11 @@ async function defaultRunCommand(command: string, args: string[], cwd: string): 
 
 /**
  * Plan and apply JWT auth into an existing Root project.
- * If resources already exist, retrofit them (order-independence B).
+ * If resources already exist, retrofit them (order-independence B) on Node stacks.
  */
 export async function addAuth(options: AddAuthOptions): Promise<AddAuthResult> {
   const graph = await loadModuleGraph(options.projectRoot);
-  assertNodeStackCapability(graph.config, "auth");
+  assertStackCapability(graph.config, "auth");
 
   if (hasModule(graph, "auth")) {
     throw new AddAuthError(
@@ -67,27 +69,35 @@ export async function addAuth(options: AddAuthOptions): Promise<AddAuthResult> {
     );
   }
 
+  const provider = getStackProviderForConfig(graph.config);
   const allowRunCommand = !options.skipGenerate && !options.dryRun;
-  const ops = planInterconnect({
-    recipeId: "auth",
-    graph,
-    allowRunCommand,
-    addedAt: options.addedAt ?? new Date().toISOString(),
-  });
+  const addedAt = options.addedAt ?? new Date().toISOString();
 
+  let ops: Operation[];
   let warnings: string[] = [];
-  if (options.retrofit !== false) {
-    const retrofit = await planAuthRetrofit(options.projectRoot, graph.config);
-    warnings = retrofit.warnings;
-    ops.push(...retrofit.ops);
-    if (allowRunCommand && retrofit.ops.some((op) => op.type === "updateOrm")) {
-      // prisma generate may already be in auth ops; ensure one run after retrofit models
-      if (!ops.some((op) => op.type === "runCommand")) {
-        ops.push({
-          type: "runCommand",
-          command: "pnpm",
-          args: ["exec", "prisma", "generate"],
-        });
+
+  if (provider.planAuth) {
+    ops = provider.planAuth({ graph, addedAt });
+  } else {
+    ops = planInterconnect({
+      recipeId: "auth",
+      graph,
+      allowRunCommand,
+      addedAt,
+    });
+
+    if (options.retrofit !== false) {
+      const retrofit = await planAuthRetrofit(options.projectRoot, graph.config);
+      warnings = retrofit.warnings;
+      ops.push(...retrofit.ops);
+      if (allowRunCommand && retrofit.ops.some((op) => op.type === "updateOrm")) {
+        if (!ops.some((op) => op.type === "runCommand")) {
+          ops.push({
+            type: "runCommand",
+            command: "pnpm",
+            args: ["exec", "prisma", "generate"],
+          });
+        }
       }
     }
   }
@@ -109,6 +119,9 @@ export async function addAuth(options: AddAuthOptions): Promise<AddAuthResult> {
     }
     await withProjectWriteLock(options.projectRoot, async () => {
       await applyOperations(options.projectRoot, ops, applyOpts);
+      if (provider.forbidsNodeProjectFiles) {
+        await assertNoNodeProjectFiles(options.projectRoot);
+      }
     });
   } catch (error) {
     if (error instanceof WriteLockError) {

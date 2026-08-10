@@ -4,7 +4,9 @@ import { hasModule, loadModuleGraph } from "../engine/module-graph.js";
 import type { Operation } from "../engine/operations.js";
 import { type TransactionOptions, applyOperations } from "../engine/transaction.js";
 import { WriteLockError, withProjectWriteLock } from "../engine/write-lock.js";
-import { assertNodeStackCapability } from "../providers/stack-guards.js";
+import { assertNoNodeProjectFiles } from "../providers/language-agnostic.js";
+import { getStackProviderForConfig } from "../providers/resolve-provider.js";
+import { assertStackCapability } from "../providers/stack-guards.js";
 import {
   defaultResourceZodFields,
   resolveResourceNames,
@@ -67,7 +69,7 @@ export async function addRoute(options: AddRouteOptions): Promise<AddRouteResult
 
   const names = resolveResourceNames(normalizeModuleName(options.name));
   const graph = await loadModuleGraph(options.projectRoot);
-  assertNodeStackCapability(graph.config, "resource");
+  assertStackCapability(graph.config, "resource");
 
   if (hasModule(graph, names.slug)) {
     throw new AddRouteError(
@@ -76,15 +78,25 @@ export async function addRoute(options: AddRouteOptions): Promise<AddRouteResult
     );
   }
 
+  const provider = getStackProviderForConfig(graph.config);
   const allowRunCommand = !options.skipGenerate && !options.dryRun;
-  const ops = planInterconnect({
-    recipeId: "resource",
-    graph,
-    resourceName: names.slug,
-    fields: defaultResourceZodFields(),
-    allowRunCommand,
-    addedAt: options.addedAt ?? new Date().toISOString(),
-  });
+  const addedAt = options.addedAt ?? new Date().toISOString();
+
+  const ops = provider.planResource
+    ? provider.planResource({
+        graph,
+        resourceName: names.slug,
+        addedAt,
+        mountPath: names.mountPath,
+      })
+    : planInterconnect({
+        recipeId: "resource",
+        graph,
+        resourceName: names.slug,
+        fields: defaultResourceZodFields(),
+        allowRunCommand,
+        addedAt,
+      });
 
   if (options.dryRun) {
     return { ops, slug: names.slug, mountPath: names.mountPath, dryRun: true };
@@ -103,6 +115,9 @@ export async function addRoute(options: AddRouteOptions): Promise<AddRouteResult
     }
     await withProjectWriteLock(options.projectRoot, async () => {
       await applyOperations(options.projectRoot, ops, applyOpts);
+      if (provider.forbidsNodeProjectFiles) {
+        await assertNoNodeProjectFiles(options.projectRoot);
+      }
     });
   } catch (error) {
     if (error instanceof WriteLockError) {
