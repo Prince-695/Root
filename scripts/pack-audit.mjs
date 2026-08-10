@@ -3,7 +3,7 @@
  * Prepare the publish directory, `npm pack`, and assert required contents.
  */
 import { execSync } from "node:child_process";
-import { mkdtempSync, readFileSync, readdirSync, rmSync } from "node:fs";
+import { mkdtempSync, readFileSync, readdirSync, rmSync, statSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -12,8 +12,8 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 
 execSync("node scripts/prepare-publish.mjs", { cwd: root, stdio: "inherit" });
 
-const releaseDir = path.join(root, "release", "root");
-const packDir = mkdtempSync(path.join(tmpdir(), "root-pack-"));
+const releaseDir = path.join(root, "release", "rootcli");
+const packDir = mkdtempSync(path.join(tmpdir(), "rootcli-pack-"));
 
 try {
   const packOut = execSync("npm pack --json", {
@@ -62,8 +62,16 @@ try {
   }
 
   const pkg = JSON.parse(readFileSync(path.join(base, "package.json"), "utf8"));
-  if (pkg.name !== "root" || !pkg.bin?.root) {
-    console.error("Pack audit FAILED: bad package.json name/bin");
+  if (pkg.name !== "rootcli" || !pkg.bin?.rootcli || !pkg.bin?.root) {
+    console.error(
+      "Pack audit FAILED: bad package.json name/bin (expected rootcli + bins rootcli/root)",
+    );
+    process.exit(1);
+  }
+
+  const cliMode = statSync(path.join(base, "dist/cli.js")).mode & 0o111;
+  if (!cliMode) {
+    console.error("Pack audit FAILED: dist/cli.js is not executable (npm publish would drop bins)");
     process.exit(1);
   }
 

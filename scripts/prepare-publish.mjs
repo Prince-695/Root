@@ -1,11 +1,12 @@
 #!/usr/bin/env node
 import { execSync } from "node:child_process";
 /**
- * Build a self-contained publish directory for `root` (bin: root).
+ * Build a self-contained publish directory for `rootcli` (bins: rootcli + root).
  * Core is vendored + CLI imports rewritten so a single tarball works with
- * `npx root@latest` / `pnpm dlx root@latest`.
+ * `npx rootcli@latest` / `pnpm dlx rootcli@latest`.
  */
 import {
+  chmodSync,
   cpSync,
   existsSync,
   mkdirSync,
@@ -19,7 +20,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-const out = path.join(root, "release", "root");
+const out = path.join(root, "release", "rootcli");
 const version = "0.1.0";
 
 function readJson(filePath) {
@@ -58,6 +59,9 @@ cpSync(path.join(root, "packages/core/templates"), path.join(out, "vendor/core/t
   recursive: true,
 });
 
+// npm publish strips bin entries unless the target is executable (+ shebang).
+chmodSync(path.join(out, "dist", "cli.js"), 0o755);
+
 writeFileSync(
   path.join(out, "vendor/core/package.json"),
   `${JSON.stringify(
@@ -90,13 +94,15 @@ const cliPkg = readJson(path.join(root, "packages/cli/package.json"));
 const corePkg = readJson(path.join(root, "packages/core/package.json"));
 
 const published = {
-  name: "root",
+  name: "rootcli",
   version,
   description:
-    "Root — pure-engineering backend scaffolding CLI (shadcn-style for backend). Bin: root.",
+    "Root — pure-engineering backend scaffolding CLI (shadcn-style for backend). Bins: rootcli, root.",
   type: "module",
   bin: {
-    root: "./dist/cli.js",
+    // Omit leading "./" — npm normalizes it away and warns otherwise.
+    rootcli: "dist/cli.js",
+    root: "dist/cli.js",
   },
   files: ["dist", "vendor"],
   engines: {
@@ -105,7 +111,7 @@ const published = {
   publishConfig: {
     access: "public",
   },
-  keywords: ["cli", "scaffold", "express", "backend", "root"],
+  keywords: ["cli", "scaffold", "express", "backend", "root", "rootcli"],
   license: "MIT",
   dependencies: {
     "@clack/prompts": cliPkg.dependencies["@clack/prompts"],
@@ -123,19 +129,19 @@ if (existsSync(licenseSrc)) {
 
 writeFileSync(
   path.join(out, "README.md"),
-  `# root
+  `# rootcli
 
-Pure-engineering backend scaffolding CLI (**no AI**).
+Pure-engineering backend scaffolding CLI (**no AI**). Product: Root. Bins: \`rootcli\`, \`root\`.
 
 \`\`\`bash
 mkdir my-api && cd my-api
-npx root@latest init
-npx root@latest add auth
-npx root@latest add resource post
-npx root@latest doctor
+npx rootcli@latest init
+npx rootcli@latest add auth
+npx rootcli@latest add resource post
+npx rootcli@latest doctor
 \`\`\`
 
-Also: \`pnpm dlx root@latest\`, \`yarn dlx root@latest\`, \`bunx root@latest\`.
+Also: \`pnpm dlx rootcli@latest\`, \`yarn dlx rootcli@latest\`, \`bunx rootcli@latest\`.
 
 Local monorepo development uses \`pnpm root-cli\` instead of dlx.
 `,
