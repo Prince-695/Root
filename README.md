@@ -6,44 +6,44 @@ Pure-engineering backend scaffolding CLI (**no AI**) — capability-oriented int
 
 ```bash
 mkdir my-api && cd my-api
-npx root@latest init
+npx rootcli@latest init
 # choose TypeScript or JavaScript + Express, DB/ORM, optional JWT
 
-npx root@latest add auth              # if not selected at init
-npx root@latest add resource post
+npx rootcli@latest add auth              # if not selected at init
+npx rootcli@latest add resource post
 pnpm install && pnpm dev
 
 # GET /health
 # POST /auth/signup → POST /auth/signin → token
 # POST /api/post with Authorization: Bearer <token>
-npx root@latest doctor
+npx rootcli@latest doctor
 ```
 
-Also: `pnpm dlx root@latest …` · `yarn dlx root@latest …` · `bunx root@latest …`
+Also: `pnpm dlx rootcli@latest …` · `yarn dlx rootcli@latest …` · `bunx rootcli@latest …`
 
 ### Command surface
 
 ```bash
-npx root@latest init
-npx root@latest add auth
-npx root@latest add resource <name>
-npx root@latest add database <type>      # planned
-npx root@latest add middleware <name>
-npx root@latest add service <name>
-npx root@latest add job <name>           # planned
-npx root@latest add event <name>         # planned
-npx root@latest add storage <type>       # planned
-npx root@latest add cache <type>         # planned
-npx root@latest add module <name>        # planned
-npx root@latest remove <type> <name>     # planned
-npx root@latest list
-npx root@latest inspect <name>
-npx root@latest diff
-npx root@latest doctor
-npx root@latest sync
-npx root@latest --dry-run <command>
-npx root@latest --help
-npx root@latest --version
+npx rootcli@latest init
+npx rootcli@latest add auth
+npx rootcli@latest add resource <name>
+npx rootcli@latest add database <type>      # planned
+npx rootcli@latest add middleware <name>
+npx rootcli@latest add service <name>
+npx rootcli@latest add job <name>           # planned
+npx rootcli@latest add event <name>         # planned
+npx rootcli@latest add storage <type>       # planned
+npx rootcli@latest add cache <type>         # planned
+npx rootcli@latest add module <name>        # planned
+npx rootcli@latest remove <type> <name>     # planned
+npx rootcli@latest list
+npx rootcli@latest inspect <name>
+npx rootcli@latest diff
+npx rootcli@latest doctor
+npx rootcli@latest sync
+npx rootcli@latest --dry-run <command>
+npx rootcli@latest --help
+npx rootcli@latest --version
 ```
 
 Root exposes **backend capabilities** (`resource`, `auth`, `database`, …), not low-level MVC file kinds (`model` / `controller` / `route`).
@@ -84,7 +84,7 @@ Default branch for ongoing work: **`main`**.
 
 | Script | Meaning |
 |---|---|
-| `pnpm prepare-publish` | Build vendored `release/root` |
+| `pnpm prepare-publish` | Build vendored `release/rootcli` |
 | `pnpm pack:audit` | `npm pack` + assert templates/bin/dist |
 | `pnpm pack:smoke` | dlx from local tarball → init/add/doctor + health |
 | `pnpm web` | Docs site dev server |
