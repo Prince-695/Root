@@ -23,13 +23,13 @@ export function DocsHome() {
       <CommandPlate
         title="golden path"
         code={`mkdir my-api && cd my-api
-npx rootcli@latest init
+npx rooot@latest init
 cp .env.example .env
 pnpm install && pnpm dev          # GET /health
 
-npx rootcli@latest add auth          # JWT + /auth/*
-npx rootcli@latest add resource post # /api/post + Zod + ORM
-npx rootcli@latest doctor`}
+npx rooot@latest add auth          # JWT + /auth/*
+npx rooot@latest add resource post # /api/post + Zod + ORM
+npx rooot@latest doctor`}
       />
       <p className="code-note">
         Health probe → JWT auth module → interconnected resource (router, controller, service,
@@ -145,7 +145,7 @@ npx rootcli@latest doctor`}
             <tr>
               <td>Invoke</td>
               <td>
-                <code>npx rootcli@latest</code> / pnpm|yarn|bun dlx
+                <code>npx rooot@latest</code> / pnpm|yarn|bun dlx
               </td>
             </tr>
             <tr>

@@ -63,9 +63,9 @@ patch   root.json              ← modules.post`}
       </p>
       <CommandPlate
         title="terminal"
-        code={`npx rootcli@latest add resource invoice
-npx rootcli@latest add auth
-npx rootcli@latest doctor`}
+        code={`npx rooot@latest add resource invoice
+npx rooot@latest add auth
+npx rooot@latest doctor`}
       />
       <ul>
         <li>

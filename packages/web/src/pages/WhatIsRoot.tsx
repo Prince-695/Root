@@ -32,7 +32,7 @@ export function WhatIsRoot() {
         <strong>Express + JavaScript</strong>. Invoke via package runners (no global install
         required):
       </p>
-      <CommandPlate title="terminal" code="npx rootcli@latest init" />
+      <CommandPlate title="terminal" code="npx rooot@latest init" />
       <p className="code-note">
         Equivalents: <code>pnpm dlx</code>, <code>yarn dlx</code>, <code>bunx</code>. Engines: Node{" "}
         <code>^22.18 || &gt;=24</code>. Monorepo contributors use <code>pnpm root-cli</code> after{" "}
@@ -47,10 +47,10 @@ export function WhatIsRoot() {
       </p>
       <CommandPlate
         title="terminal"
-        code={`npx rootcli@latest add auth
-npx rootcli@latest add resource post
-npx rootcli@latest add middleware rate-limit
-npx rootcli@latest add service mailer`}
+        code={`npx rooot@latest add auth
+npx rooot@latest add resource post
+npx rooot@latest add middleware rate-limit
+npx rooot@latest add service mailer`}
       />
       <div className="docs-two-col">
         <div className="docs-panel">

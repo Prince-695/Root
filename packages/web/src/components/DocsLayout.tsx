@@ -101,7 +101,7 @@ export function DocsLayout() {
         <article className="manual-page manual-page--full">
           <Outlet />
           <p className="footer-meta">
-            Invoke with <code>npx rootcli@latest</code> · also pnpm/yarn/bun dlx · Node{" "}
+            Invoke with <code>npx rooot@latest</code> · also pnpm/yarn/bun dlx · Node{" "}
             <code>^22.18 || &gt;=24</code>
           </p>
         </article>

@@ -59,7 +59,7 @@ export function Landing() {
           </div>
 
           <p className="mt-4 font-mono text-[0.85rem] tracking-[0.18em] text-foreground uppercase">
-            npx rootcli@latest
+            npx rooot@latest
           </p>
         </div>
       </section>

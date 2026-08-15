@@ -35,13 +35,13 @@ cd my-api`}
       />
       <p className="code-note">
         Start clean. Init refuses a foreign non-empty directory unless you pass a new folder name
-        (for example <code>npx rootcli@latest init nested-api</code>).
+        (for example <code>npx rooot@latest init nested-api</code>).
       </p>
 
       <h2>2. Init the kitchen</h2>
-      <CommandPlate title="interactive wizard" code="npx rootcli@latest init" />
+      <CommandPlate title="interactive wizard" code="npx rooot@latest init" />
       <p>Or skip questions with defaults (TypeScript + Express + Postgres + Prisma):</p>
-      <CommandPlate title="defaults" code="npx rootcli@latest --yes init" />
+      <CommandPlate title="defaults" code="npx rooot@latest --yes init" />
       <p className="code-note">
         Init writes Express files, a health route, <code>root.json</code>, <code>.env.example</code>
         , README, and the <code>[ROOT-INJECT:ROUTES]</code> anchor in the server. It may install
@@ -75,7 +75,7 @@ pnpm dev`}
       </p>
 
       <h2>4. Add login (if not chosen at init)</h2>
-      <CommandPlate title="terminal" code="npx rootcli@latest add auth" />
+      <CommandPlate title="terminal" code="npx rooot@latest add auth" />
       <p>
         This installs JWT signup/signin under <code>/auth</code>, middleware that checks{" "}
         <code>Authorization: Bearer …</code>, schema entries, env hints, and a User model for your
@@ -102,7 +102,7 @@ Content-Type: application/json
       />
 
       <h2>5. Add a resource</h2>
-      <CommandPlate title="terminal" code="npx rootcli@latest add resource post" />
+      <CommandPlate title="terminal" code="npx rooot@latest add resource post" />
       <p>Root creates layered files and mounts them. The public surface becomes:</p>
       <CommandPlate
         title="HTTP surface"
@@ -150,11 +150,11 @@ Content-Type: application/json
       <h2>7. Check the wiring</h2>
       <CommandPlate
         title="terminal"
-        code={`npx rootcli@latest doctor
-npx rootcli@latest list
-npx rootcli@latest inspect post
-npx rootcli@latest diff
-npx rootcli@latest --dry-run add resource comment`}
+        code={`npx rooot@latest doctor
+npx rooot@latest list
+npx rooot@latest inspect post
+npx rooot@latest diff
+npx rooot@latest --dry-run add resource comment`}
       />
       <div className="docs-two-col">
         <div className="docs-panel">

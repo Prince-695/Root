@@ -11,7 +11,7 @@ type Stage = {
 const stages: Stage[] = [
   {
     title: "You",
-    lines: ["npx rootcli@latest add resource post", "capability · name · flags"],
+    lines: ["npx rooot@latest add resource post", "capability · name · flags"],
   },
   {
     title: "root CLI",
@@ -68,7 +68,7 @@ export function HldDiagram() {
 
         <pre className="hld-prompt" aria-hidden>
           {"~/api ❯ "}
-          <span className="hld-prompt-cmd">npx rootcli@latest add resource post</span>
+          <span className="hld-prompt-cmd">npx rooot@latest add resource post</span>
         </pre>
 
         <div className="hld-stack">

@@ -13,17 +13,17 @@ export function CommandsIndex() {
 
       <CommandPlate
         title="cheat sheet"
-        code={`npx rootcli@latest init
-npx rootcli@latest add auth
-npx rootcli@latest add resource <name>
-npx rootcli@latest add middleware <name>
-npx rootcli@latest add service <name>
-npx rootcli@latest list
-npx rootcli@latest inspect <name>
-npx rootcli@latest diff
-npx rootcli@latest doctor
-npx rootcli@latest sync
-npx rootcli@latest --dry-run <command>`}
+        code={`npx rooot@latest init
+npx rooot@latest add auth
+npx rooot@latest add resource <name>
+npx rooot@latest add middleware <name>
+npx rooot@latest add service <name>
+npx rooot@latest list
+npx rooot@latest inspect <name>
+npx rooot@latest diff
+npx rooot@latest doctor
+npx rooot@latest sync
+npx rooot@latest --dry-run <command>`}
       />
       <p className="code-note">
         Planned (names reserved): <code>add database|job|event|storage|cache|module</code>,{" "}

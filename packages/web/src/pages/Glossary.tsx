@@ -73,7 +73,7 @@ const terms: { term: string; def: string }[] = [
   },
   {
     term: "dlx / npx",
-    def: "Run a package without a global install. Canonical: npx rootcli@latest … (also pnpm dlx, yarn dlx, bunx).",
+    def: "Run a package without a global install. Canonical: npx rooot@latest … (also pnpm dlx, yarn dlx, bunx).",
   },
   {
     term: "Monorepo",
