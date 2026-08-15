@@ -21,7 +21,7 @@ import { fileURLToPath } from "node:url";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const out = path.join(root, "release", "rooot");
-const version = "0.1.0";
+const version = "0.1.1";
 
 function readJson(filePath) {
   return JSON.parse(readFileSync(filePath, "utf8"));

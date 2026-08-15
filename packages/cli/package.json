@@ -1,6 +1,6 @@
 {
   "name": "@root/cli",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Root CLI — pure-engineering backend scaffolding (bin: rooot).",
   "type": "module",
   "bin": {

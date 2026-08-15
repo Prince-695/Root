@@ -2,6 +2,12 @@
 
 All notable changes to Root (`rooot`) are documented here.
 
+## 0.1.1 — npx entry fix (2026-08-15)
+
+### Fixed
+
+- `npx rooot@latest` now starts the CLI. npm bin shims are symlinks; 0.1.0 compared `import.meta.url` to `process.argv[1]` and exited with no output.
+
 ## Unreleased — Ultimate composition (Phases 11–20)
 
 ### Added

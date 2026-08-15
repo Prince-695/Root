@@ -1,7 +1,7 @@
 export const ROOT_ENGINE_NAME = "root" as const;
 
 /** Semver of the engine / publishable CLI pack (keep in sync with package versions). */
-export const ROOT_ENGINE_VERSION = "0.1.0" as const;
+export const ROOT_ENGINE_VERSION = "0.1.1" as const;
 
 /**
  * npm package name for public invocation (sole bin: rooot).

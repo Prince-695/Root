@@ -11,7 +11,7 @@ import {
 describe("@root/core", () => {
   it("exposes stable engine identity", () => {
     expect(ROOT_ENGINE_NAME).toBe("root");
-    expect(ROOT_ENGINE_VERSION).toBe("0.1.0");
+    expect(ROOT_ENGINE_VERSION).toBe("0.1.1");
     expect(ROOT_NPM_PACKAGE).toBe("rooot");
   });
 
@@ -30,7 +30,7 @@ describe("@root/core", () => {
 
   it("builds a welcome banner", () => {
     expect(getEngineBanner()).toContain("root");
-    expect(getEngineBanner()).toContain("0.1.0");
+    expect(getEngineBanner()).toContain("0.1.1");
   });
 
   it("type-guards known commands", () => {

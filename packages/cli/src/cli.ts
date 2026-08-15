@@ -1,5 +1,4 @@
 #!/usr/bin/env node
-import { pathToFileURL } from "node:url";
 import { ROOT_NPM_PACKAGE, getEngineBanner, rootInvoke, rootInvokeAll } from "@root/core";
 import { Command } from "commander";
 import { registerAddCommand } from "./commands/add.js";
@@ -10,6 +9,7 @@ import { registerInspectCommand } from "./commands/inspect.js";
 import { registerListCommand } from "./commands/list.js";
 import { registerRemoveCommand } from "./commands/remove.js";
 import { registerSyncCommand } from "./commands/sync.js";
+import { isMainModule } from "./is-main-module.js";
 
 export function createProgram(): Command {
   const program = new Command();
@@ -17,7 +17,7 @@ export function createProgram(): Command {
   program
     .name(ROOT_NPM_PACKAGE)
     .description(`Pure-engineering backend scaffolding CLI. Primary UX: ${rootInvoke("<command>")}`)
-    .version("0.1.0")
+    .version("0.1.1")
     .option("-v, --verbose", "Enable verbose logging", false)
     .option("--dry-run", "Preview actions without writing files", false)
     .option("--yes", "Skip confirmation prompts where safe", false);
@@ -56,13 +56,7 @@ export async function run(argv: string[] = process.argv): Promise<void> {
   await program.parseAsync(argv);
 }
 
-function isMainModule(): boolean {
-  const entry = process.argv[1];
-  if (!entry) return false;
-  return import.meta.url === pathToFileURL(entry).href;
-}
-
-if (isMainModule()) {
+if (isMainModule(process.argv[1], import.meta.url)) {
   run().catch((error: unknown) => {
     const message = error instanceof Error ? error.message : String(error);
     console.error(message);
