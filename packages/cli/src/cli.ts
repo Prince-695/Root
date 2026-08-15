@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import { pathToFileURL } from "node:url";
-import { getEngineBanner } from "@root/core";
+import { ROOT_NPM_PACKAGE, getEngineBanner, rootInvoke, rootInvokeAll } from "@root/core";
 import { Command } from "commander";
 import { registerAddCommand } from "./commands/add.js";
 import { registerDiffCommand } from "./commands/diff.js";
@@ -15,10 +15,8 @@ export function createProgram(): Command {
   const program = new Command();
 
   program
-    .name("root")
-    .description(
-      "Pure-engineering backend scaffolding CLI. Primary UX: npx rootcli@latest <command>",
-    )
+    .name(ROOT_NPM_PACKAGE)
+    .description(`Pure-engineering backend scaffolding CLI. Primary UX: ${rootInvoke("<command>")}`)
     .version("0.1.0")
     .option("-v, --verbose", "Enable verbose logging", false)
     .option("--dry-run", "Preview actions without writing files", false)
@@ -30,14 +28,14 @@ export function createProgram(): Command {
     [
       "",
       "Examples:",
-      "  $ npx rootcli@latest init",
-      "  $ npx rootcli@latest add auth",
-      "  $ npx rootcli@latest add resource post",
-      "  $ npx rootcli@latest list",
-      "  $ npx rootcli@latest doctor",
-      "  $ npx rootcli@latest --dry-run add resource comment",
+      `  $ ${rootInvoke("init")}`,
+      `  $ ${rootInvoke("add auth")}`,
+      `  $ ${rootInvoke("add resource post")}`,
+      `  $ ${rootInvoke("list")}`,
+      `  $ ${rootInvoke("doctor")}`,
+      `  $ ${rootInvoke("--dry-run add resource comment")}`,
       "",
-      "Also: pnpm dlx rootcli@latest … · yarn dlx rootcli@latest … · bunx rootcli@latest …",
+      `Also: ${rootInvokeAll("").join(" · ")}`,
     ].join("\n"),
   );
 

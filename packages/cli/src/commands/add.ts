@@ -15,6 +15,8 @@ import {
   addMonorepo,
   addRoute,
   formatOperationPlan,
+  rootInvoke,
+  rootInvokeAll,
 } from "@root/core";
 import type { Command } from "commander";
 import { getGlobalFlags, logVerbose } from "../global-flags.js";
@@ -87,8 +89,8 @@ export function registerAddCommand(program: Command): void {
         "  $ root add kubernetes",
         "",
         "Runners:",
-        "  npx rootcli@latest add resource post",
-        "  pnpm dlx rootcli@latest add auth",
+        `  ${rootInvoke("add resource post")}`,
+        `  ${rootInvokeAll("add auth")[1]}`,
       ].join("\n"),
     )
     .action(

@@ -3,6 +3,7 @@ import {
   ROOT_COMMANDS,
   ROOT_ENGINE_NAME,
   ROOT_ENGINE_VERSION,
+  ROOT_NPM_PACKAGE,
   getEngineBanner,
   isRootCommand,
 } from "../src/index.js";
@@ -11,6 +12,7 @@ describe("@root/core", () => {
   it("exposes stable engine identity", () => {
     expect(ROOT_ENGINE_NAME).toBe("root");
     expect(ROOT_ENGINE_VERSION).toBe("0.1.0");
+    expect(ROOT_NPM_PACKAGE).toBe("rooot");
   });
 
   it("lists the public command surface", () => {

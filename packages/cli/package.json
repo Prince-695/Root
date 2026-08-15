@@ -1,10 +1,10 @@
 {
   "name": "@root/cli",
   "version": "0.1.0",
-  "description": "Root CLI — pure-engineering backend scaffolding (bin: root).",
+  "description": "Root CLI — pure-engineering backend scaffolding (bin: rooot).",
   "type": "module",
   "bin": {
-    "root": "./dist/cli.js"
+    "rooot": "./dist/cli.js"
   },
   "files": ["dist"],
   "scripts": {

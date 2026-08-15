@@ -17,8 +17,11 @@ describe("@root/cli", () => {
   it("prints help mentioning the primary commands", async () => {
     const program = createProgram();
     const help = program.helpInformation();
+    expect(program.name()).toBe("rooot");
     expect(help).toContain("init");
     expect(help).toContain("add");
     expect(help).toContain("doctor");
+    expect(help).toContain("npx rooot@latest");
+    expect(help).not.toContain("rootcli");
   });
 });

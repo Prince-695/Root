@@ -1,4 +1,4 @@
-import type { InitAnswers } from "@root/core";
+import { type InitAnswers, rootInvoke } from "@root/core";
 
 /**
  * Language-aware post-init instructions (never hardcode Node for Python/Go).
@@ -39,9 +39,9 @@ export function buildInitNextSteps(options: {
       }
     }
     lines.push("", "Then (CLI still via npx — your app stays pure Python):");
-    lines.push("  npx rootcli@latest doctor");
+    lines.push(`  ${rootInvoke("doctor")}`);
     if (!adoptExisting) {
-      lines.push("  npx rootcli@latest add docker   # if needed");
+      lines.push(`  ${rootInvoke("add docker")}   # if needed`);
     }
     return lines.filter((l): l is string => l !== undefined).join("\n");
   }
@@ -54,9 +54,9 @@ export function buildInitNextSteps(options: {
       lines.push("  go run .");
     }
     lines.push("", "Then (CLI still via npx — your app stays pure Go):");
-    lines.push("  npx rootcli@latest doctor");
+    lines.push(`  ${rootInvoke("doctor")}`);
     if (!adoptExisting) {
-      lines.push("  npx rootcli@latest add docker   # if needed");
+      lines.push(`  ${rootInvoke("add docker")}   # if needed`);
     }
     return lines.filter((l): l is string => l !== undefined).join("\n");
   }
@@ -77,10 +77,10 @@ export function buildInitNextSteps(options: {
   }
   lines.push("", "Then:");
   if (answers.auth !== "jwt" && !adoptExisting) {
-    lines.push("  npx rootcli@latest add auth");
+    lines.push(`  ${rootInvoke("add auth")}`);
   }
-  lines.push("  npx rootcli@latest add resource post");
-  lines.push("  npx rootcli@latest add docker   # if needed");
+  lines.push(`  ${rootInvoke("add resource post")}`);
+  lines.push(`  ${rootInvoke("add docker")}   # if needed`);
 
   return lines.filter((l): l is string => l !== undefined).join("\n");
 }

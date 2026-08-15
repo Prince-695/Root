@@ -1,4 +1,4 @@
-import { ERRORS } from "@root/core";
+import { ERRORS, rootInvoke } from "@root/core";
 import type { Command } from "commander";
 import { getGlobalFlags, logVerbose } from "../global-flags.js";
 import { requireRootProject } from "../lib/require-root-project.js";
@@ -55,8 +55,8 @@ export function registerRemoveCommand(program: Command): void {
           "",
           "Interconnected remove (unwind mounts, schema, manifest) is planned.",
           "Until then, remove files carefully and run:",
-          "  npx rootcli@latest doctor",
-          "  npx rootcli@latest diff",
+          `  ${rootInvoke("doctor")}`,
+          `  ${rootInvoke("diff")}`,
         ].join("\n"),
       );
       process.exitCode = 1;

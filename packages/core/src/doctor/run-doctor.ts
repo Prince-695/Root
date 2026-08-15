@@ -1,6 +1,7 @@
 import { access, readFile } from "node:fs/promises";
 import path from "node:path";
 import { type RootJson, loadRootJson } from "../config/root-json.js";
+import { rootInvoke } from "../constants.js";
 import { AUTH_BANNER, EXPORTS_BANNER, RESOURCE_BANNER } from "../mutators/schema-registry.js";
 import { assertNoNodeProjectFiles } from "../providers/language-agnostic.js";
 import { sourceExtension } from "../providers/language.js";
@@ -310,8 +311,7 @@ export async function runDoctor(options: RunDoctorOptions): Promise<DoctorResult
   }
 
   if (authJwt && !authModule) {
-    const msg =
-      'root.json has auth: "jwt" but modules.auth is missing. Run: pnpm dlx rootcli@latest add auth';
+    const msg = `root.json has auth: "jwt" but modules.auth is missing. Run: ${rootInvoke("add auth")}`;
     issues.push(issue("auth-consistency", msg, options.strict ? "error" : "warning"));
     if (options.strict) bump(false);
     else bump(true);

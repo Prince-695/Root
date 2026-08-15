@@ -1,4 +1,4 @@
-import { listModules, loadModuleGraph, loadRootJson } from "@root/core";
+import { listModules, loadModuleGraph, loadRootJson, rootInvoke } from "@root/core";
 import type { Command } from "commander";
 import { getGlobalFlags, logVerbose } from "../global-flags.js";
 import { requireRootProject } from "../lib/require-root-project.js";
@@ -26,8 +26,8 @@ export function registerListCommand(program: Command): void {
             `Project: ${config.projectName}`,
             "",
             "No modules registered yet.",
-            "Try: npx rootcli@latest add resource post",
-            "     npx rootcli@latest add auth",
+            `Try: ${rootInvoke("add resource post")}`,
+            `     ${rootInvoke("add auth")}`,
           ].join("\n"),
         );
         return;

@@ -1,8 +1,9 @@
 import type { RootJson } from "../config/root-json.js";
+import { rootInvoke } from "../constants.js";
 import type { ZodField } from "../engine/operations.js";
 import { toCamelCase, toPascalCase } from "../registry/types.js";
 
-const PRISMA_BANNER = "// Models are added by `npx rootcli@latest add resource <name>`";
+const PRISMA_BANNER = `// Models are added by \`${rootInvoke("add resource <name>")}\``;
 
 function createFields(fields: ZodField[]): ZodField[] {
   return fields.filter((f) => !["id", "createdAt", "updatedAt"].includes(f.name));

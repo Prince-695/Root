@@ -1,6 +1,7 @@
 import { readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { z } from "zod";
+import { rootInvoke } from "../constants.js";
 
 export const ROOT_JSON_FILENAME = "root.json" as const;
 export const ROOT_JSON_VERSION = 2 as const;
@@ -227,7 +228,7 @@ export async function loadRootJson(projectRoot: string): Promise<RootJson> {
     raw = await readFile(filePath, "utf8");
   } catch {
     throw new Error(
-      `No ${ROOT_JSON_FILENAME} found in ${projectRoot}.\nRun: pnpm dlx rootcli@latest init`,
+      `No ${ROOT_JSON_FILENAME} found in ${projectRoot}.\nRun: ${rootInvoke("init")}`,
     );
   }
 

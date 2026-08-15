@@ -4,10 +4,10 @@ export const ROOT_ENGINE_NAME = "root" as const;
 export const ROOT_ENGINE_VERSION = "0.1.0" as const;
 
 /**
- * npm package name for public invocation (bin names: rootcli + root).
- * Primary UX: `npx rootcli@latest …` (also pnpm dlx / yarn dlx / bunx).
+ * npm package name for public invocation (sole bin: rooot).
+ * Primary UX: `npx rooot@latest …` (also pnpm dlx / yarn dlx / bunx).
  */
-export const ROOT_NPM_PACKAGE = "rootcli" as const;
+export const ROOT_NPM_PACKAGE = "rooot" as const;
 
 /** Preferred one-liner shown in errors and docs. */
 export function rootInvoke(args: string): string {
