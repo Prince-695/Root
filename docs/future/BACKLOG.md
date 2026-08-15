@@ -31,7 +31,7 @@ Documented for later phases — **not** required for current gates.
 
 ## Product
 
-- Standalone `rootcli` binary (no Node on developer machine)
+- Standalone `rooot` binary (no Node on developer machine)
 - User monorepo microservices topology
 - Nx as alternative to Turborepo
 - Adopt foreign Python/Go projects (not only Node `package.json`)

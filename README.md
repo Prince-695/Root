@@ -8,47 +8,47 @@ Pure-engineering backend scaffolding CLI (**no AI**) — capability-oriented int
 
 ```bash
 mkdir my-api && cd my-api
-npx rootcli@latest init
+npx rooot@latest init
 # choose TypeScript or JavaScript + Express, DB/ORM, optional JWT
 
-npx rootcli@latest add auth              # if not selected at init
-npx rootcli@latest add resource post
+npx rooot@latest add auth              # if not selected at init
+npx rooot@latest add resource post
 pnpm install && pnpm dev
 
 # GET /health
 # POST /auth/signup → POST /auth/signin → token
 # POST /api/post with Authorization: Bearer <token>
-npx rootcli@latest doctor
+npx rooot@latest doctor
 ```
 
-Also: `pnpm dlx rootcli@latest …` · `yarn dlx rootcli@latest …` · `bunx rootcli@latest …`
+Also: `pnpm dlx rooot@latest …` · `yarn dlx rooot@latest …` · `bunx rooot@latest …`
 
 ## Quick start (FastAPI / Flask / Go)
 
 ```bash
 mkdir py-api && cd py-api
-npx rootcli@latest init
+npx rooot@latest init
 # language: python · framework: fastapi (or flask) · orm: none|sqlalchemy
 
-npx rootcli@latest add auth
-npx rootcli@latest add resource post
+npx rooot@latest add auth
+npx rooot@latest add resource post
 python -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
 uvicorn app.main:app --reload   # Flask: flask --app app run --debug
 
-npx rootcli@latest doctor
+npx rooot@latest doctor
 # assert: no package.json in this folder
 ```
 
 ```bash
 mkdir go-api && cd go-api
-npx rootcli@latest init
+npx rooot@latest init
 # language: go · framework: go-http · orm: none|gorm
 
-npx rootcli@latest add auth
-npx rootcli@latest add resource post
+npx rooot@latest add auth
+npx rooot@latest add resource post
 go mod tidy && go run .
-npx rootcli@latest doctor
+npx rooot@latest doctor
 ```
 
 Manual end-to-end matrix for every stack and command: **[test.md](test.md)**.
@@ -56,31 +56,31 @@ Manual end-to-end matrix for every stack and command: **[test.md](test.md)**.
 ### Command surface
 
 ```bash
-npx rootcli@latest init
-npx rootcli@latest add auth
-npx rootcli@latest add resource <name>
-npx rootcli@latest add middleware <name>    # Node / Express
-npx rootcli@latest add service <name>       # Node / Express
-npx rootcli@latest add cache <type>         # Node / Express
-npx rootcli@latest add queue <type>         # Node / Express
-npx rootcli@latest add storage <type>       # Node / Express
-npx rootcli@latest add websocket            # Node / Express
-npx rootcli@latest add logging              # Node / Express
-npx rootcli@latest add health               # Node / Express
-npx rootcli@latest add rate-limit           # Node / Express
-npx rootcli@latest add docker               # all stacks
-npx rootcli@latest add github-actions       # all stacks
-npx rootcli@latest add kubernetes          # all stacks
-npx rootcli@latest add monorepo             # Node
-npx rootcli@latest remove <type> <name>
-npx rootcli@latest list
-npx rootcli@latest inspect <name>
-npx rootcli@latest diff
-npx rootcli@latest doctor
-npx rootcli@latest sync
-npx rootcli@latest --dry-run <command>
-npx rootcli@latest --help
-npx rootcli@latest --version
+npx rooot@latest init
+npx rooot@latest add auth
+npx rooot@latest add resource <name>
+npx rooot@latest add middleware <name>    # Node / Express
+npx rooot@latest add service <name>       # Node / Express
+npx rooot@latest add cache <type>         # Node / Express
+npx rooot@latest add queue <type>         # Node / Express
+npx rooot@latest add storage <type>       # Node / Express
+npx rooot@latest add websocket            # Node / Express
+npx rooot@latest add logging              # Node / Express
+npx rooot@latest add health               # Node / Express
+npx rooot@latest add rate-limit           # Node / Express
+npx rooot@latest add docker               # all stacks
+npx rooot@latest add github-actions       # all stacks
+npx rooot@latest add kubernetes          # all stacks
+npx rooot@latest add monorepo             # Node
+npx rooot@latest remove <type> <name>
+npx rooot@latest list
+npx rooot@latest inspect <name>
+npx rooot@latest diff
+npx rooot@latest doctor
+npx rooot@latest sync
+npx rooot@latest --dry-run <command>
+npx rooot@latest --help
+npx rooot@latest --version
 ```
 
 Root exposes **backend capabilities** (`resource`, `auth`, …). Atomic MVC kinds (`model` / `controller` / …) remain Node/Express helpers.
@@ -121,7 +121,7 @@ Default branch for ongoing work: **`main`**.
 
 | Script | Meaning |
 |---|---|
-| `pnpm prepare-publish` | Build vendored `release/rootcli` |
+| `pnpm prepare-publish` | Build vendored `release/rooot` |
 | `pnpm pack:audit` | `npm pack` + assert templates/bin/dist |
 | `pnpm pack:smoke` | dlx from local tarball → init/add/doctor + health |
 | `pnpm web` | Docs site dev server |

@@ -136,7 +136,7 @@ Optional: open a PR and confirm GitHub Actions is green (needs push/remote).
 - Project detector / `root.json`  
 - Interconnection engine / Schema Registry  
 - Templates, registry recipes, DB/ORM matrix  
-- Publishing to npm / real `pnpm dlx rootcli@latest`  
+- Publishing to npm / real `pnpm dlx rooot@latest`  
 
 Those belong to Phases 1–9 as documented in `Implementation_phases.md`.
 

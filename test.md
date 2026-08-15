@@ -2,7 +2,7 @@
 
 Detailed copy-paste QA for every supported language/framework and every CLI command that exists today.
 
-Use this after `pnpm build` (contributors) or with a published/local tarball (`npx rootcli@latest` / `pnpm dlx ./release/rootcli/rootcli-0.1.0.tgz`).
+Use this after `pnpm build` (contributors) or with a published/local tarball (`npx rooot@latest` / `pnpm dlx ./release/rooot/rooot-0.1.0.tgz`).
 
 ---
 
@@ -26,10 +26,10 @@ Pick one and stick to it for a session:
 export ROOT='pnpm root-cli'
 
 # Published / preview
-export ROOT='npx rootcli@latest'
+export ROOT='npx rooot@latest'
 
 # Local packed tarball (after pnpm pack:audit)
-export ROOT='pnpm dlx /ABS/PATH/TO/Root/release/rootcli/rootcli-0.1.0.tgz'
+export ROOT='pnpm dlx /ABS/PATH/TO/Root/release/rooot/rooot-0.1.0.tgz'
 ```
 
 Never use `pnpm root` (pnpm-reserved). Global flags work on either form:

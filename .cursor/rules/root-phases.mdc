@@ -12,4 +12,5 @@ alwaysApply: true
 - After a phase gate is green, write `docs/phase/phase-N.md` and stop for manual review.
 - Do not start the next phase until the user explicitly asks.
 - Prefer `pnpm root-cli` for local CLI invocation; never rely on `pnpm root` (pnpm reserved).
+- Public invoke is `npx rooot@latest` (also `pnpm dlx rooot@latest`).
 - No AI/LLM features in the product; keep scaffolding deterministic.

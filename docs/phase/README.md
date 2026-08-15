@@ -13,7 +13,7 @@ After each implementation phase gate turns green, a markdown file is added here:
 | [phase-6.md](./phase-6.md) | `add auth` + auth-aware graph (MVP) |
 | [phase-7.md](./phase-7.md) | Remaining atomic adds |
 | [phase-8.md](./phase-8.md) | Doctor, dry-run, reliability |
-| [phase-9.md](./phase-9.md) | Release engineering & public preview (`rootcli`) |
+| [phase-9.md](./phase-9.md) | Release engineering & public preview (`rooot`) |
 | [phase-10.md](./phase-10.md) | Stack providers (Express JS ready; others planned) |
 | [phase-11.md](./phase-11.md) | Express maturity — SQLite, adopt, PM, infra adds, root.json v2 |
 | [phase-12.md](./phase-12.md) | Capability pack (cache/queue/storage/…) |

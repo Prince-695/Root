@@ -1,6 +1,6 @@
 # Compatibility
 
-## Node.js (CLI / `rootcli`)
+## Node.js (CLI / `rooot`)
 
 | Version | Status |
 |---|---|
@@ -18,10 +18,10 @@ Generated Express apps may still declare `node >= 18` in their own `package.json
 
 | Tool | Invoke CLI |
 |---|---|
-| pnpm | `pnpm dlx rootcli@latest …` |
-| npm | `npx rootcli@latest …` |
-| yarn | `yarn dlx rootcli@latest …` |
-| bun | `bunx rootcli@latest …` |
+| pnpm | `pnpm dlx rooot@latest …` |
+| npm | `npx rooot@latest …` |
+| yarn | `yarn dlx rooot@latest …` |
+| bun | `bunx rooot@latest …` |
 
 ### Generated project installers
 

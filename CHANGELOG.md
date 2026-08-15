@@ -1,6 +1,6 @@
 # Changelog
 
-All notable changes to Root (`rootcli`) are documented here.
+All notable changes to Root (`rooot`) are documented here.
 
 ## Unreleased — Ultimate composition (Phases 11–20)
 
@@ -22,12 +22,13 @@ All notable changes to Root (`rootcli`) are documented here.
 
 - README / COMPATIBILITY: Express complete; FastAPI/Flask/Go ready for init+auth+resource
 - Stack capability guard allows native Python/Go auth/resource; Node-only extras still blocked on non-Node
+- Public package/bin renamed from `rootcli` to `rooot` (never published under the old name). Sole bin is `rooot`; no `root` / `rootcli` aliases.
 
 ## 0.1.0 — Public Preview (2026-08-09)
 
 ### Added
 
-- Publishable pack `root` (bin: `root`) with vendored engine + templates
+- Publishable pack `rooot` (bin: `rooot`) with vendored engine + templates
 - Capability-oriented CLI: `init`, `add resource|auth|middleware|service`, `list`, `inspect`, `diff`, `doctor`, `sync`
 - Planned stubs: `add database|job|event|storage|cache|module`, `remove`
 - Express TypeScript + JavaScript providers
@@ -37,7 +38,7 @@ All notable changes to Root (`rootcli`) are documented here.
 
 ### Notes
 
-- Public UX: `npx rootcli@latest …` (also pnpm/yarn/bun dlx)
+- Public UX: `npx rooot@latest …` (also pnpm/yarn/bun dlx)
 - Low-level `add model` / `add controller` / `add route` are not the public surface (`add route` aliases to `add resource` for one release)
 - Fastify and Spring Boot remain planned providers
 - CLI requires Node 22.18+ (Babel 8); Node 18/20 are not supported

@@ -47,7 +47,7 @@
 
 It is the **shadcn/ui equivalent for backend development**:
 
-- Users run it via package runners (`pnpm dlx rootcli@latest …`).
+- Users run it via package runners (`pnpm dlx rooot@latest …`).
 - Generated code lives **in the user’s repository** — they own it.
 - `init` **structures** a production-grade backend from an empty folder.
 - `add` **registers modules** into an existing Root project and **rewires every connected surface** (routes, controllers, services, schema, server mounts, database models, auth, dependencies, manifest) in one atomic transaction.
@@ -82,7 +82,7 @@ There is no widely adopted **“shadcn for backend”**:
 | Framework lock-in CLIs (Nest-only, Rails-only) | Stack-provider model; Express first, more later |
 | Black-box frameworks | Code ownership — copy into your repo |
 | AI-generated spaghetti | Deterministic templates + explicit CLI choices |
-| Global binary / awkward install UX | `pnpm dlx rootcli@latest` |
+| Global binary / awkward install UX | `pnpm dlx rooot@latest` |
 
 ---
 
@@ -96,9 +96,9 @@ There is no widely adopted **“shadcn for backend”**:
 
 | shadcn/ui | Root |
 |---|---|
-| `pnpm dlx shadcn@latest init` | `pnpm dlx rootcli@latest init` |
+| `pnpm dlx shadcn@latest init` | `pnpm dlx rooot@latest init` |
 | `components.json` | `root.json` |
-| `pnpm dlx shadcn@latest add button` | `pnpm dlx rootcli@latest add route post` |
+| `pnpm dlx shadcn@latest add button` | `pnpm dlx rooot@latest add route post` |
 | UI primitives copied into `components/ui` | Backend modules copied into `src/` |
 | Design tokens + shared utils | Shared middleware + Schema Registry + server anchors |
 | You own and edit components | You own and edit routes, controllers, services |
@@ -149,7 +149,7 @@ There is no widely adopted **“shadcn for backend”**:
 #### Persona 1 — Rapid Prototyper Rachel
 
 - Needs a real API structure in minutes, not a throwaway gist
-- Runs `pnpm dlx rootcli@latest init` in an empty folder, picks Postgres + Prisma, ships
+- Runs `pnpm dlx rooot@latest init` in an empty folder, picks Postgres + Prisma, ships
 
 #### Persona 2 — Enterprise Architect Alex
 
@@ -199,14 +199,14 @@ Before writing, Root snapshots affected files. On any failure, it restores them.
 
 ### 7.1 Create Mode — Folder Prompt (shadcn-style)
 
-**Trigger:** `pnpm dlx rootcli@latest init` from any directory.
+**Trigger:** `pnpm dlx rooot@latest init` from any directory.
 
 **Folder selection (before the stack wizard):**
 
 1. Prompt: **What is your project / folder name?**
 2. **Enter a name** → Root creates `<cwd>/<name>/` (if needed) and initializes inside it  
 3. **Press Escape / cancel** → continue in the **current folder** (only if that folder is empty/safe)  
-4. Optional CLI skip: `pnpm dlx rootcli@latest init my-api` creates `./my-api` without the folder prompt
+4. Optional CLI skip: `pnpm dlx rooot@latest init my-api` creates `./my-api` without the folder prompt
 
 This matches shadcn/ui: you do not need an empty cwd first — give a folder name and Root creates it.
 
@@ -222,7 +222,7 @@ This matches shadcn/ui: you do not need an empty cwd first — give a folder nam
 
 ### 7.2 Modify Mode — Existing Root Project
 
-**Trigger:** `pnpm dlx rootcli@latest add …` when `root.json` exists.
+**Trigger:** `pnpm dlx rooot@latest add …` when `root.json` exists.
 
 **Behavior:**
 
@@ -251,16 +251,16 @@ This matches shadcn/ui: you do not need an empty cwd first — give a folder nam
 
 ```bash
 mkdir my-api && cd my-api
-pnpm dlx rootcli@latest init
-pnpm dlx rootcli@latest add auth
-pnpm dlx rootcli@latest add route post
+pnpm dlx rooot@latest init
+pnpm dlx rooot@latest add auth
+pnpm dlx rooot@latest add route post
 ```
 
 Also supported:
 
 ```bash
-npx rootcli@latest init
-bunx rootcli@latest init
+npx rooot@latest init
+bunx rooot@latest init
 ```
 
 ### 8.2 Package Requirements
@@ -287,10 +287,10 @@ Docs and marketing always lead with **dlx**.
 **Purpose:** Structureize a backend from an empty folder via interactive wizard.
 
 ```bash
-pnpm dlx rootcli@latest init
-pnpm dlx rootcli@latest init --yes          # use defaults where safe (advanced)
-pnpm dlx rootcli@latest init --dry-run      # preview file tree, write nothing
-pnpm dlx rootcli@latest init --verbose
+pnpm dlx rooot@latest init
+pnpm dlx rooot@latest init --yes          # use defaults where safe (advanced)
+pnpm dlx rooot@latest init --dry-run      # preview file tree, write nothing
+pnpm dlx rooot@latest init --verbose
 ```
 
 ### 9.2 `root add <component> [name]`
@@ -307,9 +307,9 @@ pnpm dlx rootcli@latest init --verbose
 | `add model <name>` | Yes | DB model + schema registry entry |
 
 ```bash
-pnpm dlx rootcli@latest add route post
-pnpm dlx rootcli@latest add auth
-pnpm dlx rootcli@latest add model comment
+pnpm dlx rooot@latest add route post
+pnpm dlx rooot@latest add auth
+pnpm dlx rooot@latest add model comment
 ```
 
 ### 9.3 `root doctor`
@@ -326,7 +326,7 @@ Checks:
 - Auth presence consistent with protected routes (configurable strictness)
 
 ```bash
-pnpm dlx rootcli@latest doctor
+pnpm dlx rooot@latest doctor
 ```
 
 ### 9.4 Global Flags
@@ -437,7 +437,7 @@ Root targets **entry-level production** that can grow to **company-scalable** se
 
 > When a developer registers anything, **one command** leaves a consistent, bootable system. No manual imports. No forgotten schema. No orphan controllers.
 
-### 12.2 Example Transaction — `pnpm dlx rootcli@latest add route post`
+### 12.2 Example Transaction — `pnpm dlx rooot@latest add route post`
 
 | Step | Action |
 |---|---|

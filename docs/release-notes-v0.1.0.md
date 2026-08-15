@@ -1,20 +1,20 @@
 # Root v0.1.0 — Public Preview
 
-Pure-engineering backend scaffolding CLI (**no AI**). npm package: **`rootcli`**. Bins: `rootcli` and `root` (unscoped `root` / `root-cli` are taken on npm).
+Pure-engineering backend scaffolding CLI (**no AI**). npm package: **`rooot`**. Sole bin: `rooot` (unscoped `root` / `root-cli` are taken on npm).
 
 ## Install (when published to npm)
 
 ```bash
-pnpm dlx rootcli@latest init
+pnpm dlx rooot@latest init
 # or
-npx rootcli@latest init
+npx rooot@latest init
 ```
 
 ## Install from this GitHub Release
 
 ```bash
-# download rootcli-0.1.0.tgz from Assets, then:
-pnpm dlx ./rootcli-0.1.0.tgz --yes init my-api
+# download rooot-0.1.0.tgz from Assets, then:
+pnpm dlx ./rooot-0.1.0.tgz --yes init my-api
 ```
 
 ## Local monorepo (contributors)
@@ -38,9 +38,9 @@ pnpm root-cli --help
 
 ```bash
 mkdir my-api && cd my-api
-pnpm dlx rootcli@latest init
-pnpm dlx rootcli@latest add auth
-pnpm dlx rootcli@latest add resource post
+pnpm dlx rooot@latest init
+pnpm dlx rooot@latest add auth
+pnpm dlx rooot@latest add resource post
 pnpm install && pnpm dev
-pnpm dlx rootcli@latest doctor
+pnpm dlx rooot@latest doctor
 ```

@@ -1,6 +1,6 @@
 # Architecture overview
 
-Root is a **framework-aware backend composition CLI** distributed as `rootcli` on npm.
+Root is a **framework-aware backend composition CLI** distributed as `rooot` on npm.
 
 ## Layers
 

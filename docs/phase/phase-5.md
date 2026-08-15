@@ -86,7 +86,7 @@ pnpm check
 # Manual
 pnpm root-cli --yes init demo-api --skip-install
 cd demo-api && pnpm install
-pnpm root-cli add route post --skip-generate   # from repo; or pnpm dlx rootcli@latest …
+pnpm root-cli add route post --skip-generate   # from repo; or pnpm dlx rooot@latest …
 ```
 
 ---
