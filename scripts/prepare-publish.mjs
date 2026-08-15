@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 import { execSync } from "node:child_process";
 /**
- * Build a self-contained publish directory for `rootcli` (bins: rootcli + root).
+ * Build a self-contained publish directory for `rooot` (sole bin: rooot).
  * Core is vendored + CLI imports rewritten so a single tarball works with
- * `npx rootcli@latest` / `pnpm dlx rootcli@latest`.
+ * `npx rooot@latest` / `pnpm dlx rooot@latest`.
  */
 import {
   chmodSync,
@@ -20,7 +20,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-const out = path.join(root, "release", "rootcli");
+const out = path.join(root, "release", "rooot");
 const version = "0.1.0";
 
 function readJson(filePath) {
@@ -94,15 +94,14 @@ const cliPkg = readJson(path.join(root, "packages/cli/package.json"));
 const corePkg = readJson(path.join(root, "packages/core/package.json"));
 
 const published = {
-  name: "rootcli",
+  name: "rooot",
   version,
   description:
-    "Root — pure-engineering backend scaffolding CLI (shadcn-style for backend). Bins: rootcli, root.",
+    "Root — pure-engineering backend scaffolding CLI (shadcn-style for backend). Bin: rooot.",
   type: "module",
   bin: {
     // Omit leading "./" — npm normalizes it away and warns otherwise.
-    rootcli: "dist/cli.js",
-    root: "dist/cli.js",
+    rooot: "dist/cli.js",
   },
   files: ["dist", "vendor"],
   engines: {
@@ -111,7 +110,7 @@ const published = {
   publishConfig: {
     access: "public",
   },
-  keywords: ["cli", "scaffold", "express", "backend", "root", "rootcli"],
+  keywords: ["cli", "scaffold", "express", "backend", "root", "rooot"],
   license: "MIT",
   dependencies: {
     "@clack/prompts": cliPkg.dependencies["@clack/prompts"],
@@ -129,19 +128,19 @@ if (existsSync(licenseSrc)) {
 
 writeFileSync(
   path.join(out, "README.md"),
-  `# rootcli
+  `# rooot
 
-Pure-engineering backend scaffolding CLI (**no AI**). Product: Root. Bins: \`rootcli\`, \`root\`.
+Pure-engineering backend scaffolding CLI (**no AI**). Product: Root. Bin: \`rooot\`.
 
 \`\`\`bash
 mkdir my-api && cd my-api
-npx rootcli@latest init
-npx rootcli@latest add auth
-npx rootcli@latest add resource post
-npx rootcli@latest doctor
+npx rooot@latest init
+npx rooot@latest add auth
+npx rooot@latest add resource post
+npx rooot@latest doctor
 \`\`\`
 
-Also: \`pnpm dlx rootcli@latest\`, \`yarn dlx rootcli@latest\`, \`bunx rootcli@latest\`.
+Also: \`pnpm dlx rooot@latest\`, \`yarn dlx rooot@latest\`, \`bunx rooot@latest\`.
 
 Local monorepo development uses \`pnpm root-cli\` instead of dlx.
 `,

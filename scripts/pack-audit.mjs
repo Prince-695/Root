@@ -12,8 +12,8 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 
 execSync("node scripts/prepare-publish.mjs", { cwd: root, stdio: "inherit" });
 
-const releaseDir = path.join(root, "release", "rootcli");
-const packDir = mkdtempSync(path.join(tmpdir(), "rootcli-pack-"));
+const releaseDir = path.join(root, "release", "rooot");
+const packDir = mkdtempSync(path.join(tmpdir(), "rooot-pack-"));
 
 try {
   const packOut = execSync("npm pack --json", {
@@ -62,9 +62,9 @@ try {
   }
 
   const pkg = JSON.parse(readFileSync(path.join(base, "package.json"), "utf8"));
-  if (pkg.name !== "rootcli" || !pkg.bin?.rootcli || !pkg.bin?.root) {
+  if (pkg.name !== "rooot" || !pkg.bin?.rooot || pkg.bin.root || pkg.bin.rootcli) {
     console.error(
-      "Pack audit FAILED: bad package.json name/bin (expected rootcli + bins rootcli/root)",
+      "Pack audit FAILED: bad package.json name/bin (expected rooot only; no root/rootcli bins)",
     );
     process.exit(1);
   }

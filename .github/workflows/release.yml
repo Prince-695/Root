@@ -17,7 +17,7 @@ on:
 
 jobs:
   publish:
-    name: Publish rootcli
+    name: Publish rooot
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -45,7 +45,7 @@ jobs:
         run: pnpm pack:audit
 
       - name: Publish or dry-run
-        working-directory: release/rootcli
+        working-directory: release/rooot
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
           DIST_TAG: ${{ github.event.inputs.tag || 'latest' }}
@@ -55,7 +55,7 @@ jobs:
             npm publish --dry-run --access public --tag "$DIST_TAG"
           else
             npm publish --access public --tag "$DIST_TAG"
-            echo "Published rootcli with tag $DIST_TAG"
+            echo "Published rooot with tag $DIST_TAG"
             echo "Post-publish smoke (from a clean machine):"
-            echo "  pnpm dlx rootcli@$DIST_TAG --yes init"
+            echo "  pnpm dlx rooot@$DIST_TAG --yes init"
           fi

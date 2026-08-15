@@ -7,10 +7,10 @@ cd "$ROOT"
 
 pnpm prepare-publish
 (
-  cd release/rootcli
+  cd release/rooot
   npm pack
 )
-TARBALL="$ROOT/release/rootcli/rootcli-0.1.0.tgz"
+TARBALL="$ROOT/release/rooot/rooot-0.1.0.tgz"
 
 if ! git rev-parse v0.1.0 >/dev/null 2>&1; then
   git tag -a v0.1.0 -m "Root public preview 0.1.0"

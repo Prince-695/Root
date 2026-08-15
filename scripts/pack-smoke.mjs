@@ -33,12 +33,12 @@ function freePort() {
 }
 
 execSync("node scripts/prepare-publish.mjs", { cwd: root, stdio: "inherit" });
-const releaseDir = path.join(root, "release", "rootcli");
+const releaseDir = path.join(root, "release", "rooot");
 const packJson = execSync("npm pack --json", { cwd: releaseDir, encoding: "utf8" });
 const [{ filename }] = JSON.parse(packJson);
 const tarball = path.join(releaseDir, filename);
 
-const work = mkdtempSync(path.join(tmpdir(), "rootcli-smoke-"));
+const work = mkdtempSync(path.join(tmpdir(), "rooot-smoke-"));
 const appDir = path.join(work, "app");
 
 try {
